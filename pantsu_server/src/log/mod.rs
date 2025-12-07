@@ -11,7 +11,6 @@ use tracing_subscriber::Layer;
 use yansi::Paint;
 
 pub(crate) mod request_id;
-// mod tracing_fairing;
 
 struct LogTimeFormat;
 
