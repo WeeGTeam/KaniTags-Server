@@ -1,8 +1,9 @@
-use std::{sync::Arc, io, path::PathBuf};
+use bytes::Bytes;
+use std::{io, path::PathBuf};
+use tokio::fs::{DirBuilder, OpenOptions};
+use tokio::io::AsyncWriteExt;
 
-use rocket::tokio::{fs::{OpenOptions, DirBuilder}, io::AsyncWriteExt};
-
-use crate::{config::ServerConfig, image::PantsuImage, common::error::Error, common::result::Result};
+use crate::{common::error::Error, common::result::Result, config::ServerConfig, image::PantsuImage};
 
 
 pub struct PantsuLibrary {
@@ -23,7 +24,7 @@ impl PantsuLibrary {
         })
     }
 
-    pub async fn store_image(&self, image: &PantsuImage, file_content: Arc<Vec<u8>>) -> Result<()> {
+    pub async fn store_image(&self, image: &PantsuImage, file_content: Bytes) -> Result<()> {
         let path = self.library_path.join(image.filename());
         let mut file = OpenOptions::new()
             .write(true)

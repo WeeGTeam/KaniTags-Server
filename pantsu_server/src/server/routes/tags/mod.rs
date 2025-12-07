@@ -1,5 +1,6 @@
-use rocket::Route;
+use crate::AppState;
+use axum::Router;
 
-pub fn get_routes() -> Vec<Route> {
-    return rocket::routes![]
+pub fn router() -> Router<AppState> {
+    Router::new()
 }
