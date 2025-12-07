@@ -28,21 +28,12 @@ async fn import_impl(fs_service: Arc<dyn FsService + Sync + Send>, image_import:
     let image = PantsuImage::try_from(image_import.image_file.as_ref())?;
     image_id::verify_image_id(&image_import.image_id, image.id())?;
 
+    // TODO: import: check if file exists (in db)
+
     info!("Store image in library: '{}'", image.filename());
     fs_service.store_image(image.clone(), image_import.image_file.clone()).await?;
+
+    // TODO: add to db
+
     Ok(())
 }
-
-// async fn import_impl2<'r>(context: &Context, services: &Services, image_import: ImageImport) -> Result<content::RawJson<String>> {
-//     let image = PantsuImage::try_from(&image_import.image_file.data[..])?;
-//     image_id::verify_image_id(&image_import.image_id, image.id())?;
-//
-//     // TODO: import: check if file exists (in db)
-//
-//     info!("Store image in library: '{}'", image.filename());
-//     let image_file_arc = Arc::new(image_import.image_file.data);
-//     services.fs_service.store_image(image.clone(), image_file_arc.clone()).await?;
-//
-//     // TODO: add to db
-//     Ok(wrap_ok(format!("hehe '{}' '{}'", image_import.image_id.format_id_hash(), image.filename())))
-// }
