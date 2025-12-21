@@ -1,6 +1,6 @@
 use crate::AppState;
-use axum::Router;
+use utoipa_axum::router::OpenApiRouter;
 
-pub fn router() -> Router<AppState> {
-    Router::new()
+pub fn router() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new()
 }

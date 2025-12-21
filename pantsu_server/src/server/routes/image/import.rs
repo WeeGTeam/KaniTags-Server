@@ -4,6 +4,7 @@ use axum::extract::State;
 use axum_typed_multipart::TryFromMultipart;
 use bytes::Bytes;
 use tracing::log::{debug, info};
+use utoipa::ToSchema;
 
 use crate::common::result;
 use crate::image::image_id::ImageId;
@@ -12,12 +13,24 @@ use crate::server::multipart::Multipart;
 use crate::worker::fs::fs_service::FsService;
 use crate::AppState;
 
-#[derive(TryFromMultipart, Debug)]
+#[derive(TryFromMultipart, ToSchema, Debug)]
 pub struct ImageImport {
+    #[schema(value_type = String, format = Binary, content_media_type = "application/octet-stream")]
     #[form_data(limit = "unlimited")]
     pub image_file: Bytes,
+    #[schema(value_type = String)]
     pub image_id: ImageId,
 }
+
+#[utoipa::path(
+    post,
+    path = "/import",
+    responses(
+        (status = NO_CONTENT, description = "Image import successful"),
+        (status = INTERNAL_SERVER_ERROR, description = "Image import failed")
+    ),
+    request_body(content = ImageImport, content_type = "multipart/form-data")
+)]
 pub async fn import(State(state): State<AppState>, image_import: Multipart<ImageImport>) -> result::Result<()> {
     debug!("{:?}", image_import.image_id);
     import_impl(state.fs_service.clone(), image_import.data).await?;
