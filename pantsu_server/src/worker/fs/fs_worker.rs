@@ -38,5 +38,7 @@ fn respond<T>(responder: JobResponder<T>, response: Result<T>) -> Result<()> {
 
 async fn handle_store_image<'r>(image: PantsuImage, file_content: Bytes, config: &ServerConfig) -> Result<()> {
     let library = PantsuLibrary::new(config).await?;
-    library.store_image(&image, file_content).await
+    library.store_image(&image, file_content.clone()).await?;
+    library.create_thumbnail(&image, file_content).await?;    
+    Ok(())
 }
