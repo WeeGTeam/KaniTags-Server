@@ -26,6 +26,10 @@ impl PantsuImage {
     pub fn filename(&self) -> String {
         format!("{}.{}", self.id.filename_format(), self.format.extension())
     }
+
+    pub fn filename_with_custom_extension(&self, format: ImageFormat) -> String {
+        format!("{}.{}", self.id.filename_format(), format.extension())
+    }
 }
 
 impl TryFrom<&[u8]> for PantsuImage {

@@ -69,6 +69,10 @@ pub enum Error {
 
     #[error("Encountered an unexpected IO Error: '{0}'")]
     IoError(#[from] std::io::Error),
+
+    // placeholder for anyhow error
+    #[error("Internal server error: '{0}'")]
+    Unknown(String),
 }
 
 impl Error {
