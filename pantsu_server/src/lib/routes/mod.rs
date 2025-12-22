@@ -18,14 +18,12 @@ mod multipart;
 #[openapi()]
 struct ApiDoc;
 
-pub fn get_router(app_state: AppState) -> OpenApiRouter {
-    let config = &app_state.config;
+pub fn get_router(config: &ServerConfig) -> OpenApiRouter<AppState> {
     OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest("/image", image::router(config))
         .nest("/images", images::router())
         .nest("/sauce", sauce::router())
         .nest("/tags", tags::router())
-        .with_state(app_state.clone())
         .layer(TraceLayer::new_for_http()
             .make_span_with(crate::log::request_id::request_id_tracing_span)
         )

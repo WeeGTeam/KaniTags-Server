@@ -65,7 +65,9 @@ async fn main() -> Result<()> {
 pub async fn launch_server(shared_state: AppState) -> Result<()> {
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", shared_state.config.server_port)).await?;
 
-    let (router, api) = routes::get_router(shared_state).split_for_parts();
+    let (router, api) = routes::get_router(&shared_state.config)
+        .with_state(shared_state)
+        .split_for_parts();
 
     let router = router.merge(SwaggerUi::new("/swagger-ui").url("/apidoc/openapi.json", api));
 
