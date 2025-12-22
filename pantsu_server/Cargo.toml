@@ -9,6 +9,10 @@ edition = "2021"
 name = "pantsu_server"
 path = "src/bin/main.rs"
 
+[[bin]]
+name = "generate_openapi"
+path = "src/bin/generate_openapi.rs"
+
 [lib]
 name = "pantsu_lib"
 path = "src/lib/lib.rs"
