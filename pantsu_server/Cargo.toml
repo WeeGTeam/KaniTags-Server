@@ -5,6 +5,14 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[[bin]]
+name = "pantsu_server"
+path = "src/bin/main.rs"
+
+[lib]
+name = "pantsu_lib"
+path = "src/lib/lib.rs"
+
 [dependencies]
 async-trait = "0.1.89"
 axum = { version = "0.8.7", features = ["multipart"] }
