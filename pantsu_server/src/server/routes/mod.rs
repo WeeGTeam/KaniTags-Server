@@ -1,16 +1,21 @@
 use crate::AppState;
-use axum::Router;
 use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
 use tower_http::trace::TraceLayer;
+use utoipa::OpenApi;
+use utoipa_axum::router::OpenApiRouter;
 
 pub mod image;
 pub mod images;
 pub mod sauce;
 pub mod tags;
 
-pub fn get_router(app_state: AppState) -> Router {
+#[derive(OpenApi)]
+#[openapi()]
+struct ApiDoc;
+
+pub fn get_router(app_state: AppState) -> OpenApiRouter {
     let config = &app_state.config;
-    Router::new()
+    OpenApiRouter::with_openapi(ApiDoc::openapi())
         .nest("/image", image::router(config))
         .nest("/images", images::router())
         .nest("/sauce", sauce::router())

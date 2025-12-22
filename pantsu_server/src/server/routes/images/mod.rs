@@ -2,9 +2,9 @@ mod images;
 
 use crate::AppState;
 use axum::routing::get;
-use axum::Router;
+use utoipa_axum::router::OpenApiRouter;
 
-pub fn router() -> Router<AppState> {
-    Router::new()
+pub fn router() -> OpenApiRouter<AppState> {
+    OpenApiRouter::new()
         .route("/", get(images::get_images))
 }
