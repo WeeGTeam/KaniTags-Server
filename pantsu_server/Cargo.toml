@@ -40,7 +40,7 @@ tower-http = { version = "0.6.7", features = ["trace", "request-id"] }
 tracing = "0.1.43"
 tracing-log = "0.2.0"
 tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
-utoipa = { version = "5.4.0", features = ["axum_extras"] }
+utoipa = { version = "5.4.0", features = ["axum_extras", "yaml"] }
 utoipa-axum = "0.2.0"
 utoipa-swagger-ui = { version = "9.0.2", features = ["axum"] }
 uuid = { version = "1.19.0", features = ["v4"] }
