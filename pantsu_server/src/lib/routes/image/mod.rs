@@ -11,6 +11,7 @@ use utoipa_axum::routes;
 pub fn router(server_config: &ServerConfig) -> OpenApiRouter<AppState> {
     OpenApiRouter::new()
         .routes(routes!(import::import)).route_layer(DefaultBodyLimit::max(server_config.request_body_limit.as_u64() as usize))
-        .routes(routes!(image::dummy_get_image))
+        .routes(routes!(image::get_image))
+        .routes(routes!(image::get_image_thumbnail))
         .routes(routes!(tags::dummy_get_tags))
 }

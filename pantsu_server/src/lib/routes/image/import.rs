@@ -1,6 +1,7 @@
 use axum::extract::State;
 use axum_typed_multipart::TryFromMultipart;
 use bytes::Bytes;
+use serde::Serialize;
 use std::sync::Arc;
 use tracing::log::{debug, info};
 use utoipa::ToSchema;
@@ -13,6 +14,7 @@ use crate::routes::AppState;
 use crate::worker::fs::fs_service::FsService;
 
 #[derive(TryFromMultipart, ToSchema, Debug)]
+#[schema(rename_all = "camelCase")]
 pub struct ImageImport {
     #[schema(value_type = String, format = Binary, content_media_type = "application/octet-stream")]
     #[form_data(limit = "unlimited")]
@@ -25,8 +27,8 @@ pub struct ImageImport {
     post,
     path = "/import",
     responses(
-        (status = NO_CONTENT, description = "Image import successful"),
-        (status = INTERNAL_SERVER_ERROR, description = "Image import failed")
+        (status = OK, description = "Image import successful", body = String),
+        (status = INTERNAL_SERVER_ERROR, description = "Image import failed", body = u32)
     ),
     request_body(content = ImageImport, content_type = "multipart/form-data")
 )]
