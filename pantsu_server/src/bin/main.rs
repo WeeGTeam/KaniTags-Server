@@ -1,14 +1,15 @@
+use axum::extract::DefaultBodyLimit;
 use pantsu_lib::common::result::Result;
 use pantsu_lib::config::ServerConfig;
-use pantsu_lib::log::setup_logger;
-use pantsu_lib::routes;
-use pantsu_lib::routes::AppState;
+use pantsu_lib::log::{request_id, setup_logger};
+use pantsu_lib::routes::{AppState, OpenApiRouter};
 use pantsu_lib::worker::iqdb::iqdb_service::IqdbService;
 use pantsu_lib::worker::worker_init;
+use pantsu_openapi::server;
 use std::sync::Arc;
+use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
+use tower_http::trace::TraceLayer;
 use tracing::{debug, info, Level};
-use utoipa::openapi::server;
-use utoipa_swagger_ui::SwaggerUi;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -51,11 +52,7 @@ async fn main() -> Result<()> {
         }).await;
     */
 
-    let app_state = AppState::new(
-        Arc::new(iqdb_service),
-        Arc::new(fs_service),
-        config
-    );
+    let app_state = AppState::new(Arc::new(iqdb_service), Arc::new(fs_service), config);
 
     launch_server(app_state).await?;
 
@@ -63,13 +60,16 @@ async fn main() -> Result<()> {
 }
 
 pub async fn launch_server(shared_state: AppState) -> Result<()> {
-    let listener = tokio::net::TcpListener::bind(("0.0.0.0", shared_state.config.server_port)).await?;
+    let listener =
+        tokio::net::TcpListener::bind(("0.0.0.0", shared_state.config.server_port)).await?;
 
-    let (router, api) = routes::get_router(&shared_state.config)
-        .with_state(shared_state)
-        .split_for_parts();
-
-    let router = router.merge(SwaggerUi::new("/swagger-ui").url("/apidoc/openapi.json", api));
+    let body_limit =
+        DefaultBodyLimit::max(shared_state.config.request_body_limit.as_u64() as usize);
+    let router = server::new(OpenApiRouter(shared_state))
+        .layer(TraceLayer::new_for_http().make_span_with(request_id::request_id_tracing_span))
+        .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid::default()))
+        .layer(PropagateRequestIdLayer::x_request_id())
+        .layer(body_limit);
 
     axum::serve(listener, router).await?;
 

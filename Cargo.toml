@@ -3,4 +3,5 @@ resolver = "2"
 
 members = [
     "pantsu_server",
+    "pantsu_openapi",
 ]
