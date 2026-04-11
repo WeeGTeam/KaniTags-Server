@@ -1,0 +1,213 @@
+openapi: 3.1.0
+info:
+  title: Pantsu Server
+  summary: A image library and sauce lookup service for pantsu
+  description: API to import images, filter and download images, manage tags, lookup sources and tags
+  version: 0.1.0
+servers:
+  - description: localhost
+    url: http://localhost:8000
+tags:
+  - name: imageImport
+  - name: imageDownload
+  - name: imageList
+  - name: imageTag
+paths:
+  /image/importSession:
+    post:
+      tags:
+        - imageImport
+      operationId: startImportSession
+      responses:
+        "201":
+          description: import session started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportSession'
+
+  /image/import/{id}:
+    post:
+      tags:
+        - imageImport
+      operationId: importImage
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImportSessionId'
+      requestBody:
+        description: imports an image
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ImageImport'
+        required: true
+      responses:
+        "201":
+          description: imported
+        "409":
+          description: image already exists
+  /image/{id}/full:
+    get:
+      tags:
+        - imageDownload
+      operationId: getFullImage
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImageId'
+      responses:
+        "200":
+          description: Ok
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: image not found
+  /image/{id}/thumbnail:
+    get:
+      tags:
+        - imageDownload
+      operationId: getThumbnailImage
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImageId'
+      responses:
+        "200":
+          description: Ok
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+            image/png:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: image not found
+  /image/{id}/tags:
+    get:
+      tags:
+        - imageTag
+      operationId: getImageTags
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImageId'
+      responses:
+        "200":
+          description: "Ok"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageTag'
+        "404":
+          description: image not found
+  /images:
+    get:
+      tags:
+        - imageList
+      operationId: getImages
+      parameters:
+        - in: query
+          name: list
+          description: limit search to this list
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: layout
+          description: limit search to layout type
+          required: false
+          schema:
+            type: string
+            enum: [ portrait, landscape ]
+        - in: query
+          name: tag
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageInfo'
+components:
+  schemas:
+    ImportSession:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ImportSessionId'
+      required:
+        - id
+    ImportSessionId:
+      type: string
+      example: "1234567890"
+      pattern: "^[0-9]+$"
+    ImageId:
+      type: string
+      example: "3b6368639f3e17fa"
+      pattern: "^[0-9a-f]{16}$"
+    TagId:
+      type: string
+      example: "123456789"
+      pattern: "^[0-9]+$"
+    UserId:
+      type: string
+      example: "123456789"
+      pattern: "^[0-9]+$"
+    ImageTag:
+      type: object
+      properties:
+        tagId:
+          $ref: '#/components/schemas/TagId'
+        createdBy:
+          $ref: '#/components/schemas/UserId'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-09-20T12:34:56Z"
+      required:
+        - tagId
+        - createdBy
+        - createdAt
+    ImageImport:
+      type: object
+      properties:
+        file:
+          type: string
+          format: binary
+      required:
+        - file
+    ImageInfo:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ImageId'
+      required:
+        - id

@@ -10,7 +10,7 @@ use tracing_subscriber::util::SubscriberInitExt;
 use tracing_subscriber::Layer;
 use yansi::Paint;
 
-pub(crate) mod request_id;
+pub mod request_id;
 
 struct LogTimeFormat;
 

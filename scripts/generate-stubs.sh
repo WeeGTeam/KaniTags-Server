@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
+
+IMAGE_DOWNLOAD="$ROOT_DIR/pantsu_openapi/src/apis/image_download.rs"
+SERVER="$ROOT_DIR/pantsu_openapi/src/server/mod.rs"
+
+OPENAPI_GENERATOR_VERSION=7.21.0
+OPENAPI_GENERATOR_DOWNLOAD_CACHE_DIR="$SCRIPT_DIR"
+
+export OPENAPI_GENERATOR_VERSION
+export OPENAPI_GENERATOR_DOWNLOAD_CACHE_DIR
+
+bash "$SCRIPT_DIR/openapi-generator-cli.sh" generate \
+  -i "$ROOT_DIR/openapi.yaml" \
+  -o "$ROOT_DIR/pantsu_openapi" \
+  -g rust-axum \
+  -p packageName=pantsu-openapi
+
+# Add content_type String to the 200 image response variants
+sed -i 's/^    (ByteArray)$/    (ByteArray, String)/' "$IMAGE_DOWNLOAD"
+# Destructure content_type in server handlers
+sed -i '/apis::image_download::[A-Za-z]*Response::[A-Za-z]*/{n; s/(body)/(body, content_type)/}' "$SERVER"
+# Use runtime content_type instead of hardcoded "image/jpeg"
+sed -i 's/HeaderValue::from_static("image\/jpeg")/HeaderValue::from_str(\&content_type).unwrap_or_else(|_| HeaderValue::from_static("application\/octet-stream"))/' "$SERVER"
