@@ -3,7 +3,7 @@ resolver = "2"
 
 members = [
     "pantsu_server",
-    "pantsu_openapi",
+    "incoming/pantsu_openapi",
 ]
 
 [workspace.dependencies]
