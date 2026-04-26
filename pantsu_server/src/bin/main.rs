@@ -1,20 +1,16 @@
-use axum::extract::DefaultBodyLimit;
-use pantsu_lib::common::result::Result;
+use pantsu_domain::common::error::Error;
+use pantsu_domain::reverse_image_search::ReverseImageSearchService;
+use pantsu_http_api::launch_server;
 use pantsu_lib::config::ServerConfig;
-use pantsu_lib::log::{request_id, setup_logger};
-use pantsu_lib::routes::{AppState, OpenApiRouter};
-use pantsu_lib::worker::iqdb::iqdb_service::IqdbService;
-use pantsu_lib::worker::worker_init;
-use pantsu_openapi::server;
+use pantsu_lib::log::setup_logger;
+use pantsu_lib::worker_init;
 use std::sync::Arc;
-use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetRequestIdLayer};
-use tower_http::trace::TraceLayer;
 use tracing::{debug, info, Level};
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), Error> {
     setup_logger(Level::DEBUG);
-    let config = ServerConfig::load_config()?;
+    let config = ServerConfig::load_config().map_err(|_| Error::TodoError())?;
     println!("{:?}", config);
     debug!("{:?}", config);
 
@@ -22,7 +18,7 @@ async fn main() -> Result<()> {
     let sauce = iqdb_service.get_sauce("Megumin".to_string()).await?;
     info!("the sauce of {} is {}", "Megumin", sauce);
 
-    let fs_service = worker_init::init_fs(config.clone());
+    let fs_service = worker_init::init_fs(config.library_path.clone());
 
     /*let stream_service = worker_init::init_iqdb();
     let mut sauce_jobs: FuturesUnordered<_> = (1..512)
@@ -52,26 +48,13 @@ async fn main() -> Result<()> {
         }).await;
     */
 
-    let app_state = AppState::new(Arc::new(iqdb_service), Arc::new(fs_service), config);
-
-    launch_server(app_state).await?;
-
-    Ok(())
-}
-
-pub async fn launch_server(shared_state: AppState) -> Result<()> {
-    let listener =
-        tokio::net::TcpListener::bind(("0.0.0.0", shared_state.config.server_port)).await?;
-
-    let body_limit =
-        DefaultBodyLimit::max(shared_state.config.request_body_limit.as_u64() as usize);
-    let router = server::new(OpenApiRouter(shared_state))
-        .layer(TraceLayer::new_for_http().make_span_with(request_id::request_id_tracing_span))
-        .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid::default()))
-        .layer(PropagateRequestIdLayer::x_request_id())
-        .layer(body_limit);
-
-    axum::serve(listener, router).await?;
+    launch_server(
+        Arc::new(iqdb_service),
+        Arc::new(fs_service),
+        config.request_body_limit.as_u64() as usize,
+        config.server_port,
+    )
+    .await?;
 
     Ok(())
 }

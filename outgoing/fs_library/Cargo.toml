@@ -1,0 +1,13 @@
+[package]
+name = "pantsu-fs-library"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+pantsu-domain = { workspace = true }
+pantsu-worker = { workspace = true }
+
+async-trait = { workspace = true }
+bytes = { workspace = true }
+image = { workspace = true }
+tokio = { workspace = true, features = ["io-util"] }

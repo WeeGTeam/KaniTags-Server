@@ -1,0 +1,10 @@
+[package]
+name = "pantsu-iqdb"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+pantsu-domain = { workspace = true }
+pantsu-worker = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }
