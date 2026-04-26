@@ -3,11 +3,22 @@ resolver = "2"
 
 members = [
     "pantsu_server",
+    "domain",
     "incoming/pantsu_openapi",
+    "incoming/http-api",
+    "outgoing/iqdb",
+    "outgoing/fs_library",
+    "outgoing/shared/worker",
 ]
 
 [workspace.dependencies]
+pantsu-domain = { path = "domain" }
 pantsu-openapi = { path = "incoming/pantsu_openapi" }
+pantsu-http-api = { path = "incoming/http-api" }
+pantsu-fs-library = { path = "outgoing/fs_library" }
+pantsu-iqdb = { path = "outgoing/iqdb" }
+pantsu-worker = { path = "outgoing/shared/worker" }
+
 async-trait = "0.1.89"
 axum = { version = "0.8.7", features = ["multipart"] }
 axum-macros = "0.5.0"

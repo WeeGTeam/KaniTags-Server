@@ -14,30 +14,17 @@ name = "pantsu_lib"
 path = "src/lib/lib.rs"
 
 [dependencies]
-pantsu-openapi = { workspace = true }
-async-trait = { workspace = true }
-axum = { workspace = true }
-axum-macros = { workspace = true }
-axum_typed_multipart = { workspace = true }
-blockhash = { workspace = true }
+pantsu-domain = { workspace = true }
+pantsu-http-api = { workspace = true }
+pantsu-fs-library = { workspace = true }
+pantsu-iqdb = { workspace = true }
+pantsu-worker = { workspace = true }
+
 byte-unit = { workspace = true }
-bytes = { workspace = true }
 chrono = { workspace = true }
 figment = { workspace = true }
-futures = { workspace = true }
-image = { workspace = true }
-lz_fnv = { workspace = true }
-regex = { workspace = true }
 serde = { workspace = true }
-serde_json = { workspace = true }
-thiserror = { workspace = true }
 tokio = { workspace = true }
-tokio-stream = { workspace = true }
-tower-http = { workspace = true }
 tracing = { workspace = true }
-tracing-log = { workspace = true }
 tracing-subscriber = { workspace = true }
-uuid = { workspace = true }
 yansi = { workspace = true }
-headers = { workspace = true }
-axum-extra = { workspace = true }
