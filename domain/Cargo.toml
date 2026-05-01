@@ -13,4 +13,5 @@ image = { workspace = true }
 lz_fnv = { workspace = true }
 regex = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["sync"]}
+tracing = { workspace = true }
