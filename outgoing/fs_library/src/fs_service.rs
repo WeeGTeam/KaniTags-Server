@@ -1,32 +1,29 @@
+use std::path::PathBuf;
+
 use async_trait::async_trait;
 use bytes::Bytes;
 use pantsu_domain::common::result::Result;
 use pantsu_domain::image::PantsuImage;
-use pantsu_domain::library::LibraryService;
-use pantsu_worker::worker_connection::WorkerConnectionTx;
-use pantsu_worker::JobResponder;
-use tokio::sync::oneshot;
+use pantsu_domain::library::{GALLERY_THUMBNAIL_OPTIONS, Library, LibraryService};
 
-pub enum FsJob {
-    StoreImage(PantsuImage, Bytes, JobResponder<()>),
-}
+use crate::library::PantsuLibrary;
 
 pub struct DefaultFsService {
-    worker_connection: WorkerConnectionTx<FsJob>,
+    lib_path: PathBuf,
 }
 
 impl DefaultFsService {
-    pub fn new(worker_connection: WorkerConnectionTx<FsJob>) -> Self {
-        return DefaultFsService { worker_connection };
+    pub fn new(lib_path: PathBuf) -> Self {
+        return DefaultFsService { lib_path };
     }
 }
 
 #[async_trait]
 impl LibraryService for DefaultFsService {
     async fn store_image(&self, image: PantsuImage, file_content: Bytes) -> Result<()> {
-        let (sender, receiver) = oneshot::channel::<Result<()>>();
-        let job = FsJob::StoreImage(image, file_content, sender);
-        self.worker_connection.send_job(job).await?;
-        return receiver.await?;
+        let library = PantsuLibrary::new(self.lib_path.clone()).await?;
+        library.store_image(&image, file_content.clone()).await?;
+        library.create_thumbnail(&image, file_content, GALLERY_THUMBNAIL_OPTIONS).await?;
+        Ok(())
     }
 }
