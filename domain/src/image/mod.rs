@@ -8,6 +8,7 @@ use image::GenericImageView;
 pub mod hash;
 pub mod image_format;
 pub mod image_id;
+pub mod thumbnail;
 
 #[derive (Clone)]
 pub struct PantsuImage {

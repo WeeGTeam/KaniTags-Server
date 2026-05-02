@@ -2,14 +2,12 @@ use pantsu_domain::common::{error::Error, result::Result};
 
 use async_trait::async_trait;
 use bytes::Bytes;
-use image::codecs::jpeg::JpegEncoder;
 use pantsu_domain::image::image_format::ImageFormat;
 use pantsu_domain::image::PantsuImage;
 use pantsu_domain::library::{Library, ThumbnailOptions, GALLERY_THUMBNAIL_OPTIONS};
 use std::{io, path::PathBuf};
 use tokio::fs::{DirBuilder, OpenOptions};
 use tokio::io::AsyncWriteExt;
-use tokio::task::spawn_blocking;
 
 
 pub struct PantsuLibrary {
@@ -73,12 +71,11 @@ impl Library for PantsuLibrary {
         &self,
         image: &PantsuImage,
         file_content: Bytes,
-        options: ThumbnailOptions,
     ) -> Result<()> {
         let path = self
             .gallery_thumbnail_path
             .join(image.filename_with_custom_extension(ImageFormat::JPG));
-        let file = OpenOptions::new()
+        let mut file = OpenOptions::new()
             .write(true)
             .create_new(true)
             .open(path)
@@ -89,28 +86,12 @@ impl Library for PantsuLibrary {
                     image.id()
                 ))
             })?;
-        let file_std = file.into_std().await;
-
-        let image_id = image.id().clone();
-        spawn_blocking(move || {
-            let loaded_image = image::load_from_memory(&file_content).map_err(|_| {
-                Error::Unknown(format!("Failed to load image \"{}\" into memory", image_id))
-            })?;
-            let thumbnail = loaded_image.thumbnail(options.max_size, options.max_size);
-
-            let encoder =
-                JpegEncoder::new_with_quality(file_std, options.jpg_quality);
-            thumbnail.write_with_encoder(encoder).map_err(|_| {
-                Error::Unknown(format!(
-                    "Failed to encode and write thumbnail \"{}\"",
-                    image_id
-                ))
-            })
-        })
-        .await
-        .map_err(|_| {
-            Error::Unknown("Failed to join blocking thread generating the thumbnail".to_owned())
-        })?
+        Ok(
+            file
+                .write_all(&file_content)
+                .await
+                .map_err(|e| Error::Unknown(e.to_string()))?
+        )
     }
 }
 
