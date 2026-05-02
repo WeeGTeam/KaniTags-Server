@@ -15,6 +15,7 @@ pub mod outgoing {
     use async_trait::async_trait;
     use bytes::Bytes;
     
+    use crate::api::model::ThumbnailOptions;
     use crate::common::result::Result;
     use crate::image::PantsuImage;
     
@@ -27,6 +28,16 @@ pub mod outgoing {
             &self,
             image: &PantsuImage,
             file_content: Bytes,
+            options: ThumbnailOptions,
         ) -> Result<()>;
     }
+}
+
+pub mod model {
+    
+    pub struct ThumbnailOptions {
+        pub max_size: u32,
+        pub jpg_quality: u8,
+    }
+    
 }

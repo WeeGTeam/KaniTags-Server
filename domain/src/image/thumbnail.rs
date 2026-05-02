@@ -4,18 +4,17 @@ use bytes::Bytes;
 use image::codecs::jpeg::JpegEncoder;
 use tokio::task::spawn_blocking;
 
-use crate::{common::{error::Error, result::Result}, image::{image_id::ImageId}, library::{GALLERY_THUMBNAIL_OPTIONS, ThumbnailOptions}};
+use crate::{api::model::ThumbnailOptions, common::{error::Error, result::Result}, image::image_id::ImageId};
 
+
+pub const GALLERY_THUMBNAIL_OPTIONS: ThumbnailOptions = ThumbnailOptions {
+    max_size: 512,
+    jpg_quality: 80,
+};
 const INITIAL_THUMBNAIL_BUFFER_SIZE: usize = usize::pow(2, 14);
 
-pub async fn create_gallery_thumbnail(
-    image_id: ImageId,
-    image_data: Bytes,
-) -> Result<Bytes> {
-    create_thumbnail_in_memory(image_id, image_data, GALLERY_THUMBNAIL_OPTIONS).await
-}
 
-async fn create_thumbnail_in_memory(
+pub async fn create_thumbnail_in_memory(
     image_id: ImageId,
     image_data: Bytes,
     options: ThumbnailOptions,
