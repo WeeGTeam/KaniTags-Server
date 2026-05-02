@@ -7,7 +7,7 @@ members = [
     "incoming/pantsu_openapi",
     "incoming/http-api",
     "outgoing/iqdb",
-    "outgoing/fs_library",
+    "outgoing/fs",
     "outgoing/shared/worker",
 ]
 
@@ -15,7 +15,7 @@ members = [
 pantsu-domain = { path = "domain" }
 pantsu-openapi = { path = "incoming/pantsu_openapi" }
 pantsu-http-api = { path = "incoming/http-api" }
-pantsu-fs-library = { path = "outgoing/fs_library" }
+pantsu-fs = { path = "outgoing/fs" }
 pantsu-iqdb = { path = "outgoing/iqdb" }
 pantsu-worker = { path = "outgoing/shared/worker" }
 

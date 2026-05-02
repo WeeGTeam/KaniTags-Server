@@ -1,5 +1,5 @@
+use pantsu_domain::api::incoming::ImageManagementService;
 use pantsu_domain::common::error::Error;
-use pantsu_domain::api::ImageManagementService;
 use pantsu_domain::reverse_image_search::ReverseImageSearchService;
 use pantsu_openapi::apis::ErrorHandler;
 use std::sync::Arc;

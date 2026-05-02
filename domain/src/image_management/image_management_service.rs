@@ -4,17 +4,17 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use tracing::info;
 
-use crate::{api::ImageManagementService, common::error::Error, image::{PantsuImage, thumbnail::{create_gallery_thumbnail}}, library::LibraryService};
+use crate::{api::{incoming::ImageManagementService, outgoing::ImageRepository}, common::error::Error, image::{PantsuImage, thumbnail::create_gallery_thumbnail}};
 
 
 pub struct ImageManagementServiceImpl {
-    fs_service: Arc<dyn LibraryService + Sync + Send>,
+    image_repository: Arc<dyn ImageRepository + Sync + Send>,
 }
 
 impl ImageManagementServiceImpl {
-    pub fn new(fs_service: Arc<dyn LibraryService + Send + Sync + 'static>) -> Self {
+    pub fn new(image_repository: Arc<dyn ImageRepository + Send + Sync + 'static>) -> Self {
         Self {
-            fs_service: fs_service,
+            image_repository,
         }
     }
 }
@@ -32,9 +32,9 @@ impl ImageManagementService for ImageManagementServiceImpl {
         // TODO: import: check if file exists (in db)
 
         info!("Store image '{}' in library: '{}'", image_name, image.filename());
-        self.fs_service.store_image(image.clone(), image_data.clone()).await?;
+        self.image_repository.store_image(image.clone(), image_data.clone()).await?;
         let thumbnail = create_gallery_thumbnail(image.id().clone(), image_data).await?;
-        self.fs_service.store_jpg_thumbnail(&image, thumbnail).await?;
+        self.image_repository.store_jpg_thumbnail(&image, thumbnail).await?;
 
         // TODO: add to db
 

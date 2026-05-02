@@ -2,24 +2,25 @@ use std::path::PathBuf;
 
 use async_trait::async_trait;
 use bytes::Bytes;
+use pantsu_domain::api::outgoing::ImageRepository;
 use pantsu_domain::common::result::Result;
 use pantsu_domain::image::PantsuImage;
-use pantsu_domain::library::{Library, LibraryService};
+use pantsu_domain::library::Library;
 
 use crate::library::PantsuLibrary;
 
-pub struct DefaultFsService {
+pub struct FsImageRepository {
     lib_path: PathBuf,
 }
 
-impl DefaultFsService {
+impl FsImageRepository {
     pub fn new(lib_path: PathBuf) -> Self {
-        return DefaultFsService { lib_path };
+        return FsImageRepository { lib_path };
     }
 }
 
 #[async_trait]
-impl LibraryService for DefaultFsService {
+impl ImageRepository for FsImageRepository {
     async fn store_image(&self, image: PantsuImage, file_content: Bytes) -> Result<()> {
         let library = PantsuLibrary::new(self.lib_path.clone()).await?;
         library.store_image(&image, file_content.clone()).await?;

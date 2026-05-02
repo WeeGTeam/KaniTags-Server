@@ -24,13 +24,4 @@ pub trait Library {
     ) -> Result<()>;
 }
 
-#[async_trait]
-pub trait LibraryService {
-    async fn store_image(&self, image: PantsuImage, file_content: Bytes) -> Result<()>;
 
-    async fn store_jpg_thumbnail(
-        &self,
-        image: &PantsuImage,
-        file_content: Bytes,
-    ) -> Result<()>;
-}
