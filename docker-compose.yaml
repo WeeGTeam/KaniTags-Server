@@ -1,9 +1,17 @@
 services:
-    PantsuDB:
-        image: 'postgres:latest'
-        ports:
-            - '5432:5432'
-        environment:
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: postgres
-            POSTGRES_DB: pantsudb
+  PantsuDB:
+    image: 'postgres:latest'
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pantsudb
+  PantsuDBTest:
+    image: 'postgres:latest'
+    ports:
+      - '55432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pantsudb
