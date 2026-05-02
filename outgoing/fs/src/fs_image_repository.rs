@@ -20,30 +20,14 @@ impl FsImageRepository {
     }
 
     async fn get_library_path(&self) -> Result<&Path> {
-        DirBuilder::new()
-            .recursive(true)
-            .mode(0o770)
-            .create(&self.lib_path)
-            .await
-            .map_err(|err| Error::LibraryDirectoryError(self.lib_path.clone(), err))?;
+        ensure_directory_exists(&self.lib_path).await?;
         Ok(self.lib_path.as_path())
     }
 
     async fn get_thumbnails_path(&self, options: ThumbnailOptions) -> Result<PathBuf> {
         let thumbnails_path = self.lib_path.join("thumbnails");
         let gallery_thumbnails_path = thumbnails_path.join(get_directory_name(&options));
-        
-        DirBuilder::new()
-            .recursive(true)
-            .mode(0o770)
-            .create(&gallery_thumbnails_path)
-            .await
-            .map_err(|_| {
-                Error::Unknown(format!(
-                    "Failed to create thumbnails library directory: {}",
-                    gallery_thumbnails_path.to_string_lossy()
-                ))
-            })?;
+        ensure_directory_exists(&gallery_thumbnails_path).await?;
         Ok(gallery_thumbnails_path)
     }
 }
@@ -100,6 +84,19 @@ impl ImageRepository for FsImageRepository {
                 .map_err(|e| Error::Unknown(e.to_string()))?
         )
     }
+}
+
+async fn ensure_directory_exists(directory: &Path) -> Result<()> {
+    DirBuilder::new()
+        .recursive(true)
+        .mode(0o770)
+        .create(directory)
+        .await
+        .map_err(|_| {
+            Error::Unknown(format!(
+                "Failed to create directory: {}", directory.to_string_lossy()
+            ))
+        })
 }
 
 fn get_directory_name(options: &ThumbnailOptions) -> String {
