@@ -1,13 +1,12 @@
+use crate::api::model::image_id::ImageId;
 use crate::{api::model::image::PantsuImage, common::error::Error};
 use crate::common::result::Result;
 use crate::image::image_format::ImageFormat;
-use crate::image::image_id::ImageId;
 use chrono::Utc;
 use image::GenericImageView;
 
 pub mod hash;
 pub mod image_format;
-pub mod image_id;
 pub mod thumbnail;
 
 impl TryFrom<&[u8]> for PantsuImage {

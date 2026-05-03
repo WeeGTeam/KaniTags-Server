@@ -1,2 +1,3 @@
 pub mod image;
+pub mod image_id;
 pub mod thumbnail;
