@@ -32,9 +32,9 @@ impl ImageManagementService for ImageManagementServiceImpl {
         // TODO: import: check if file exists (in db)
 
         info!("Store image '{}' in library: '{}'", image_name, image.filename());
-        self.image_repository.store_image(image.clone(), image_data.clone()).await?;
+        self.image_repository.store_image(image.clone(), image_data.clone()).await.map_err(|e| Error::Unknown(e.to_string()))?;
         let thumbnail = create_thumbnail_in_memory(image.id.clone(), image_data, GALLERY_THUMBNAIL_OPTIONS).await?;
-        self.image_repository.store_jpg_thumbnail(&image, thumbnail, GALLERY_THUMBNAIL_OPTIONS).await?;
+        self.image_repository.store_jpg_thumbnail(&image, thumbnail, GALLERY_THUMBNAIL_OPTIONS).await.map_err(|e| Error::Unknown(e.to_string()))?;
 
         // TODO: add to db
 
