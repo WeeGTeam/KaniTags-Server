@@ -1,5 +1,5 @@
+use pantsu_domain::api::incoming::ImageManagementService;
 use pantsu_domain::common::error::Error;
-use pantsu_domain::library::LibraryService;
 use pantsu_domain::reverse_image_search::ReverseImageSearchService;
 use pantsu_openapi::apis::ErrorHandler;
 use std::sync::Arc;
@@ -23,18 +23,19 @@ impl ErrorHandler<Error> for AppState {}
 #[derive(Clone)]
 pub struct AppState {
     pub reverse_image_search_service: Arc<dyn ReverseImageSearchService + Send + Sync>,
-    pub library_service: Arc<dyn LibraryService + Send + Sync>,
+    pub image_management_service: Arc<dyn ImageManagementService + Send + Sync>,
 }
 
 impl AppState {
-    pub fn new<RS, LS>(iqdb_service: Arc<RS>, fs_service: Arc<LS>) -> Self
+    pub fn new<RS, IS>(iqdb_service: Arc<RS>, image_management_service: Arc<IS>,
+    ) -> Self
     where
         RS: ReverseImageSearchService + Send + Sync + 'static,
-        LS: LibraryService + Send + Sync + 'static,
+        IS: ImageManagementService + Send + Sync + 'static,
     {
         Self {
             reverse_image_search_service: iqdb_service,
-            library_service: fs_service,
+            image_management_service,
         }
     }
 }

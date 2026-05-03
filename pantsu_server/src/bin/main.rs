@@ -1,5 +1,6 @@
-use pantsu_domain::common::error::Error;
+use pantsu_domain::{common::error::Error, image_management::image_management_service::ImageManagementServiceImpl};
 use pantsu_domain::reverse_image_search::ReverseImageSearchService;
+use pantsu_fs::fs_image_repository::FsImageRepository;
 use pantsu_http_api::launch_server;
 use pantsu_lib::config::ServerConfig;
 use pantsu_lib::log::setup_logger;
@@ -18,7 +19,11 @@ async fn main() -> Result<(), Error> {
     let sauce = iqdb_service.get_sauce("Megumin".to_string()).await?;
     info!("the sauce of {} is {}", "Megumin", sauce);
 
-    let fs_service = worker_init::init_fs(config.library_path.clone());
+    let fs_image_repository = FsImageRepository::new(config.library_path.clone());
+
+    let image_management_service = ImageManagementServiceImpl::new(
+        Arc::new(fs_image_repository),
+    );
 
     /*let stream_service = worker_init::init_iqdb();
     let mut sauce_jobs: FuturesUnordered<_> = (1..512)
@@ -50,7 +55,7 @@ async fn main() -> Result<(), Error> {
 
     launch_server(
         Arc::new(iqdb_service),
-        Arc::new(fs_service),
+        Arc::new(image_management_service),
         config.request_body_limit.as_u64() as usize,
         config.server_port,
     )

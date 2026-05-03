@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 use thiserror::Error;
 use tokio::sync::{mpsc, oneshot};
 
@@ -12,9 +11,6 @@ pub enum Error {
     TodoError(),
 
     // filesystem
-    #[error("Library directory '{0}' does not exist and cannot be created due to error: {1}")]
-    LibraryDirectoryError(PathBuf, std::io::Error),
-
     #[error("Image exists on disk, but should not according to database: {0}")]
     UnexpectedImageExists(String),
 
