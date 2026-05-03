@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use tracing::info;
 
-use crate::{api::{incoming::image_management::ImageManagementService, outgoing::image_repository::ImageRepository}, common::error::Error, image::{PantsuImage, thumbnail::{GALLERY_THUMBNAIL_OPTIONS, create_thumbnail_in_memory}}};
+use crate::{api::{incoming::image_management::ImageManagementService, model::image::PantsuImage, outgoing::image_repository::ImageRepository}, common::error::Error, image::thumbnail::{GALLERY_THUMBNAIL_OPTIONS, create_thumbnail_in_memory}};
 
 
 pub struct ImageManagementServiceImpl {
@@ -33,7 +33,7 @@ impl ImageManagementService for ImageManagementServiceImpl {
 
         info!("Store image '{}' in library: '{}'", image_name, image.filename());
         self.image_repository.store_image(image.clone(), image_data.clone()).await?;
-        let thumbnail = create_thumbnail_in_memory(image.id().clone(), image_data, GALLERY_THUMBNAIL_OPTIONS).await?;
+        let thumbnail = create_thumbnail_in_memory(image.id.clone(), image_data, GALLERY_THUMBNAIL_OPTIONS).await?;
         self.image_repository.store_jpg_thumbnail(&image, thumbnail, GALLERY_THUMBNAIL_OPTIONS).await?;
 
         // TODO: add to db

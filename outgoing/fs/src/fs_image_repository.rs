@@ -2,11 +2,11 @@ use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
 use bytes::Bytes;
+use pantsu_domain::api::model::image::PantsuImage;
 use pantsu_domain::{api::model::thumbnail::ThumbnailOptions, image::image_format::ImageFormat};
 use pantsu_domain::api::outgoing::image_repository::ImageRepository;
 use pantsu_domain::common::error::Error;
 use pantsu_domain::common::result::Result;
-use pantsu_domain::image::PantsuImage;
 use tokio::{fs::{DirBuilder, OpenOptions}, io::{self, AsyncWriteExt}};
 
 
@@ -45,7 +45,7 @@ impl ImageRepository for FsImageRepository {
             .await
             .map_err(|err| match err.kind() {
                 io::ErrorKind::AlreadyExists => {
-                    Error::UnexpectedImageExists(image.id().to_string())
+                    Error::UnexpectedImageExists(image.id.to_string())
                 }
                 _ => Error::Unknown(err.to_string()),
             })?;
@@ -74,7 +74,7 @@ impl ImageRepository for FsImageRepository {
             .map_err(|_| {
                 Error::Unknown(format!(
                     "Failed to create thumbnail file for image \"{}\"",
-                    image.id()
+                    image.id
                 ))
             })?;
         Ok(
