@@ -4,7 +4,7 @@ use bytes::Bytes;
 use image::codecs::jpeg::JpegEncoder;
 use tokio::task::spawn_blocking;
 
-use crate::{api::model::ThumbnailOptions, common::{error::Error, result::Result}, image::image_id::ImageId};
+use crate::{api::model::thumbnail::ThumbnailOptions, common::{error::Error, result::Result}, image::image_id::ImageId};
 
 
 pub const GALLERY_THUMBNAIL_OPTIONS: ThumbnailOptions = ThumbnailOptions {

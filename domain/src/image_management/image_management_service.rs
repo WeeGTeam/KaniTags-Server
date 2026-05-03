@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use tracing::info;
 
-use crate::{api::{incoming::ImageManagementService, outgoing::ImageRepository}, common::error::Error, image::{PantsuImage, thumbnail::{GALLERY_THUMBNAIL_OPTIONS, create_thumbnail_in_memory}}};
+use crate::{api::{incoming::image_management::ImageManagementService, outgoing::image_repository::ImageRepository}, common::error::Error, image::{PantsuImage, thumbnail::{GALLERY_THUMBNAIL_OPTIONS, create_thumbnail_in_memory}}};
 
 
 pub struct ImageManagementServiceImpl {
