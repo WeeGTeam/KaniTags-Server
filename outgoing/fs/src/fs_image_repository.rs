@@ -2,8 +2,8 @@ use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
 use bytes::Bytes;
-use pantsu_domain::api::model::image::PantsuImage;
-use pantsu_domain::{api::model::thumbnail::ThumbnailOptions, image::image_format::ImageFormat};
+use pantsu_domain::api::model::{image::PantsuImage, image_format::ImageFormat};
+use pantsu_domain::api::model::thumbnail::ThumbnailOptions;
 use pantsu_domain::api::outgoing::image_repository::ImageRepository;
 use pantsu_domain::common::error::Error;
 use pantsu_domain::common::result::Result;
