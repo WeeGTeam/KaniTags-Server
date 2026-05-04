@@ -17,7 +17,7 @@ impl TryFrom<&[u8]> for PantsuImage {
         let image_perceptual_hash = hash::get_perceptual_hash(&image);
         let image_dimensions = image.dimensions();
         let image_format = ImageFormat::try_from(image::guess_format(bytes)
-            .map_err(|_| Error::TodoError())?)?;
+            .map_err(|_| Error::TodoError())?).map_err(|e| Error::Unknown(e.to_string()))?;
         Ok(
             PantsuImage {
                 id: ImageId::new(image_id_hash, image_perceptual_hash),
