@@ -1,5 +1,5 @@
-use crate::common::error::Error;
-use crate::common::result::Result;
+use thiserror::Error;
+
 
 #[derive (Clone)]
 pub enum ImageFormat {
@@ -16,12 +16,18 @@ impl ImageFormat {
 }
 
 impl TryFrom<image::ImageFormat> for ImageFormat {
-    type Error = Error;
-    fn try_from(format: image::ImageFormat) -> Result<Self> {
+    type Error = ImageFormatError;
+    fn try_from(format: image::ImageFormat) -> Result<Self, ImageFormatError> {
         Ok(match format {
             image::ImageFormat::Png => ImageFormat::PNG,
             image::ImageFormat::Jpeg => ImageFormat::JPG,
-            _ => return Err(Error::TodoError())
+            other => return Err(ImageFormatError::UnsupportedImageFormat(other))?
         })
     }
+}
+
+#[derive(Error, Debug)]
+pub enum ImageFormatError {
+    #[error("Unsupported image format: {0:?}")]
+    UnsupportedImageFormat(image::ImageFormat),
 }

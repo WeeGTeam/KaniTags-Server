@@ -2,10 +2,9 @@ use std::fmt::{Display, Formatter};
 use std::num::ParseIntError;
 use std::str::FromStr;
 
+use anyhow::{Context, anyhow};
 use regex::Regex;
 
-use crate::common::error::Error;
-use crate::common::result::Result;
 use crate::image::hash::{hash_to_hex, IdHash, PerceptualHash};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -44,12 +43,12 @@ impl ImageId {
 }
 
 impl FromStr for ImageId {
-    type Err = Error;
+    type Err = anyhow::Error;
 
-    fn from_str(value: &str) -> std::result::Result<Self, Self::Err> {
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
         let regex = Regex::new(r"^(?<id>[[:xdigit:]]{16})-(?<perceptual>[[:xdigit:]]{36})$").unwrap();
         let captures = regex.captures(value.trim())
-            .ok_or_else(|| Error::TodoError())?;
+            .ok_or_else(|| anyhow!("Cannot parse string to ImageId, unexpected format: {}", value.to_owned()))?;
         let id_hash: IdHash = hex_to_hash::<8>(&captures["id"])?;
         let perceptual_hash: PerceptualHash = hex_to_hash::<18>(&captures["perceptual"])?;
         Ok(ImageId {
@@ -60,14 +59,14 @@ impl FromStr for ImageId {
 }
 
 /// should be infallible, because we already check for valid size and content of `str` with regex
-fn hex_to_hash<const SIZE: usize>(str: &str) -> Result<[u8; SIZE]> {
+fn hex_to_hash<const SIZE: usize>(str: &str) -> Result<[u8; SIZE], anyhow::Error> {
     (0..2*SIZE)
         .step_by(2)
         .map(|i| u8::from_str_radix(&str[i..i+2], 16))
-        .collect::<std::result::Result<Vec<u8>, ParseIntError>>()
-        .map_err(|_| Error::TodoError())?
+        .collect::<Result<Vec<u8>, ParseIntError>>()
+        .with_context(|| format!("Unable to parse hex to hash: {}", str.to_owned()))?
         .try_into()
-        .map_err(|_| Error::TodoError())
+        .map_err(|_| anyhow!("Unable to parse hex to hash: {}", str))
 }
 
 impl Display for ImageId {
@@ -78,7 +77,6 @@ impl Display for ImageId {
 
 #[cfg(test)]
 mod test {
-    use crate::common::error::Error;
     use std::str::FromStr;
 
     use super::ImageId;
@@ -92,42 +90,42 @@ mod test {
     #[test]
     fn empty_string_is_invalid() {
         let name = "";
-        let image_id = ImageId::from_str(name).unwrap_err();
-        assert!(matches!(image_id, Error::TodoError()));
+        let image_id = ImageId::from_str(name);
+        assert!(matches!(image_id, Err(anyhow::Error {..})));
     }
 
     #[test]
     fn no_dash_is_invalid() {
         let name = "a8c65b2726296dcc07807e4fe23cb3c1dca0ce71f382bf81f00f";
-        let image_id = ImageId::from_str(name).unwrap_err();
-        assert!(matches!(image_id, Error::TodoError()));
+        let image_id = ImageId::from_str(name);
+        assert!(matches!(image_id, Err(anyhow::Error {..})));
     }
 
     #[test]
     fn non_hex_string_is_invalid() {
         let name = "a8c65j2726296dcc-07807e4fe23cb3c1dca0ce71f382bf81f00f";
-        let image_id = ImageId::from_str(name).unwrap_err();
-        assert!(matches!(image_id, Error::TodoError()));
+        let image_id = ImageId::from_str(name);
+        assert!(matches!(image_id, Err(anyhow::Error {..})));
     }
 
     #[test]
     fn too_short_id_hash_is_invalid() {
         let name = "a8c652726296dcc-07807e4fe23cb3c1dca0ce71f382bf81f00f";
-        let image_id = ImageId::from_str(name).unwrap_err();
-        assert!(matches!(image_id, Error::TodoError()));
+        let image_id = ImageId::from_str(name);
+        assert!(matches!(image_id, Err(anyhow::Error {..})));
     }
 
     #[test]
     fn too_short_perceptual_hash_is_invalid() {
         let name = "a8c65b2726296dcc-07807e4fe23cb3c1dca0ce71f382bf8100f";
-        let image_id = ImageId::from_str(name).unwrap_err();
-        assert!(matches!(image_id, Error::TodoError()));
+        let image_id = ImageId::from_str(name);
+        assert!(matches!(image_id, Err(anyhow::Error {..})));
     }
 
     #[test]
     fn excess_string_is_invalid() {
         let name = "a8c65b2726296dcc-07807e4fe23cb3c1dca0ce71f382bf81f00f HelloThere";
-        let image_id = ImageId::from_str(name).unwrap_err();
-        assert!(matches!(image_id, Error::TodoError()));
+        let image_id = ImageId::from_str(name);
+        assert!(matches!(image_id, Err(anyhow::Error {..})));
     }
 }

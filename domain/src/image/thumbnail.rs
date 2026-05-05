@@ -1,10 +1,11 @@
 use std::io::Write;
 
+use anyhow::Context;
 use bytes::Bytes;
 use image::codecs::jpeg::JpegEncoder;
 use tokio::task::spawn_blocking;
 
-use crate::{api::model::ThumbnailOptions, common::{error::Error, result::Result}, image::image_id::ImageId};
+use crate::api::model::{image_id::ImageId, thumbnail::ThumbnailOptions};
 
 
 pub const GALLERY_THUMBNAIL_OPTIONS: ThumbnailOptions = ThumbnailOptions {
@@ -18,7 +19,7 @@ pub async fn create_thumbnail_in_memory(
     image_id: ImageId,
     image_data: Bytes,
     options: ThumbnailOptions,
-) -> Result<Bytes> {
+) -> Result<Bytes, anyhow::Error> {
     let result_buffer = Vec::with_capacity(INITIAL_THUMBNAIL_BUFFER_SIZE);
     create_thumbnail(result_buffer, image_id, image_data, options).await
 }
@@ -28,21 +29,17 @@ async fn create_thumbnail(
     image_id: ImageId,
     image_data: Bytes,
     options: ThumbnailOptions,
-) -> Result<Bytes>{
+) -> Result<Bytes, anyhow::Error>{
     spawn_blocking(move || {
-        let loaded_image = image::load_from_memory(&image_data).map_err(|_| {
-            Error::Unknown(format!("Failed to load image \"{}\" into memory", image_id))
-        })?;
+        let loaded_image = image::load_from_memory(&image_data)
+            .with_context(|| format!("Failed to load image \"{}\" into memory", image_id))?;
         let thumbnail = loaded_image.thumbnail(options.max_size, options.max_size);
 
         let encoder = JpegEncoder::new_with_quality(&mut result_writer, options.jpg_quality);
-        thumbnail.write_with_encoder(encoder).map_err(|e| {
-            Error::Unknown(format!("Failed to encode thumbnail \"{}\": {}", image_id, e.to_string()))
-        })?;
+        thumbnail.write_with_encoder(encoder)
+            .with_context(|| format!("Failed to encode thumbnail \"{}\"", image_id))?;
         Ok(result_writer.into())
     })
     .await
-    .map_err(|_| {
-        Error::Unknown("Failed to join blocking thread generating the thumbnail".to_owned())
-    })?
+    .context("Failed to join blocking thread generating the thumbnail")?
 }

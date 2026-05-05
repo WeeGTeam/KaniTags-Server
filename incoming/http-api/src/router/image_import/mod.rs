@@ -24,7 +24,7 @@ impl ImageImport<Error> for AppState {
         let file_name = field.file_name().unwrap().to_owned();
         let file_data = field.bytes().await.unwrap();
         
-        self.image_management_service.import_image(file_name, file_data).await?;
+        self.image_management_service.import_image(file_name, file_data).await.map_err(|e| Error::Unknown(e.to_string()))?;
         Ok(ImportImageResponse::Status201_Imported)
     }
 

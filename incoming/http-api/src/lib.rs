@@ -1,6 +1,6 @@
 use crate::router::{AppState, OpenApiRouter};
 use axum::extract::DefaultBodyLimit;
-use pantsu_domain::api::incoming::ImageManagementService;
+use pantsu_domain::api::incoming::image_management::ImageManagementService;
 use pantsu_domain::common::error::Error;
 use pantsu_domain::common::result::Result;
 use pantsu_domain::reverse_image_search::ReverseImageSearchService;
