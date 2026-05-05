@@ -71,7 +71,7 @@ async fn write_image_to_new_file(file_content: &Bytes, path: &Path, image_id: &I
         .await
         .map_err(|e| match e.kind() {
             io::ErrorKind::AlreadyExists => {
-                StoreImageError::ImageAlreadyExists(image_id.clone())
+                StoreImageError::ImageAlreadyExists(path.to_owned())
             }
             _ => StoreImageError::Unknown(e.into()),
         })?;

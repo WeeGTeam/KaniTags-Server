@@ -1,9 +1,10 @@
+use std::path::PathBuf;
+
 use async_trait::async_trait;
 use bytes::Bytes;
 use thiserror::Error;
 
 use crate::api::model::image::PantsuImage;
-use crate::api::model::image_id::ImageId;
 use crate::api::model::thumbnail::ThumbnailOptions;
 
 
@@ -25,5 +26,5 @@ pub enum StoreImageError {
     Unknown(#[from] anyhow::Error),
 
     #[error("Image already exists in filesystem: '{0}'")]
-    ImageAlreadyExists(ImageId),
+    ImageAlreadyExists(PathBuf),
 }

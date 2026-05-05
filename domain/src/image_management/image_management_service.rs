@@ -60,7 +60,7 @@ fn allow_existing_image(store_result: Result<(), StoreImageError>) -> Result<(),
         Ok(it) => Ok(it),
         Err(unknown @ StoreImageError::Unknown(_)) => Err(ImportImageError::Unknown(unknown.into())),
         Err(StoreImageError::ImageAlreadyExists(e)) => {
-            warn!("Failed to store image: {}", e);
+            warn!("Failed to store image: {}", e.display());
             Ok(())
         },
     }
