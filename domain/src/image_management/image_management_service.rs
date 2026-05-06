@@ -39,7 +39,7 @@ impl ImageManagementService for ImageManagementServiceImpl {
         image_name: String,
         image_data: Bytes,
     ) -> Result<(), ImportImageError> {
-        let image = try_create_pantsu_image(&image_data)?;
+        let image = try_create_pantsu_image(&image_name, &image_data)?;
         // image_id::verify_image_id(&image_import.image_id, image.id())?;
 
         // TODO: import: check if file exists (in db)

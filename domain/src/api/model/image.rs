@@ -5,9 +5,9 @@ use chrono::{DateTime, Utc};
 #[derive (Clone)]
 pub struct CreatePantsuImage {
     pub id: ImageId,
+    pub upload_filename: String,
     pub format: ImageFormat,
-    pub _dimensions: (u32, u32),
-    pub _date_added: DateTime<Utc>,
+    pub dimensions: (u32, u32),
 }
 
 impl CreatePantsuImage {
