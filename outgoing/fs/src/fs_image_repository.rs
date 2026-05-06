@@ -1,11 +1,11 @@
 use std::path::{Path, PathBuf};
 
-use async_trait::async_trait;
 use anyhow::Context;
+use async_trait::async_trait;
 use bytes::Bytes;
 use pantsu_domain::api::model::image_id::ImageId;
-use pantsu_domain::api::model::{image::PantsuImage, image_format::ImageFormat};
 use pantsu_domain::api::model::thumbnail::ThumbnailOptions;
+use pantsu_domain::api::model::{image::CreatePantsuImage, image_format::ImageFormat};
 use pantsu_domain::api::outgoing::image_repository::{ImageRepository, StoreImageError};
 use tokio::{fs::{DirBuilder, OpenOptions}, io::{self, AsyncWriteExt}};
 
@@ -34,22 +34,22 @@ impl FsImageRepository {
 
 #[async_trait]
 impl ImageRepository for FsImageRepository {
-    async fn store_image(&self, image: PantsuImage, file_content: Bytes) -> Result<(), StoreImageError> {
+    async fn store_image(&self, image: CreatePantsuImage, file_content: Bytes) -> Result<(), StoreImageError> {
         let library_dir = self.get_library_directory().await?;
         let path = library_dir.join(image.filename());
 
         write_image_to_new_file(&file_content, &path, &image.id).await
     }
-    
+
     async fn store_jpg_thumbnail(
         &self,
-        image: &PantsuImage,
+        image: &CreatePantsuImage,
         file_content: Bytes,
         options: ThumbnailOptions
     ) -> Result<(), StoreImageError> {
         let thumbnail_dir = self.get_thumbnail_directory(options).await?;
         let path = thumbnail_dir.join(image.filename_with_custom_extension(ImageFormat::JPG));
-        
+
         write_image_to_new_file(&file_content, &path, &image.id).await
     }
 }

@@ -5,10 +5,10 @@ use bytes::Bytes;
 use tracing::{info, warn};
 
 use crate::api::incoming::image_management::{ImageManagementService, ImportImageError};
-use crate::api::model::image::PantsuImage;
+use crate::api::model::image::CreatePantsuImage;
 use crate::api::outgoing::image_repository::{ImageRepository, StoreImageError};
+use crate::image::thumbnail::{create_thumbnail_in_memory, GALLERY_THUMBNAIL_OPTIONS};
 use crate::image::try_create_pantsu_image;
-use crate::image::thumbnail::{GALLERY_THUMBNAIL_OPTIONS, create_thumbnail_in_memory};
 
 
 pub struct ImageManagementServiceImpl {
@@ -24,7 +24,7 @@ impl ImageManagementServiceImpl {
 
     async fn create_thumbnail(
         &self,
-        image: &PantsuImage,
+        image: &CreatePantsuImage,
         image_data: Bytes,
     ) -> Result<(), ImportImageError> {
         let thumbnail = create_thumbnail_in_memory(image.id.clone(), image_data, GALLERY_THUMBNAIL_OPTIONS).await?;
