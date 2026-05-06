@@ -1,3 +1,4 @@
+use anyhow::Context;
 use diesel::r2d2::ConnectionManager;
 use diesel::PgConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
@@ -38,8 +39,8 @@ impl Postgres {
 
     fn get_connection(
         &self,
-    ) -> Result<PooledConnection<ConnectionManager<PgConnection>>, r2d2::Error> {
-        self.pool.get()
+    ) -> Result<PooledConnection<ConnectionManager<PgConnection>>, anyhow::Error> {
+        self.pool.get().context("could not get database connection")
     }
 }
 

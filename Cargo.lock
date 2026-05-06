@@ -1981,6 +1981,7 @@ dependencies = [
 name = "pantsu-postgres"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "chrono",
  "diesel",
  "diesel-derive-enum",

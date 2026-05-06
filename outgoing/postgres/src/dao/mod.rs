@@ -10,7 +10,7 @@ pub mod image;
 pub mod tag;
 pub mod user;
 
-trait Dao {
+pub trait Dao {
     fn user_dao<'c>(&'c mut self) -> UserDao<'c>;
     fn image_dao<'c>(&'c mut self) -> ImageDao<'c>;
     fn collection_dao<'c>(&'c mut self) -> CollectionDao<'c>;
@@ -41,7 +41,7 @@ impl Dao for diesel::PgConnection {
 }
 
 #[cfg(test)]
-mod test {
+pub mod test {
     use crate::dao::Dao;
     use crate::models::auto_tag_session::{AutoTagSessionInsertRow, AutoTagSessionRow};
     use crate::models::auto_tag_session_image::{
@@ -60,7 +60,7 @@ mod test {
     use crate::models::{
         AutoTagStatus, ImageFormat, ReverseLookupSite, SourceSiteName, SourceStatus, TagType,
     };
-    use diesel::result::Error;
+    use anyhow::Error;
     use diesel::PgConnection;
     use rand::random;
 

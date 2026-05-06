@@ -7,7 +7,9 @@ use crate::schema::image_source::dsl as image_source_dsl;
 use crate::schema::image_source::dsl::image_source;
 use crate::schema::user_image::dsl as user_image_dsl;
 use crate::schema::user_image::dsl::user_image;
-use diesel::ExpressionMethods;
+use anyhow::Context;
+use anyhow::Error;
+use diesel::{ExpressionMethods, OptionalExtension};
 use diesel::{QueryDsl, RunQueryDsl, SelectableHelper};
 
 pub struct ImageDao<'c> {
@@ -22,70 +24,78 @@ impl<'c> ImageDao<'c> {
     pub fn insert_image(
         &mut self,
         insert_row: &ImageInsertRow,
-    ) -> Result<ImageRow, diesel::result::Error> {
+    ) -> Result<ImageRow, Error> {
         diesel::insert_into(image)
             .values(insert_row)
             .returning(ImageRow::as_returning())
             .get_result(self.connection)
+            .context("Failed to insert image into database")
     }
 
-    pub fn get_all_images(&mut self) -> Result<Vec<ImageRow>, diesel::result::Error> {
+    pub fn get_all_images(&mut self) -> Result<Vec<ImageRow>, Error> {
         image.load(self.connection)
+            .context("Failed to get all images from database")
     }
 
     pub fn insert_user_image(
         &mut self,
         insert_row: &UserImageInsertRow,
-    ) -> Result<UserImageRow, diesel::result::Error> {
+    ) -> Result<UserImageRow, Error> {
         diesel::insert_into(user_image)
             .values(insert_row)
             .returning(UserImageRow::as_returning())
             .get_result(self.connection)
+            .context("Failed to insert user image into database")
     }
 
     pub fn get_all_images_by_user(
         &mut self,
         user_id: i64,
-    ) -> Result<Vec<ImageRow>, diesel::result::Error> {
+    ) -> Result<Vec<ImageRow>, Error> {
         image
             .select(ImageRow::as_select())
             .inner_join(user_image)
             .filter(user_image_dsl::id.eq(user_id))
             .load(self.connection)
+            .context("Failed to get images by user from database")
     }
 
-    pub fn get_image_by_id(&mut self, id: i64) -> Result<ImageRow, diesel::result::Error> {
+    pub fn get_image_by_id(&mut self, id: i64) -> Result<ImageRow, Error> {
         image
             .filter(image_dsl::id.eq(id))
             .get_result(self.connection)
+            .context("Failed to get image by id from database")
     }
 
     pub fn get_image_by_id_hash(
         &mut self,
         id_hash: &[u8],
-    ) -> Result<ImageRow, diesel::result::Error> {
+    ) -> Result<ImageRow, Error> {
         image
             .filter(image_dsl::id_hash.eq(id_hash))
             .get_result(self.connection)
+            .context("Failed to get image by id hash from database")
     }
 
     pub fn insert_image_source(
         &mut self,
         insert_row: &ImageSourceInsertRow,
-    ) -> Result<ImageSourceRow, diesel::result::Error> {
+    ) -> Result<ImageSourceRow, Error> {
         diesel::insert_into(image_source)
             .values(insert_row)
             .returning(ImageSourceRow::as_returning())
             .get_result(self.connection)
+            .context("Failed to insert image source into database")
     }
 
     pub fn get_image_sources_by_image(
         &mut self,
         image_id: i64,
-    ) -> Result<Vec<ImageSourceRow>, diesel::result::Error> {
+    ) -> Result<Vec<ImageSourceRow>, Error> {
         image_source
             .filter(image_source_dsl::image_id.eq(image_id))
             .load(self.connection)
+            .context("Failed to get image sources by image from database")
     }
 }
 

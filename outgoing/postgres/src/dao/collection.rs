@@ -3,6 +3,7 @@ use crate::models::collection_image::{CollectionImageInsertRow, CollectionImageR
 use crate::schema::collection::dsl::collection;
 use crate::schema::collection_image::dsl as collection_image_dsl;
 use crate::schema::collection_image::dsl::collection_image;
+use anyhow::{Context, Error};
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel::{RunQueryDsl, SelectableHelper};
@@ -19,43 +20,48 @@ impl<'c> CollectionDao<'c> {
     pub fn insert_collection(
         &mut self,
         insert_row: &CollectionInsertRow,
-    ) -> Result<CollectionRow, diesel::result::Error> {
+    ) -> Result<CollectionRow, Error> {
         diesel::insert_into(collection)
             .values(insert_row)
             .returning(CollectionRow::as_returning())
             .get_result(self.connection)
+            .context("Failed to insert collection into database")
     }
 
-    pub fn get_all_collections(&mut self) -> Result<Vec<CollectionRow>, diesel::result::Error> {
-        collection.load(self.connection)
+    pub fn get_all_collections(&mut self) -> Result<Vec<CollectionRow>, Error> {
+        collection
+            .load(self.connection)
+            .context("Failed to load collections from database")
     }
 
     pub fn insert_collection_images(
         &mut self,
         insert_rows: &[CollectionImageInsertRow],
-    ) -> Result<Vec<CollectionImageRow>, diesel::result::Error> {
+    ) -> Result<Vec<CollectionImageRow>, Error> {
         diesel::insert_into(collection_image)
             .values(insert_rows)
             .returning(CollectionImageRow::as_returning())
             .get_results(self.connection)
+            .context("Failed to insert collection images into database")
     }
 
     pub fn get_all_collection_images(
         &mut self,
         collection_id: i64,
-    ) -> Result<Vec<CollectionImageRow>, diesel::result::Error> {
+    ) -> Result<Vec<CollectionImageRow>, Error> {
         collection_image
             .filter(collection_image_dsl::collection_id.eq(collection_id))
             .load(self.connection)
+            .context("Failed to load collection images from database")
     }
 }
 
 #[cfg(test)]
 mod test {
+    use crate::dao::Dao;
     use crate::dao::test::{
         insert_test_collection, insert_test_collection_image, insert_test_image, insert_test_user,
     };
-    use crate::dao::Dao;
     use crate::models::collection::CollectionInsertRow;
     use crate::models::collection_image::CollectionImageInsertRow;
     use crate::test::test_db;

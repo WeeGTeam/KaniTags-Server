@@ -7,6 +7,7 @@ use crate::schema::auto_tag_session::dsl::auto_tag_session;
 use crate::schema::auto_tag_session_image::dsl as auto_tag_session_image_dsl;
 use crate::schema::auto_tag_session_image::dsl::auto_tag_session_image;
 use crate::schema::auto_tag_session_image_option::dsl::auto_tag_session_image_option;
+use anyhow::{Context, Error};
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
 
 pub struct AutoTagDao<'c> {
@@ -20,59 +21,65 @@ impl<'c> AutoTagDao<'c> {
 
     pub fn get_all_auto_tag_sessions(
         &mut self,
-    ) -> Result<Vec<AutoTagSessionRow>, diesel::result::Error> {
+    ) -> Result<Vec<AutoTagSessionRow>, Error> {
         auto_tag_session.load(self.connection)
+            .context("Failed to load auto tag sessions from database")
     }
 
     pub fn insert_auto_tag_session(
         &mut self,
         insert_row: &AutoTagSessionInsertRow,
-    ) -> Result<AutoTagSessionRow, diesel::result::Error> {
+    ) -> Result<AutoTagSessionRow, Error> {
         diesel::insert_into(auto_tag_session)
             .values(insert_row)
             .returning(AutoTagSessionRow::as_returning())
             .get_result(self.connection)
+            .context("Failed to insert auto tag session into database")
     }
 
     pub fn get_all_auto_tag_session_images(
         &mut self,
         session_id: i64,
-    ) -> Result<Vec<AutoTagSessionImageRow>, diesel::result::Error> {
+    ) -> Result<Vec<AutoTagSessionImageRow>, Error> {
         auto_tag_session_image
             .select(AutoTagSessionImageRow::as_select())
             .filter(auto_tag_session_image_dsl::session_id.eq(session_id))
             .load(self.connection)
+            .context("Failed to load auto tag session images from database")
     }
 
     pub fn insert_auto_tag_session_images(
         &mut self,
         insert_rows: &[AutoTagSessionImageInsertRow],
-    ) -> Result<Vec<AutoTagSessionImageRow>, diesel::result::Error> {
+    ) -> Result<Vec<AutoTagSessionImageRow>, Error> {
         diesel::insert_into(auto_tag_session_image)
             .values(insert_rows)
             .returning(AutoTagSessionImageRow::as_returning())
             .load(self.connection)
+            .context("Failed to insert auto tag session images into database")
     }
 
     pub fn get_all_auto_tag_session_image_options(
         &mut self,
         session_id: i64,
-    ) -> Result<Vec<AutoTagSessionImageOptionRow>, diesel::result::Error> {
+    ) -> Result<Vec<AutoTagSessionImageOptionRow>, Error> {
         auto_tag_session_image_option
             .select(AutoTagSessionImageOptionRow::as_select())
             .inner_join(auto_tag_session_image)
             .filter(auto_tag_session_image_dsl::session_id.eq(session_id))
             .load(self.connection)
+            .context("Failed to load auto tag session image options from database")
     }
 
     pub fn insert_auto_tag_session_image_options(
         &mut self,
         insert_rows: &[AutoTagSessionImageOptionInsertRow],
-    ) -> Result<Vec<AutoTagSessionImageOptionRow>, diesel::result::Error> {
+    ) -> Result<Vec<AutoTagSessionImageOptionRow>, Error> {
         diesel::insert_into(auto_tag_session_image_option)
             .values(insert_rows)
             .returning(AutoTagSessionImageOptionRow::as_returning())
             .load(self.connection)
+            .context("Failed to insert auto tag session image options into database")
     }
 }
 

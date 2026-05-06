@@ -1,6 +1,7 @@
 use crate::models::user_account::{UserAccountInsertRow, UserAccountRow};
 use crate::schema::user_account::dsl as user_dsl;
 use crate::schema::user_account::dsl::user_account;
+use anyhow::{Context, Error};
 use diesel::ExpressionMethods;
 use diesel::{QueryDsl, RunQueryDsl, SelectableHelper};
 
@@ -16,25 +17,26 @@ impl<'c> UserDao<'c> {
     pub fn insert_user(
         &mut self,
         insert_row: &UserAccountInsertRow,
-    ) -> Result<UserAccountRow, diesel::result::Error> {
+    ) -> Result<UserAccountRow, Error> {
         diesel::insert_into(user_account)
             .values(insert_row)
             .returning(UserAccountRow::as_returning())
             .get_result(self.connection)
+            .context("Failed to insert user into database.")
     }
 
-    pub fn get_all_users(&mut self) -> Result<Vec<UserAccountRow>, diesel::result::Error> {
-        user_account.load(self.connection)
+    pub fn get_all_users(&mut self) -> Result<Vec<UserAccountRow>, Error> {
+        user_account
+            .load(self.connection)
+            .context("Failed to load all users from database.")
     }
 
-    pub fn get_user_by_user_name(
-        &mut self,
-        user_name: &str,
-    ) -> Result<UserAccountRow, diesel::result::Error> {
+    pub fn get_user_by_user_name(&mut self, user_name: &str) -> Result<UserAccountRow, Error> {
         user_account
             .select(UserAccountRow::as_select())
             .filter(user_dsl::user_name.eq(user_name))
             .get_result(self.connection)
+            .context("Failed to load user by user name from database.")
     }
 }
 
