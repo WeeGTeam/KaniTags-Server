@@ -58,13 +58,14 @@ impl<'c> CollectionDao<'c> {
 
 #[cfg(test)]
 mod test {
-    use crate::dao::Dao;
     use crate::dao::test::{
         insert_test_collection, insert_test_collection_image, insert_test_image, insert_test_user,
     };
+    use crate::dao::Dao;
     use crate::models::collection::CollectionInsertRow;
     use crate::models::collection_image::CollectionImageInsertRow;
     use crate::test::test_db;
+    use assertables::assert_len_eq_x;
     use diesel::Connection;
 
     #[test]
@@ -72,14 +73,13 @@ mod test {
     fn test_insert_collection() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let result = conn.test_transaction(|c| {
+        let _result = conn.test_transaction(|c| {
             let user = insert_test_user(c)?;
             c.collection_dao().insert_collection(&CollectionInsertRow {
                 user_id: user.id,
                 name: "test_collection".to_string(),
             })
         });
-        println!("collection: {:?}", result);
     }
 
     #[test]
@@ -92,9 +92,7 @@ mod test {
             let _collection = insert_test_collection(c, user.id)?;
             c.collection_dao().get_all_collections()
         });
-        for result in results {
-            println!("collection: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 
     #[test]
@@ -112,9 +110,7 @@ mod test {
                     collection_id: collection.id,
                 }])
         });
-        for result in results {
-            println!("collection image: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 
     #[test]
@@ -129,8 +125,6 @@ mod test {
             let _collection_image = insert_test_collection_image(c, collection.id, image.id)?;
             c.collection_dao().get_all_collection_images(collection.id)
         });
-        for result in results {
-            println!("collection image: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 }

@@ -11,31 +11,31 @@ pub mod tag;
 pub mod user;
 
 pub trait Dao {
-    fn user_dao<'c>(&'c mut self) -> UserDao<'c>;
-    fn image_dao<'c>(&'c mut self) -> ImageDao<'c>;
-    fn collection_dao<'c>(&'c mut self) -> CollectionDao<'c>;
-    fn auto_tag_dao<'c>(&'c mut self) -> AutoTagDao<'c>;
-    fn tag_dao<'c>(&'c mut self) -> TagDao<'c>;
+    fn user_dao(&mut self) -> UserDao<'_>;
+    fn image_dao(&mut self) -> ImageDao<'_>;
+    fn collection_dao(&mut self) -> CollectionDao<'_>;
+    fn auto_tag_dao(&mut self) -> AutoTagDao<'_>;
+    fn tag_dao(&mut self) -> TagDao<'_>;
 }
 
 impl Dao for diesel::PgConnection {
-    fn user_dao<'c>(&'c mut self) -> UserDao<'c> {
+    fn user_dao(&mut self) -> UserDao<'_> {
         UserDao::new(self)
     }
 
-    fn image_dao<'c>(&'c mut self) -> ImageDao<'c> {
+    fn image_dao(&mut self) -> ImageDao<'_> {
         ImageDao::new(self)
     }
 
-    fn collection_dao<'c>(&'c mut self) -> CollectionDao<'c> {
+    fn collection_dao(&mut self) -> CollectionDao<'_> {
         CollectionDao::new(self)
     }
 
-    fn auto_tag_dao<'c>(&'c mut self) -> AutoTagDao<'c> {
+    fn auto_tag_dao(&mut self) -> AutoTagDao<'_> {
         AutoTagDao::new(self)
     }
 
-    fn tag_dao<'c>(&'c mut self) -> TagDao<'c> {
+    fn tag_dao(&mut self) -> TagDao<'_> {
         TagDao::new(self)
     }
 }
@@ -57,6 +57,7 @@ pub mod test {
     use crate::models::image_tag::{ImageTagInsertRow, ImageTagRow};
     use crate::models::tag::{TagInsertRow, TagRow};
     use crate::models::user_account::{UserAccountInsertRow, UserAccountRow};
+    use crate::models::user_image::{UserImageInsertRow, UserImageRow};
     use crate::models::{
         AutoTagStatus, ImageFormat, ReverseLookupSite, SourceSiteName, SourceStatus, TagType,
     };
@@ -80,6 +81,15 @@ pub mod test {
             res_width: 1920,
             res_height: 1080,
         })
+    }
+
+    pub fn insert_test_user_image(
+        c: &mut PgConnection,
+        user_id: i64,
+        image_id: i64,
+    ) -> Result<UserImageRow, Error> {
+        c.image_dao()
+            .insert_user_image(&UserImageInsertRow { user_id, image_id })
     }
 
     pub fn insert_test_image_source(

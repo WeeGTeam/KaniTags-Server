@@ -95,6 +95,7 @@ mod test {
     use crate::models::auto_tag_session_image_option::AutoTagSessionImageOptionInsertRow;
     use crate::models::{AutoTagStatus, ReverseLookupSite, SourceSiteName};
     use crate::test::test_db;
+    use assertables::{assert_len_eq_x, assert_matches};
     use diesel::Connection;
 
     #[test]
@@ -111,7 +112,7 @@ mod test {
                     closed_at: None,
                 })
         });
-        println!("session: {:?}", result);
+        assert_matches!(result.lookup_site, ReverseLookupSite::IQDB);
     }
 
     #[test]
@@ -124,9 +125,7 @@ mod test {
             let _session = insert_test_auto_tag_session(c, user.id)?;
             c.auto_tag_dao().get_all_auto_tag_sessions()
         });
-        for result in results {
-            println!("session: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 
     #[test]
@@ -145,9 +144,7 @@ mod test {
                     status: AutoTagStatus::PENDING,
                 }])
         });
-        for result in results {
-            println!("session image: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 
     #[test]
@@ -158,11 +155,11 @@ mod test {
         let results = conn.test_transaction(|c| {
             let user = insert_test_user(c)?;
             let session = insert_test_auto_tag_session(c, user.id)?;
+            let image = insert_test_image(c)?;
+            let _session_image = insert_test_auto_tag_session_image(c, session.id, image.id)?;
             c.auto_tag_dao().get_all_auto_tag_session_images(session.id)
         });
-        for result in results {
-            println!("session image: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 
     #[test]
@@ -179,9 +176,7 @@ mod test {
             c.auto_tag_dao()
                 .get_all_auto_tag_session_image_options(session.id)
         });
-        for result in results {
-            println!("session: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 
     #[test]
@@ -203,8 +198,6 @@ mod test {
                 },
             ])
         });
-        for result in results {
-            println!("session uncertainty: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 }

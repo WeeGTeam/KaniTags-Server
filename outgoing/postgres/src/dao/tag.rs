@@ -61,6 +61,7 @@ mod test {
     use crate::models::tag::TagInsertRow;
     use crate::models::TagType;
     use crate::test::test_db;
+    use assertables::assert_len_eq_x;
     use diesel::Connection;
 
     #[test]
@@ -68,13 +69,12 @@ mod test {
     fn test_insert_tag() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let result = conn.test_transaction(|c| {
+        let _result = conn.test_transaction(|c| {
             c.tag_dao().insert_tag(&TagInsertRow {
                 tag_type: TagType::CHARACTER,
                 tag_name: "Megumin".to_string(),
             })
         });
-        println!("tag: {:?}", result);
     }
 
     #[test]
@@ -86,9 +86,7 @@ mod test {
             let _tag = insert_test_tag(c)?;
             c.tag_dao().get_all_tags()
         });
-        for result in results {
-            println!("tag: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 
     #[test]
@@ -103,6 +101,6 @@ mod test {
             let _image_tag = insert_test_image_tag(c, image.id, tag.id, Some(user.id))?;
             c.tag_dao().get_all_image_tags_by_image(image.id)
         });
-        println!("tag: {:?}", result);
+        assert_len_eq_x!(result, 1);
     }
 }

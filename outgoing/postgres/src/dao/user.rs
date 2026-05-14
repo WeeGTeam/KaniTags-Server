@@ -46,6 +46,7 @@ mod test {
     use crate::dao::Dao;
     use crate::models::user_account::UserAccountInsertRow;
     use crate::test::test_db;
+    use assertables::assert_len_eq_x;
     use diesel::Connection;
 
     #[test]
@@ -53,13 +54,12 @@ mod test {
     fn test_insert_user() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let result = conn.test_transaction(|c| {
+        let _result = conn.test_transaction(|c| {
             c.user_dao().insert_user(&UserAccountInsertRow {
                 user_name: "test_user".to_string(),
                 display_name: "Test User".to_string(),
             })
         });
-        println!("user: {:?}", result);
     }
 
     #[test]
@@ -71,9 +71,7 @@ mod test {
             let _user = insert_test_user(c)?;
             c.user_dao().get_all_users()
         });
-        for result in results {
-            println!("user: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 
     #[test]
@@ -81,10 +79,9 @@ mod test {
     fn test_get_user_by_user_name() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let result = conn.test_transaction(|c| {
+        let _result = conn.test_transaction(|c| {
             let user = insert_test_user(c)?;
             c.user_dao().get_user_by_user_name(&user.user_name)
         });
-        println!("user: {:?}", result);
     }
 }

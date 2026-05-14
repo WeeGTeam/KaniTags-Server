@@ -15,5 +15,6 @@ r2d2 = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
+assertables = { workspace = true }
 rand = { workspace = true }
 serial_test = { workspace = true }

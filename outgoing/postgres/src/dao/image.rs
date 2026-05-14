@@ -102,13 +102,14 @@ impl<'c> ImageDao<'c> {
 
 #[cfg(test)]
 mod test {
-    use crate::dao::test::{insert_test_image, insert_test_image_source, insert_test_user};
+    use crate::dao::test::{insert_test_image, insert_test_image_source, insert_test_user, insert_test_user_image};
     use crate::dao::Dao;
     use crate::models::image::ImageInsertRow;
     use crate::models::image_source::ImageSourceInsertRow;
     use crate::models::user_image::UserImageInsertRow;
     use crate::models::{ImageFormat, ReverseLookupSite, SourceSiteName, SourceStatus};
     use crate::test::test_db;
+    use assertables::{assert_len_eq_x, assert_matches, assert_some};
     use diesel::Connection;
 
     #[test]
@@ -116,7 +117,7 @@ mod test {
     fn test_insert_image() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let result = conn.test_transaction(|c| {
+        let _result = conn.test_transaction(|c| {
             c.image_dao().insert_image(&ImageInsertRow {
                 id_hash: vec![0, 1, 2, 3, 4, 5, 6, 7],
                 perceptual_hash: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
@@ -126,7 +127,6 @@ mod test {
                 res_height: 1080,
             })
         });
-        println!("image: {:?}", result);
     }
 
     #[test]
@@ -138,9 +138,7 @@ mod test {
             let _image = insert_test_image(c)?;
             c.image_dao().get_all_images()
         });
-        for result in results {
-            println!("image: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 
     #[test]
@@ -148,7 +146,7 @@ mod test {
     fn test_insert_user_image() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let result = conn.test_transaction(|c| {
+        let _result = conn.test_transaction(|c| {
             let user = insert_test_user(c)?;
             let image = insert_test_image(c)?;
             c.image_dao().insert_user_image(&UserImageInsertRow {
@@ -156,7 +154,6 @@ mod test {
                 image_id: image.id,
             })
         });
-        println!("user image: {:?}", result);
     }
 
     #[test]
@@ -166,9 +163,11 @@ mod test {
         let mut conn = postgres.get_connection().unwrap();
         let result = conn.test_transaction(|c| {
             let user = insert_test_user(c)?;
+            let image = insert_test_image(c)?;
+            let _user_image = insert_test_user_image(c, user.id, image.id)?;
             c.image_dao().get_all_images_by_user(user.id)
         });
-        println!("image: {:?}", result);
+        assert_len_eq_x!(result, 1);
     }
 
     #[test]
@@ -176,11 +175,10 @@ mod test {
     fn test_get_image_by_id() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let result = conn.test_transaction(|c| {
+        let _result = conn.test_transaction(|c| {
             let image = insert_test_image(c)?;
             c.image_dao().get_image_by_id(image.id)
         });
-        println!("image: {:?}", result);
     }
 
     #[test]
@@ -192,7 +190,7 @@ mod test {
             let image = insert_test_image(c)?;
             c.image_dao().get_image_by_id_hash(&image.id_hash)
         });
-        println!("image: {:?}", result);
+        assert_some!(result);
     }
 
     #[test]
@@ -211,7 +209,7 @@ mod test {
                 certainty: 0.77,
             })
         });
-        println!("image source: {:?}", result);
+        assert_matches!(result.reverse_lookup_site, ReverseLookupSite::IQDB);
     }
 
     #[test]
@@ -224,8 +222,6 @@ mod test {
             let _source = insert_test_image_source(c, image.id)?;
             c.image_dao().get_image_sources_by_image(image.id)
         });
-        for result in results {
-            println!("image source: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 }
