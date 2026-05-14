@@ -4,8 +4,8 @@ use std::str::FromStr;
 
 use anyhow::{anyhow, Context};
 use regex::Regex;
-
-use crate::image::hash::{hash_to_hex, IdHash, PerceptualHash};
+use crate::api::model::image_hash::{IdHash, PerceptualHash};
+use crate::image::hash::hash_to_hex;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ImageId {

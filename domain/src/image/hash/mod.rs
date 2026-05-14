@@ -1,10 +1,8 @@
 use image::DynamicImage;
+use crate::api::model::image_hash::{IdHash, PerceptualHash};
 
 mod id_hash;
 mod perceptual_hash;
-
-pub type IdHash = [u8; 8];
-pub type PerceptualHash = [u8; 18];
 
 // TODO: think about implementing hashes because of changes/inconsistencies between versions/platforms
 
