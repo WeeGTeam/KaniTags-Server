@@ -5,7 +5,7 @@ use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use r2d2::{Pool, PooledConnection};
 use std::error::Error;
 use std::time::Duration;
-use tracing_log::log::info;
+use tracing::info;
 
 pub mod dao;
 pub mod models;

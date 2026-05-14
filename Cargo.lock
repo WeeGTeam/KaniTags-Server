@@ -1990,7 +1990,7 @@ dependencies = [
  "r2d2",
  "rand 0.10.1",
  "serial_test",
- "tracing-log",
+ "tracing",
 ]
 
 [[package]]
