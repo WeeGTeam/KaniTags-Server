@@ -70,10 +70,11 @@ impl<'c> ImageDao<'c> {
     pub fn get_image_by_id_hash(
         &mut self,
         id_hash: &[u8],
-    ) -> Result<ImageRow, Error> {
+    ) -> Result<Option<ImageRow>, Error> {
         image
             .filter(image_dsl::id_hash.eq(id_hash))
             .get_result(self.connection)
+            .optional()
             .context("Failed to get image by id hash from database")
     }
 
