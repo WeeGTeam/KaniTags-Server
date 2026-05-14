@@ -3,7 +3,7 @@ use crate::Postgres;
 use diesel::Connection;
 use pantsu_domain::api::model::image::{CreatePantsuImage, PantsuImage};
 use pantsu_domain::api::outgoing::database::{Database, ImageDatabase};
-use pantsu_domain::image::hash::hash_to_hex;
+use pantsu_domain::api::model::image_hash::hash_to_hex;
 use tracing::debug;
 use pantsu_domain::api::model::image_hash::IdHash;
 

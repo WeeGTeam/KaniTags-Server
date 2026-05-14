@@ -2,10 +2,9 @@ use std::fmt::{Display, Formatter};
 use std::num::ParseIntError;
 use std::str::FromStr;
 
+use crate::api::model::image_hash::{hash_to_hex, IdHash, PerceptualHash};
 use anyhow::{anyhow, Context};
 use regex::Regex;
-use crate::api::model::image_hash::{IdHash, PerceptualHash};
-use crate::image::hash::hash_to_hex;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ImageId {

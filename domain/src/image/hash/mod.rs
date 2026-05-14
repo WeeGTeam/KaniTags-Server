@@ -14,6 +14,3 @@ pub fn get_perceptual_hash(image: &DynamicImage) -> PerceptualHash {
     perceptual_hash::calculate_perceptual_hash(image)
 }
 
-pub fn hash_to_hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|b| format!("{:02x?}", b)).collect::<String>()
-}
