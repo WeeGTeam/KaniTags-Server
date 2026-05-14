@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use std::num::ParseIntError;
 use std::str::FromStr;
 
-use anyhow::{Context, anyhow};
+use anyhow::{anyhow, Context};
 use regex::Regex;
 
 use crate::image::hash::{hash_to_hex, IdHash, PerceptualHash};
@@ -21,11 +21,11 @@ impl ImageId {
         }
     }
 
-    pub fn get_id_hash(&self) -> &[u8] {
+    pub fn get_id_hash(&self) -> &IdHash {
         &self.id_hash
     }
 
-    pub fn get_perceptual_hash(&self) -> &[u8] {
+    pub fn get_perceptual_hash(&self) -> &PerceptualHash {
         &self.perceptual_hash
     }
 

@@ -19,3 +19,13 @@ impl CreatePantsuImage {
         format!("{}.{}", self.id.filename_format(), format.extension())
     }
 }
+
+#[derive(Debug, Clone)]
+pub struct PantsuImage {
+    pub id: i64,
+    pub date_added: DateTime<Utc>,
+    pub image_id: ImageId,
+    pub format: ImageFormat,
+    pub upload_filename: String,
+    pub dimensions: (u32, u32),
+}
