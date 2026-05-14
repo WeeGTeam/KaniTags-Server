@@ -1,12 +1,14 @@
+use anyhow::Context;
 use diesel::r2d2::ConnectionManager;
 use diesel::PgConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use r2d2::{Pool, PooledConnection};
 use std::error::Error;
 use std::time::Duration;
-use tracing_log::log::info;
+use tracing::info;
 
 pub mod dao;
+pub mod database;
 pub mod models;
 pub mod schema;
 
@@ -18,8 +20,9 @@ pub struct Postgres {
 }
 
 impl Postgres {
-    pub fn new(db_url: &str) -> Result<Postgres, r2d2::Error> {
-        let manager = ConnectionManager::<PgConnection>::new(db_url);
+    pub fn new(db_url: &str, username: &str, password: &str) -> Result<Postgres, r2d2::Error> {
+        let url = format!("postgres://{}:{}@{}", username, password, db_url);
+        let manager = ConnectionManager::<PgConnection>::new(url);
         let pool = Pool::builder()
             .max_size(5)
             .connection_timeout(Duration::from_secs(5))
@@ -38,8 +41,8 @@ impl Postgres {
 
     fn get_connection(
         &self,
-    ) -> Result<PooledConnection<ConnectionManager<PgConnection>>, r2d2::Error> {
-        self.pool.get()
+    ) -> Result<PooledConnection<ConnectionManager<PgConnection>>, anyhow::Error> {
+        self.pool.get().context("could not get database connection")
     }
 }
 
@@ -50,7 +53,7 @@ mod test {
     use diesel::r2d2::R2D2Connection;
 
     pub fn test_db() -> Postgres {
-        let db = Postgres::new("postgres://postgres:postgres@localhost:55432/pantsudb").unwrap();
+        let db = Postgres::new("localhost:55432", "postgres" , "postgres").unwrap();
         let mut connection = db.get_connection().unwrap();
         connection
             .batch_execute(

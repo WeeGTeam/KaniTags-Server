@@ -3,6 +3,7 @@ use crate::models::tag::{TagInsertRow, TagRow};
 use crate::schema::image_tag::dsl as image_tag_dsl;
 use crate::schema::image_tag::dsl::image_tag;
 use crate::schema::tag::dsl::tag;
+use anyhow::{Context, Error};
 use diesel::ExpressionMethods;
 use diesel::{QueryDsl, RunQueryDsl, SelectableHelper};
 
@@ -15,38 +16,39 @@ impl<'c> TagDao<'c> {
         TagDao { connection }
     }
 
-    pub fn insert_tag(
-        &mut self,
-        insert_row: &TagInsertRow,
-    ) -> Result<TagRow, diesel::result::Error> {
+    pub fn insert_tag(&mut self, insert_row: &TagInsertRow) -> Result<TagRow, Error> {
         diesel::insert_into(tag)
             .values(insert_row)
             .returning(TagRow::as_returning())
             .get_result(self.connection)
+            .context("Failed to insert tag into database")
     }
 
-    pub fn get_all_tags(&mut self) -> Result<Vec<TagRow>, diesel::result::Error> {
+    pub fn get_all_tags(&mut self) -> Result<Vec<TagRow>, Error> {
         tag.load(self.connection)
+            .context("Failed to load tags from database")
     }
 
     pub fn insert_image_tag(
         &mut self,
         insert_row: &ImageTagInsertRow,
-    ) -> Result<ImageTagRow, diesel::result::Error> {
+    ) -> Result<ImageTagRow, Error> {
         diesel::insert_into(image_tag)
             .values(insert_row)
             .returning(ImageTagRow::as_returning())
             .get_result(self.connection)
+            .context("Failed to insert image tag into database")
     }
 
     pub fn get_all_image_tags_by_image(
         &mut self,
         image_id: i64,
-    ) -> Result<Vec<ImageTagRow>, diesel::result::Error> {
+    ) -> Result<Vec<ImageTagRow>, Error> {
         image_tag
             .filter(image_tag_dsl::image_id.eq(image_id))
             .select(ImageTagRow::as_select())
             .load(self.connection)
+            .context("Failed to load image tags from database")
     }
 }
 
@@ -59,6 +61,7 @@ mod test {
     use crate::models::tag::TagInsertRow;
     use crate::models::TagType;
     use crate::test::test_db;
+    use assertables::assert_len_eq_x;
     use diesel::Connection;
 
     #[test]
@@ -66,13 +69,12 @@ mod test {
     fn test_insert_tag() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let result = conn.test_transaction(|c| {
+        let _result = conn.test_transaction(|c| {
             c.tag_dao().insert_tag(&TagInsertRow {
                 tag_type: TagType::CHARACTER,
                 tag_name: "Megumin".to_string(),
             })
         });
-        println!("tag: {:?}", result);
     }
 
     #[test]
@@ -84,9 +86,7 @@ mod test {
             let _tag = insert_test_tag(c)?;
             c.tag_dao().get_all_tags()
         });
-        for result in results {
-            println!("tag: {:?}", result);
-        }
+        assert_len_eq_x!(results, 1);
     }
 
     #[test]
@@ -101,6 +101,6 @@ mod test {
             let _image_tag = insert_test_image_tag(c, image.id, tag.id, Some(user.id))?;
             c.tag_dao().get_all_image_tags_by_image(image.id)
         });
-        println!("tag: {:?}", result);
+        assert_len_eq_x!(result, 1);
     }
 }

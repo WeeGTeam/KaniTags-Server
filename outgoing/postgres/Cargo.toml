@@ -6,13 +6,15 @@ edition = "2024"
 [dependencies]
 pantsu-domain = { workspace = true }
 
+anyhow = { workspace = true }
 chrono = { workspace = true }
 diesel = { workspace = true, features = ["postgres", "chrono", "r2d2"] }
 diesel-derive-enum = { workspace = true, features = ["postgres"] }
 diesel_migrations = { workspace = true, features = ["postgres"] }
 r2d2 = { workspace = true }
-tracing-log = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
+assertables = { workspace = true }
 rand = { workspace = true }
 serial_test = { workspace = true }

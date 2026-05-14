@@ -1,10 +1,11 @@
-use pantsu_domain::{common::error::Error, image_management::image_management_service::ImageManagementServiceImpl};
 use pantsu_domain::reverse_image_search::ReverseImageSearchService;
+use pantsu_domain::{common::error::Error, image_management::image_management_service::ImageManagementServiceImpl};
 use pantsu_fs::fs_image_repository::FsImageRepository;
 use pantsu_http_api::launch_server;
 use pantsu_lib::config::ServerConfig;
 use pantsu_lib::log::setup_logger;
 use pantsu_lib::worker_init;
+use pantsu_postgres::Postgres;
 use std::sync::Arc;
 use tracing::{debug, info, Level};
 
@@ -20,9 +21,12 @@ async fn main() -> Result<(), Error> {
     info!("the sauce of {} is {}", "Megumin", sauce);
 
     let fs_image_repository = FsImageRepository::new(config.library_path.clone());
+    let database = Postgres::new(&config.db_url, &config.db_username, &config.db_password).map_err(|_| Error::TodoError())?;
+    database.setup().map_err(|_| Error::TodoError())?;
 
     let image_management_service = ImageManagementServiceImpl::new(
         Arc::new(fs_image_repository),
+        Arc::new(database),
     );
 
     /*let stream_service = worker_init::init_iqdb();

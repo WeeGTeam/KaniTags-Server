@@ -20,6 +20,9 @@ pub enum ImportImageError {
 
     #[error("Unable to load Image: {0}")]
     InvalidImage(image::ImageError),
+
+    #[error("Image already imported: {0}")]
+    ImageAlreadyImported(i64),
 }
 
 impl From<ImageFormatError> for ImportImageError {

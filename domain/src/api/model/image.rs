@@ -3,14 +3,14 @@ use chrono::{DateTime, Utc};
 
 
 #[derive (Clone)]
-pub struct PantsuImage {
+pub struct CreatePantsuImage {
     pub id: ImageId,
+    pub upload_filename: String,
     pub format: ImageFormat,
-    pub _dimensions: (u32, u32),
-    pub _date_added: DateTime<Utc>,
+    pub dimensions: (u32, u32),
 }
 
-impl PantsuImage {
+impl CreatePantsuImage {
     pub fn filename(&self) -> String {
         format!("{}.{}", self.id.filename_format(), self.format.extension())
     }
@@ -18,4 +18,14 @@ impl PantsuImage {
     pub fn filename_with_custom_extension(&self, format: ImageFormat) -> String {
         format!("{}.{}", self.id.filename_format(), format.extension())
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct PantsuImage {
+    pub id: i64,
+    pub date_added: DateTime<Utc>,
+    pub image_id: ImageId,
+    pub format: ImageFormat,
+    pub upload_filename: String,
+    pub dimensions: (u32, u32),
 }

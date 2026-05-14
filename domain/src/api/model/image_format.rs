@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 
-#[derive (Clone)]
+#[derive (Debug, Clone)]
 pub enum ImageFormat {
     PNG, JPG,
 }
