@@ -8,6 +8,7 @@ use std::time::Duration;
 use tracing::info;
 
 pub mod dao;
+pub mod database;
 pub mod models;
 pub mod schema;
 
