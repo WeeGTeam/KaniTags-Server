@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 pantsu-domain = { workspace = true }
+kani-domain-api-model = { workspace = true }
 pantsu-worker = { workspace = true }
 async-trait = { workspace = true }
 tokio = { workspace = true }

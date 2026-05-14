@@ -1598,6 +1598,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "kani-domain-api-model"
+version = "0.1.0"
+
+[[package]]
 name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1910,6 +1914,7 @@ dependencies = [
  "chrono",
  "futures",
  "image",
+ "kani-domain-api-model",
  "lz_fnv",
  "regex",
  "thiserror",
@@ -1925,6 +1930,7 @@ dependencies = [
  "async-trait",
  "bytes",
  "image",
+ "kani-domain-api-model",
  "pantsu-domain",
  "pantsu-worker",
  "tokio",
@@ -1940,6 +1946,7 @@ dependencies = [
  "bytes",
  "chrono",
  "headers",
+ "kani-domain-api-model",
  "pantsu-domain",
  "pantsu-openapi",
  "tokio",
@@ -1952,6 +1959,7 @@ name = "pantsu-iqdb"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "kani-domain-api-model",
  "pantsu-domain",
  "pantsu-worker",
  "tokio",
@@ -1997,6 +2005,7 @@ dependencies = [
  "diesel",
  "diesel-derive-enum",
  "diesel_migrations",
+ "kani-domain-api-model",
  "pantsu-domain",
  "r2d2",
  "rand 0.10.1",
@@ -2011,6 +2020,7 @@ dependencies = [
  "byte-unit",
  "chrono",
  "figment",
+ "kani-domain-api-model",
  "pantsu-domain",
  "pantsu-fs",
  "pantsu-http-api",
@@ -2029,6 +2039,7 @@ name = "pantsu-worker"
 version = "0.1.0"
 dependencies = [
  "futures",
+ "kani-domain-api-model",
  "pantsu-domain",
  "tokio",
  "tokio-stream",
