@@ -4,9 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+# TODO remove dependency when common::Result/common::Error is migrated
 pantsu-domain = { workspace = true }
-kani-domain-api-model = { workspace = true }
-kani-domain-api-outgoing = { workspace = true }
 pantsu-worker = { workspace = true }
 
 async-trait = { workspace = true }

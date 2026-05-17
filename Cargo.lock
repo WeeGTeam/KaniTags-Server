@@ -1961,11 +1961,8 @@ dependencies = [
  "anyhow",
  "async-trait",
  "bytes",
- "image",
  "kani-domain-api-model",
  "kani-domain-api-outgoing",
- "pantsu-domain",
- "pantsu-worker",
  "tokio",
 ]
 
@@ -1976,11 +1973,9 @@ dependencies = [
  "async-trait",
  "axum",
  "axum-extra",
- "bytes",
  "chrono",
  "headers",
  "kani-domain-api-incoming",
- "kani-domain-api-model",
  "pantsu-domain",
  "pantsu-openapi",
  "tokio",
@@ -1993,8 +1988,6 @@ name = "pantsu-iqdb"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "kani-domain-api-model",
- "kani-domain-api-outgoing",
  "pantsu-domain",
  "pantsu-worker",
  "tokio",
@@ -2042,7 +2035,6 @@ dependencies = [
  "diesel_migrations",
  "kani-domain-api-model",
  "kani-domain-api-outgoing",
- "pantsu-domain",
  "r2d2",
  "rand 0.10.1",
  "serial_test",
@@ -2056,9 +2048,6 @@ dependencies = [
  "byte-unit",
  "chrono",
  "figment",
- "kani-domain-api-incoming",
- "kani-domain-api-model",
- "kani-domain-api-outgoing",
  "pantsu-domain",
  "pantsu-fs",
  "pantsu-http-api",
@@ -2077,8 +2066,6 @@ name = "pantsu-worker"
 version = "0.1.0"
 dependencies = [
  "futures",
- "kani-domain-api-model",
- "kani-domain-api-outgoing",
  "pantsu-domain",
  "tokio",
  "tokio-stream",

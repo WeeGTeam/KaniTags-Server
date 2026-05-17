@@ -4,15 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+# TODO remove dependency when possible
 pantsu-domain = { workspace = true }
 kani-domain-api-incoming = { workspace = true }
-kani-domain-api-model = { workspace = true }
 pantsu-openapi = { workspace = true }
 
 async-trait = { workspace = true }
 axum = { workspace = true }
 axum-extra = { workspace = true }
-bytes = { workspace = true }
 chrono = { workspace = true }
 headers = { workspace = true }
 tokio = { workspace = true }

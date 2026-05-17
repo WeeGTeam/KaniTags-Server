@@ -4,9 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+# TODO remove when pantsu_domain::common::result::Result is removed
 pantsu-domain = { workspace = true }
-kani-domain-api-model = { workspace = true }
-kani-domain-api-outgoing = { workspace = true }
 
 tokio = { workspace = true }
 tokio-stream = { workspace = true }
