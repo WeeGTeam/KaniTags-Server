@@ -5,7 +5,7 @@ use bytes::Bytes;
 use image::codecs::jpeg::JpegEncoder;
 use tokio::task::spawn_blocking;
 
-use crate::api::model::{image_id::ImageId, thumbnail::ThumbnailOptions};
+use kani_domain_api_model::{image_id::ImageId, thumbnail::ThumbnailOptions};
 
 
 pub const GALLERY_THUMBNAIL_OPTIONS: ThumbnailOptions = ThumbnailOptions {

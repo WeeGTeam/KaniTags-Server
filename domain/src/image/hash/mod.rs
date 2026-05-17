@@ -1,5 +1,5 @@
 use image::DynamicImage;
-use crate::api::model::image_hash::{IdHash, PerceptualHash};
+use kani_domain_api_model::image_hash::{IdHash, PerceptualHash};
 
 mod id_hash;
 mod perceptual_hash;

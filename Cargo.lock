@@ -1600,6 +1600,13 @@ dependencies = [
 [[package]]
 name = "kani-domain-api-model"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "image",
+ "regex",
+ "thiserror",
+]
 
 [[package]]
 name = "lazy_static"

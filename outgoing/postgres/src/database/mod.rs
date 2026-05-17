@@ -1,11 +1,11 @@
 use crate::dao::Dao;
 use crate::Postgres;
 use diesel::Connection;
-use pantsu_domain::api::model::image::{CreatePantsuImage, PantsuImage};
+use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
+use kani_domain_api_model::image_hash::hash_to_hex;
+use kani_domain_api_model::image_hash::IdHash;
 use pantsu_domain::api::outgoing::database::{Database, ImageDatabase};
-use pantsu_domain::api::model::image_hash::hash_to_hex;
 use tracing::debug;
-use pantsu_domain::api::model::image_hash::IdHash;
 
 pub mod converter;
 
@@ -41,8 +41,8 @@ mod test {
     use crate::dao::test::insert_test_image;
     use crate::test::test_db;
     use assertables::{assert_none, assert_ok};
-    use pantsu_domain::api::model::image_format::ImageFormat;
-    use pantsu_domain::api::model::image_id::ImageId;
+    use kani_domain_api_model::image_format::ImageFormat;
+    use kani_domain_api_model::image_id::ImageId;
 
     #[test]
     #[serial_test::serial]

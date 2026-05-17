@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 use std::num::ParseIntError;
 use std::str::FromStr;
 
-use crate::api::model::image_hash::{hash_to_hex, IdHash, PerceptualHash};
+use crate::image_hash::{hash_to_hex, IdHash, PerceptualHash};
 use anyhow::{anyhow, Context};
 use regex::Regex;
 

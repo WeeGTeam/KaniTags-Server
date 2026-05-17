@@ -1,5 +1,5 @@
-use crate::api::model::image::{CreatePantsuImage, PantsuImage};
-use crate::api::model::image_hash::IdHash;
+use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
+use kani_domain_api_model::image_hash::IdHash;
 
 pub trait ImageDatabase {
     fn get_image_by_id_hash(&self, id_hash: &IdHash) -> Result<Option<PantsuImage>, anyhow::Error>;

@@ -1,8 +1,8 @@
 use crate::models::image::{ImageInsertRow, ImageRow};
-use pantsu_domain::api::model::image::{CreatePantsuImage, PantsuImage};
-use pantsu_domain::api::model::image_format::ImageFormat;
-use pantsu_domain::api::model::image_hash::{IdHash, PerceptualHash};
-use pantsu_domain::api::model::image_id::ImageId;
+use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
+use kani_domain_api_model::image_format::ImageFormat;
+use kani_domain_api_model::image_hash::{IdHash, PerceptualHash};
+use kani_domain_api_model::image_id::ImageId;
 impl TryFrom<ImageRow> for PantsuImage {
     type Error = anyhow::Error;
 
