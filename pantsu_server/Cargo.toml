@@ -15,6 +15,7 @@ path = "src/lib/lib.rs"
 
 [dependencies]
 pantsu-domain = { workspace = true }
+kani-domain-api-incoming = { workspace = true }
 kani-domain-api-model = { workspace = true }
 kani-domain-api-outgoing = { workspace = true }
 pantsu-http-api = { workspace = true }

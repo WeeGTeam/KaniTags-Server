@@ -4,6 +4,7 @@ resolver = "2"
 members = [
     "pantsu_server",
     "domain",
+    "domain-api/incoming",
     "domain-api/model",
     "domain-api/outgoing",
     "incoming/pantsu_openapi",
@@ -16,6 +17,7 @@ members = [
 
 [workspace.dependencies]
 pantsu-domain = { path = "domain" }
+kani-domain-api-incoming = { path = "domain-api/incoming" }
 kani-domain-api-model = { path = "domain-api/model" }
 kani-domain-api-outgoing = { path = "domain-api/outgoing" }
 pantsu-openapi = { path = "incoming/pantsu_openapi" }

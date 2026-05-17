@@ -1598,6 +1598,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "kani-domain-api-incoming"
+version = "0.1.0"
+dependencies = [
+ "kani-domain-api-model",
+]
+
+[[package]]
 name = "kani-domain-api-model"
 version = "0.1.0"
 dependencies = [
@@ -1932,6 +1939,7 @@ dependencies = [
  "chrono",
  "futures",
  "image",
+ "kani-domain-api-incoming",
  "kani-domain-api-model",
  "kani-domain-api-outgoing",
  "lz_fnv",
@@ -1966,6 +1974,7 @@ dependencies = [
  "bytes",
  "chrono",
  "headers",
+ "kani-domain-api-incoming",
  "kani-domain-api-model",
  "pantsu-domain",
  "pantsu-openapi",
@@ -2042,6 +2051,7 @@ dependencies = [
  "byte-unit",
  "chrono",
  "figment",
+ "kani-domain-api-incoming",
  "kani-domain-api-model",
  "kani-domain-api-outgoing",
  "pantsu-domain",
