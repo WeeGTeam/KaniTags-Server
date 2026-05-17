@@ -15,7 +15,7 @@ pub struct FsImageRepository {
 
 impl FsImageRepository {
     pub fn new(library_path: PathBuf) -> Self {
-        return FsImageRepository { lib_path: library_path };
+        FsImageRepository { lib_path: library_path }
     }
 
     async fn get_library_directory(&self) -> Result<&Path, anyhow::Error> {
