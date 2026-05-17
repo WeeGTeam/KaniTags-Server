@@ -33,9 +33,14 @@ impl FsImageRepository {
 
 #[async_trait]
 impl ImageRepository for FsImageRepository {
-    async fn store_image(&self, image_id: &ImageId, file_content: Bytes) -> Result<(), StoreImageError> {
+    async fn store_image(
+        &self,
+        image_id: &ImageId,
+        format: &ImageFormat,
+        file_content: Bytes,
+    ) -> Result<(), StoreImageError> {
         let library_dir = self.get_library_directory().await?;
-        let path = library_dir.join(image_id.filename_format());
+        let path = library_dir.join(get_image_filename(&image_id, &format));
 
         write_image_to_new_file(&file_content, &path, &image_id).await
     }
@@ -47,7 +52,7 @@ impl ImageRepository for FsImageRepository {
         options: ThumbnailOptions
     ) -> Result<(), StoreImageError> {
         let thumbnail_dir = self.get_thumbnail_directory(options).await?;
-        let path = thumbnail_dir.join(image_id.filename_with_custom_extension(ImageFormat::JPG));
+        let path = thumbnail_dir.join(get_image_filename(&image_id, &ImageFormat::JPG));
 
         write_image_to_new_file(&file_content, &path, &image_id).await
     }
@@ -84,4 +89,8 @@ async fn write_image_to_new_file(file_content: &Bytes, path: &Path, image_id: &I
 
 fn get_thumbnail_directory_name(options: &ThumbnailOptions) -> String {
     format!("{}x{}", options.max_size, options.max_size)
+}
+
+pub fn get_image_filename(id: &ImageId, format: &ImageFormat) -> String {
+    format!("{}.{}", id.format_id_hash(), format.extension())
 }

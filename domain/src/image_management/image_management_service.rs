@@ -59,8 +59,8 @@ impl ImageManagementService for ImageManagementServiceImpl {
             return Err(ImportImageError::ImageAlreadyImported(db_image.image_id));
         }
 
-        info!("Store image '{}' in library: '{}'", image_name, image_id.filename_format());
-        allow_existing_image(self.image_repository.store_image(&image_id, image_data.clone()).await)?;
+        info!("Store image '{}' in library", image_id);
+        allow_existing_image(self.image_repository.store_image(&image_id, &image.format, image_data.clone()).await)?;
         let _ = self.create_thumbnail(&image_id, image_data).await.inspect_err(|e| warn!("Failed to create thumbnail: {}", e));
 
         let stored_image = self.database.store_image(&user, import_session_id, &image)?;
