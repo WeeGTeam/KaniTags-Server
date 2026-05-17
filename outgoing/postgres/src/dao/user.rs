@@ -2,7 +2,7 @@ use crate::models::user_account::{UserAccountInsertRow, UserAccountRow};
 use crate::schema::user_account::dsl as user_dsl;
 use crate::schema::user_account::dsl::user_account;
 use anyhow::{Context, Error};
-use diesel::ExpressionMethods;
+use diesel::{ExpressionMethods, OptionalExtension};
 use diesel::{QueryDsl, RunQueryDsl, SelectableHelper};
 
 pub struct UserDao<'c> {
@@ -31,11 +31,12 @@ impl<'c> UserDao<'c> {
             .context("Failed to load all users from database.")
     }
 
-    pub fn get_user_by_user_name(&mut self, user_name: &str) -> Result<UserAccountRow, Error> {
+    pub fn get_user_by_user_name(&mut self, user_name: &str) -> Result<Option<UserAccountRow>, Error> {
         user_account
             .select(UserAccountRow::as_select())
             .filter(user_dsl::user_name.eq(user_name))
             .get_result(self.connection)
+            .optional()
             .context("Failed to load user by user name from database.")
     }
 }
@@ -46,7 +47,7 @@ mod test {
     use crate::dao::Dao;
     use crate::models::user_account::UserAccountInsertRow;
     use crate::test::test_db;
-    use assertables::assert_len_eq_x;
+    use assertables::{assert_len_eq_x, assert_some};
     use diesel::Connection;
 
     #[test]
@@ -79,9 +80,10 @@ mod test {
     fn test_get_user_by_user_name() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let _result = conn.test_transaction(|c| {
+        let result = conn.test_transaction(|c| {
             let user = insert_test_user(c)?;
             c.user_dao().get_user_by_user_name(&user.user_name)
         });
+        assert_some!(result);
     }
 }
