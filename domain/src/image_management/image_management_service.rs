@@ -4,12 +4,12 @@ use bytes::Bytes;
 use std::sync::Arc;
 use tracing::{info, warn};
 
-use crate::api::incoming::image_management::{ImageManagementService, ImportImageError};
-use crate::api::model::image::CreatePantsuImage;
-use crate::api::outgoing::database::Database;
-use crate::api::outgoing::image_repository::{ImageRepository, StoreImageError};
 use crate::image::thumbnail::{create_thumbnail_in_memory, GALLERY_THUMBNAIL_OPTIONS};
 use crate::image::try_create_pantsu_image;
+use kani_domain_api_incoming::image_management::{ImageManagementService, ImportImageError};
+use kani_domain_api_model::image::CreatePantsuImage;
+use kani_domain_api_outgoing::database::Database;
+use kani_domain_api_outgoing::image_repository::{ImageRepository, StoreImageError};
 
 
 pub struct ImageManagementServiceImpl {

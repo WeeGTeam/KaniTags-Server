@@ -4,14 +4,14 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use thiserror::Error;
 
-use crate::api::model::image::CreatePantsuImage;
-use crate::api::model::thumbnail::ThumbnailOptions;
+use kani_domain_api_model::image::CreatePantsuImage;
+use kani_domain_api_model::thumbnail::ThumbnailOptions;
 
 
 #[async_trait]
 pub trait ImageRepository {
     async fn store_image(&self, image: CreatePantsuImage, file_content: Bytes) -> Result<(), StoreImageError>;
-    
+
     async fn store_jpg_thumbnail(
         &self,
         image: &CreatePantsuImage,

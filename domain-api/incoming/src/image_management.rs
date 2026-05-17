@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use thiserror::Error;
 
-use crate::api::model::image_format::ImageFormatError;
+use kani_domain_api_model::image_format::ImageFormatError;
 
 
 #[async_trait]

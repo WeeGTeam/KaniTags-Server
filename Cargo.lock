@@ -1598,6 +1598,40 @@ dependencies = [
 ]
 
 [[package]]
+name = "kani-domain-api-incoming"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytes",
+ "image",
+ "kani-domain-api-model",
+ "thiserror",
+]
+
+[[package]]
+name = "kani-domain-api-model"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "image",
+ "regex",
+ "thiserror",
+]
+
+[[package]]
+name = "kani-domain-api-outgoing"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytes",
+ "kani-domain-api-model",
+ "thiserror",
+]
+
+[[package]]
 name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1910,6 +1944,9 @@ dependencies = [
  "chrono",
  "futures",
  "image",
+ "kani-domain-api-incoming",
+ "kani-domain-api-model",
+ "kani-domain-api-outgoing",
  "lz_fnv",
  "regex",
  "thiserror",
@@ -1924,9 +1961,8 @@ dependencies = [
  "anyhow",
  "async-trait",
  "bytes",
- "image",
- "pantsu-domain",
- "pantsu-worker",
+ "kani-domain-api-model",
+ "kani-domain-api-outgoing",
  "tokio",
 ]
 
@@ -1937,9 +1973,9 @@ dependencies = [
  "async-trait",
  "axum",
  "axum-extra",
- "bytes",
  "chrono",
  "headers",
+ "kani-domain-api-incoming",
  "pantsu-domain",
  "pantsu-openapi",
  "tokio",
@@ -1997,7 +2033,8 @@ dependencies = [
  "diesel",
  "diesel-derive-enum",
  "diesel_migrations",
- "pantsu-domain",
+ "kani-domain-api-model",
+ "kani-domain-api-outgoing",
  "r2d2",
  "rand 0.10.1",
  "serial_test",

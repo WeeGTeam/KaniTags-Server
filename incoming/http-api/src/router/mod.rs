@@ -1,4 +1,4 @@
-use pantsu_domain::api::incoming::image_management::ImageManagementService;
+use kani_domain_api_incoming::image_management::ImageManagementService;
 use pantsu_domain::common::error::Error;
 use pantsu_domain::reverse_image_search::ReverseImageSearchService;
 use pantsu_openapi::apis::ErrorHandler;

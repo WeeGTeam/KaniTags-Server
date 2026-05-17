@@ -3,12 +3,12 @@ use std::path::{Path, PathBuf};
 use anyhow::Context;
 use async_trait::async_trait;
 use bytes::Bytes;
-use pantsu_domain::api::model::image_id::ImageId;
-use pantsu_domain::api::model::thumbnail::ThumbnailOptions;
-use pantsu_domain::api::model::{image::CreatePantsuImage, image_format::ImageFormat};
-use pantsu_domain::api::outgoing::image_repository::{ImageRepository, StoreImageError};
+use kani_domain_api_model::image::CreatePantsuImage;
+use kani_domain_api_model::image_format::ImageFormat;
+use kani_domain_api_model::image_id::ImageId;
+use kani_domain_api_model::thumbnail::ThumbnailOptions;
+use kani_domain_api_outgoing::image_repository::{ImageRepository, StoreImageError};
 use tokio::{fs::{DirBuilder, OpenOptions}, io::{self, AsyncWriteExt}};
-
 
 pub struct FsImageRepository {
     lib_path: PathBuf,

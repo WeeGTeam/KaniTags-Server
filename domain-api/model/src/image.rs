@@ -1,6 +1,6 @@
-use crate::api::model::{image_format::ImageFormat, image_id::ImageId};
+use crate::image_format::ImageFormat;
+use crate::image_id::ImageId;
 use chrono::{DateTime, Utc};
-
 
 #[derive (Clone)]
 pub struct CreatePantsuImage {

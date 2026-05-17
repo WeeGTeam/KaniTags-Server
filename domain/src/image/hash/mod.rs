@@ -1,10 +1,8 @@
 use image::DynamicImage;
+use kani_domain_api_model::image_hash::{IdHash, PerceptualHash};
 
 mod id_hash;
 mod perceptual_hash;
-
-pub type IdHash = [u8; 8];
-pub type PerceptualHash = [u8; 18];
 
 // TODO: think about implementing hashes because of changes/inconsistencies between versions/platforms
 
@@ -16,6 +14,3 @@ pub fn get_perceptual_hash(image: &DynamicImage) -> PerceptualHash {
     perceptual_hash::calculate_perceptual_hash(image)
 }
 
-pub fn hash_to_hex(bytes: &[u8]) -> String {
-    bytes.iter().map(|b| format!("{:02x?}", b)).collect::<String>()
-}
