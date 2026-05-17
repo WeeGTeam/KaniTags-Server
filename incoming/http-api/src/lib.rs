@@ -15,7 +15,7 @@ use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetReques
 use tower_http::trace::TraceLayer;
 
 pub mod auth_middleware;
-mod request_id;
+mod request_tracing;
 pub mod router;
 
 pub async fn launch_server<RS, IS, LS>(
@@ -53,7 +53,7 @@ where
     let body_limit = DefaultBodyLimit::max(request_body_limit);
     let router = server::new(OpenApiRouter(shared_state))
         .route_layer(auth_layer)
-        .layer(TraceLayer::new_for_http().make_span_with(request_id::request_id_tracing_span))
+        .layer(TraceLayer::new_for_http().make_span_with(request_tracing::request_tracing_span))
         .layer(SetRequestIdLayer::x_request_id(MakeRequestUuid::default()))
         .layer(PropagateRequestIdLayer::x_request_id())
         .layer(body_limit);
