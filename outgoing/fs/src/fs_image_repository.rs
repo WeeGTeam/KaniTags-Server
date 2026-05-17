@@ -3,11 +3,12 @@ use std::path::{Path, PathBuf};
 use anyhow::Context;
 use async_trait::async_trait;
 use bytes::Bytes;
+use kani_domain_api_model::image::PantsuImage;
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::thumbnail::ThumbnailOptions;
-use kani_domain_api_outgoing::image_repository::{ImageRepository, StoreImageError};
-use tokio::{fs::{DirBuilder, OpenOptions}, io::{self, AsyncWriteExt}};
+use kani_domain_api_outgoing::image_repository::{ImageRepository, LoadImageError, StoreImageError};
+use tokio::{fs, fs::{DirBuilder, OpenOptions}, io::{self, AsyncWriteExt}};
 
 pub struct FsImageRepository {
     lib_path: PathBuf,
@@ -56,6 +57,13 @@ impl ImageRepository for FsImageRepository {
 
         write_image_to_new_file(&file_content, &path, &image_id).await
     }
+
+    async fn load_image(&self, image: &PantsuImage) -> Result<Bytes, LoadImageError> {
+        let library_dir = self.get_library_directory().await?;
+        let path = library_dir.join(get_image_filename(&image.image_id, &image.format));
+
+        read_image(&path).await
+    }
 }
 
 async fn ensure_directory_exists(directory: &Path) -> Result<(), anyhow::Error> {
@@ -85,6 +93,17 @@ async fn write_image_to_new_file(file_content: &Bytes, path: &Path, image_id: &I
             .await
             .with_context(|| format!("Failed to write into image into file: {}", image_id))?
     )
+}
+
+async fn read_image(path: &Path) -> Result<Bytes, LoadImageError> {
+    fs::read(&path).await
+        .map(|loaded_image| Bytes::from(loaded_image))
+        .map_err(|e| match e.kind() {
+            io::ErrorKind::NotFound => {
+                LoadImageError::ImageNotFound(path.to_owned())
+            }
+            _ => LoadImageError::Unknown(e.into())
+        })
 }
 
 fn get_thumbnail_directory_name(options: &ThumbnailOptions) -> String {
