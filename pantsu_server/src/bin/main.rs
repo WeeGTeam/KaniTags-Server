@@ -68,6 +68,7 @@ async fn main() -> Result<(), Error> {
         Arc::new(login_service),
         config.request_body_limit.as_u64() as usize,
         config.server_port,
+        config.auth_user_header
     )
     .await?;
 

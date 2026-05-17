@@ -1,6 +1,7 @@
 # server_port: 8000,
-# db_username: "pantsu_maid"
-# db_password: "password"
-# db_url: "localhost:4269"
+# auth_user_header: "Remote-User"
+# db_username: "postgres"
+# db_password: "postgres"
+# db_url: "localhost:5432"
 # library_path: "pantsu_library",
 # request_body_limit: "25MB"

@@ -10,6 +10,7 @@ use std::str::FromStr;
 #[serde(default)]
 pub struct ServerConfig {
     pub server_port: u16,
+    pub auth_user_header: String,
     pub db_username: String,
     pub db_password: String,
     pub db_url: String,
@@ -40,6 +41,7 @@ impl Default for ServerConfig {
     fn default() -> Self {
         ServerConfig {
             server_port: 8000,
+            auth_user_header: "Remote-User".to_string(),
             db_username: "pantsu_maid".to_string(),
             db_password: "password".to_string(),
             db_url: "localhost:4269".to_string(),
