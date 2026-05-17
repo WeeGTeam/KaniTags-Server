@@ -6,6 +6,8 @@ edition = "2024"
 [dependencies]
 pantsu-domain = { workspace = true }
 kani-domain-api-model = { workspace = true }
+kani-domain-api-outgoing = { workspace = true }
+
 tokio = { workspace = true }
 tokio-stream = { workspace = true }
 futures = { workspace = true }

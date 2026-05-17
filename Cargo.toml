@@ -5,6 +5,7 @@ members = [
     "pantsu_server",
     "domain",
     "domain-api/model",
+    "domain-api/outgoing",
     "incoming/pantsu_openapi",
     "incoming/http-api",
     "outgoing/iqdb",
@@ -16,6 +17,7 @@ members = [
 [workspace.dependencies]
 pantsu-domain = { path = "domain" }
 kani-domain-api-model = { path = "domain-api/model" }
+kani-domain-api-outgoing = { path = "domain-api/outgoing" }
 pantsu-openapi = { path = "incoming/pantsu_openapi" }
 pantsu-http-api = { path = "incoming/http-api" }
 pantsu-fs = { path = "outgoing/fs" }
