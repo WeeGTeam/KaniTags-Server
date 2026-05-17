@@ -7,7 +7,7 @@ use kani_domain_api_model::image::CreatePantsuImage;
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::thumbnail::ThumbnailOptions;
-use pantsu_domain::api::outgoing::image_repository::{ImageRepository, StoreImageError};
+use kani_domain_api_outgoing::image_repository::{ImageRepository, StoreImageError};
 use tokio::{fs::{DirBuilder, OpenOptions}, io::{self, AsyncWriteExt}};
 
 pub struct FsImageRepository {

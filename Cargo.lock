@@ -1611,6 +1611,13 @@ dependencies = [
 [[package]]
 name = "kani-domain-api-outgoing"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytes",
+ "kani-domain-api-model",
+ "thiserror",
+]
 
 [[package]]
 name = "lazy_static"

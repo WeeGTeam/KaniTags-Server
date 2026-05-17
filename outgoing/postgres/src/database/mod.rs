@@ -4,7 +4,7 @@ use diesel::Connection;
 use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
 use kani_domain_api_model::image_hash::hash_to_hex;
 use kani_domain_api_model::image_hash::IdHash;
-use pantsu_domain::api::outgoing::database::{Database, ImageDatabase};
+use kani_domain_api_outgoing::database::{Database, ImageDatabase};
 use tracing::debug;
 
 pub mod converter;
