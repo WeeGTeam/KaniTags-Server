@@ -23,11 +23,11 @@ pantsu-postgres = { workspace = true }
 
 byte-unit = { workspace = true }
 chrono = { workspace = true }
-figment = { workspace = true }
+figment = { workspace = true, features = ["env", "yaml"] }
 serde = { workspace = true }
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["macros"] }
 tracing = { workspace = true }
-tracing-subscriber = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
 yansi = { workspace = true }
 
 [features]
