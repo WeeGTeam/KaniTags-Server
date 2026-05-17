@@ -5,3 +5,9 @@ edition = "2024"
 
 [dependencies]
 kani-domain-api-model = { workspace = true }
+
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+bytes = { workspace = true }
+image = { workspace = true }
+thiserror = { workspace = true }

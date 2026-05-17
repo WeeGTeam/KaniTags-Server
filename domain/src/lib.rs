@@ -1,4 +1,3 @@
-pub mod api;
 pub mod common;
 pub mod image;
 pub mod image_management;

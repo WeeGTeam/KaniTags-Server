@@ -1,6 +1,6 @@
 use blockhash::Image;
 
-use crate::api::incoming::image_management::ImportImageError;
+use kani_domain_api_incoming::image_management::ImportImageError;
 use kani_domain_api_model::{image::CreatePantsuImage, image_format::ImageFormat, image_id::ImageId};
 
 pub mod hash;

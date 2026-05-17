@@ -1601,7 +1601,12 @@ dependencies = [
 name = "kani-domain-api-incoming"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytes",
+ "image",
  "kani-domain-api-model",
+ "thiserror",
 ]
 
 [[package]]
