@@ -47,6 +47,9 @@ pub async fn auth_middleware(
         UserLoadError::UserMissingError(e) => (StatusCode::UNAUTHORIZED, e),
     })?;
 
+    // Record into the span created by TraceLayer.
+    tracing::Span::current().record("user", tracing::field::display(&user.user_name));
+
     // Run the rest of the request inside the task-local scope.
     Ok(CURRENT_USER.scope(user, next.run(request)).await)
 }

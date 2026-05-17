@@ -14,5 +14,6 @@ pub fn request_tracing_span(request: &Request<Body>) -> Span {
         id = %request_id,
         method = %request.method(),
         uri = %request.uri(),
+        user = tracing::field::Empty
     )
 }
