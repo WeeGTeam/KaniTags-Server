@@ -3,9 +3,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
+OPENAPI_DIR="${ROOT_DIR}/incoming/pantsu_openapi"
 
-IMAGE_DOWNLOAD="$ROOT_DIR/pantsu_openapi/src/apis/image_download.rs"
-SERVER="$ROOT_DIR/pantsu_openapi/src/server/mod.rs"
+IMAGE_DOWNLOAD="$OPENAPI_DIR/src/apis/image_download.rs"
+SERVER="$OPENAPI_DIR/src/server/mod.rs"
 
 OPENAPI_GENERATOR_VERSION=7.21.0
 OPENAPI_GENERATOR_DOWNLOAD_CACHE_DIR="$SCRIPT_DIR"
@@ -15,7 +16,7 @@ export OPENAPI_GENERATOR_DOWNLOAD_CACHE_DIR
 
 bash "$SCRIPT_DIR/openapi-generator-cli.sh" generate \
   -i "$ROOT_DIR/openapi.yaml" \
-  -o "$ROOT_DIR/pantsu_openapi" \
+  -o "$OPENAPI_DIR" \
   -g rust-axum \
   -p packageName=pantsu-openapi
 
