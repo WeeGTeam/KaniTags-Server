@@ -35,6 +35,11 @@ impl Postgres {
         info!("setting up database");
         let mut connection = self.pool.get()?;
         connection.run_pending_migrations(MIGRATIONS)?;
+        #[cfg(feature = "mock-user")]
+        {
+            use diesel::connection::SimpleConnection;
+            connection.batch_execute("INSERT INTO user_account (user_name, display_name) VALUES ('anonymous', 'Anonymous') ON CONFLICT DO NOTHING;")?;
+        }
         info!("database up to date");
         Ok(())
     }

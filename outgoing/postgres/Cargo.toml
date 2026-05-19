@@ -19,3 +19,6 @@ tracing = { workspace = true }
 assertables = { workspace = true }
 rand = { workspace = true }
 serial_test = { workspace = true }
+
+[features]
+mock-user = []
