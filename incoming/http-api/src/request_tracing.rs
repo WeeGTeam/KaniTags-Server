@@ -3,7 +3,7 @@ use axum::extract::Request;
 use tower_http::request_id::RequestId;
 use tracing::{info_span, Span};
 
-pub fn request_id_tracing_span(request: &Request<Body>) -> Span {
+pub fn request_tracing_span(request: &Request<Body>) -> Span {
     let request_id = request
         .extensions()
         .get::<RequestId>()
@@ -14,5 +14,6 @@ pub fn request_id_tracing_span(request: &Request<Body>) -> Span {
         id = %request_id,
         method = %request.method(),
         uri = %request.uri(),
+        user = tracing::field::Empty
     )
 }

@@ -1,4 +1,5 @@
 use pantsu_domain::reverse_image_search::ReverseImageSearchService;
+use pantsu_domain::user::login_service::LoginServiceImpl;
 use pantsu_domain::{common::error::Error, image_management::image_management_service::ImageManagementServiceImpl};
 use pantsu_fs::fs_image_repository::FsImageRepository;
 use pantsu_http_api::launch_server;
@@ -26,7 +27,11 @@ async fn main() -> Result<(), Error> {
 
     let image_management_service = ImageManagementServiceImpl::new(
         Arc::new(fs_image_repository),
-        Arc::new(database),
+        Arc::new(database.clone()),
+    );
+
+    let login_service = LoginServiceImpl::new(
+        Arc::new(database)
     );
 
     /*let stream_service = worker_init::init_iqdb();
@@ -60,8 +65,10 @@ async fn main() -> Result<(), Error> {
     launch_server(
         Arc::new(iqdb_service),
         Arc::new(image_management_service),
+        Arc::new(login_service),
         config.request_body_limit.as_u64() as usize,
         config.server_port,
+        config.auth_user_header
     )
     .await?;
 

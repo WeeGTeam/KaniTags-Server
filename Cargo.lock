@@ -1976,6 +1976,7 @@ dependencies = [
  "chrono",
  "headers",
  "kani-domain-api-incoming",
+ "kani-domain-api-model",
  "pantsu-domain",
  "pantsu-openapi",
  "tokio",

@@ -7,6 +7,7 @@ edition = "2024"
 # TODO remove dependency when possible
 pantsu-domain = { workspace = true }
 kani-domain-api-incoming = { workspace = true }
+kani-domain-api-model = { workspace = true }
 pantsu-openapi = { workspace = true }
 
 async-trait = { workspace = true }
@@ -17,3 +18,7 @@ headers = { workspace = true }
 tokio = { workspace = true }
 tower-http = { workspace = true }
 tracing = { workspace = true }
+
+[features]
+# instead of reading user from header, always mocks 'anonymous' as user_name
+mock-user = []

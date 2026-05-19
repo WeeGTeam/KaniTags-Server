@@ -55,7 +55,7 @@ impl<'c> ImageDao<'c> {
         image
             .select(ImageRow::as_select())
             .inner_join(user_image)
-            .filter(user_image_dsl::id.eq(user_id))
+            .filter(user_image_dsl::user_id.eq(user_id))
             .load(self.connection)
             .context("Failed to get images by user from database")
     }
