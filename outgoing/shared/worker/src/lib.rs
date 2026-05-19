@@ -1,4 +1,4 @@
-use pantsu_domain::common::result::Result;
+use kani_domain::common::result::Result;
 use tokio::sync::oneshot;
 
 pub mod worker_connection;

@@ -1,8 +1,8 @@
-use pantsu_domain::common::error::Error;
-use pantsu_domain::reverse_image_search::ReverseImageSearchService;
-use pantsu_iqdb::iqdb_service::DefaultIqdbService;
-use pantsu_iqdb::iqdb_worker;
-use pantsu_worker::worker_connection::{create_worker_connection, WorkerConnectionRx, WorkerConnectionTx};
+use kani_domain::common::error::Error;
+use kani_domain::reverse_image_search::ReverseImageSearchService;
+use kani_iqdb::iqdb_service::DefaultIqdbService;
+use kani_iqdb::iqdb_worker;
+use kani_worker::worker_connection::{create_worker_connection, WorkerConnectionRx, WorkerConnectionTx};
 use std::future::Future;
 use tokio::task;
 

@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
-OPENAPI_DIR="${ROOT_DIR}/incoming/pantsu_openapi"
+OPENAPI_DIR="${ROOT_DIR}/incoming/kani_openapi"
 
 IMAGE_DOWNLOAD="$OPENAPI_DIR/src/apis/image_download.rs"
 SERVER="$OPENAPI_DIR/src/server/mod.rs"
@@ -18,7 +18,7 @@ bash "$SCRIPT_DIR/openapi-generator-cli.sh" generate \
   -i "$ROOT_DIR/openapi.yaml" \
   -o "$OPENAPI_DIR" \
   -g rust-axum \
-  -p packageName=pantsu-openapi
+  -p packageName=kani-openapi
 
 # Add content_type String to the 200 image response variants
 sed -i 's/^    (ByteArray)$/    (ByteArray, String)/' "$IMAGE_DOWNLOAD"

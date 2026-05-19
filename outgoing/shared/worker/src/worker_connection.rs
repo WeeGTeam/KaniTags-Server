@@ -3,7 +3,7 @@ use std::future::Future;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use tokio_stream::wrappers::ReceiverStream;
 
-use pantsu_domain::common::{error::{self}, result::Result};
+use kani_domain::common::{error::{self}, result::Result};
 
 pub struct WorkerConnectionTx<J> {
     request_tx: Sender<J>,

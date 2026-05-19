@@ -1575,6 +1575,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "kani-domain"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "blockhash",
+ "bytes",
+ "chrono",
+ "futures",
+ "image",
+ "kani-domain-api-incoming",
+ "kani-domain-api-model",
+ "kani-domain-api-outgoing",
+ "lz_fnv",
+ "regex",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "kani-domain-api-incoming"
 version = "0.1.0"
 dependencies = [
@@ -1606,6 +1627,124 @@ dependencies = [
  "bytes",
  "kani-domain-api-model",
  "thiserror",
+]
+
+[[package]]
+name = "kani-fs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "bytes",
+ "kani-domain-api-model",
+ "kani-domain-api-outgoing",
+ "tokio",
+]
+
+[[package]]
+name = "kani-http-api"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "axum",
+ "axum-extra",
+ "chrono",
+ "headers",
+ "kani-domain",
+ "kani-domain-api-incoming",
+ "kani-domain-api-model",
+ "kani-openapi",
+ "tokio",
+ "tower-http",
+ "tracing",
+]
+
+[[package]]
+name = "kani-iqdb"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "kani-domain",
+ "kani-worker",
+ "tokio",
+]
+
+[[package]]
+name = "kani-openapi"
+version = "0.1.0"
+dependencies = [
+ "ammonia",
+ "async-trait",
+ "axum",
+ "axum-extra",
+ "base64",
+ "bytes",
+ "chrono",
+ "frunk",
+ "frunk-enum-core",
+ "frunk-enum-derive",
+ "frunk_core",
+ "frunk_derives",
+ "headers",
+ "http",
+ "lazy_static",
+ "regex",
+ "serde",
+ "serde_html_form",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+ "validator",
+]
+
+[[package]]
+name = "kani-postgres"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "assertables",
+ "chrono",
+ "diesel",
+ "diesel-derive-enum",
+ "diesel_migrations",
+ "kani-domain-api-model",
+ "kani-domain-api-outgoing",
+ "r2d2",
+ "rand 0.10.1",
+ "serial_test",
+ "tracing",
+]
+
+[[package]]
+name = "kani-server"
+version = "0.1.0"
+dependencies = [
+ "byte-unit",
+ "chrono",
+ "figment",
+ "kani-domain",
+ "kani-fs",
+ "kani-http-api",
+ "kani-iqdb",
+ "kani-postgres",
+ "kani-worker",
+ "serde",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "yansi",
+]
+
+[[package]]
+name = "kani-worker"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "kani-domain",
+ "tokio",
+ "tokio-stream",
 ]
 
 [[package]]
@@ -1918,145 +2057,6 @@ name = "once_cell"
 version = "1.21.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9f7c3e4beb33f85d45ae3e3a1792185706c8e16d043238c593331cc7cd313b50"
-
-[[package]]
-name = "pantsu-domain"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "blockhash",
- "bytes",
- "chrono",
- "futures",
- "image",
- "kani-domain-api-incoming",
- "kani-domain-api-model",
- "kani-domain-api-outgoing",
- "lz_fnv",
- "regex",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "pantsu-fs"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "bytes",
- "kani-domain-api-model",
- "kani-domain-api-outgoing",
- "tokio",
-]
-
-[[package]]
-name = "pantsu-http-api"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "axum",
- "axum-extra",
- "chrono",
- "headers",
- "kani-domain-api-incoming",
- "kani-domain-api-model",
- "pantsu-domain",
- "pantsu-openapi",
- "tokio",
- "tower-http",
- "tracing",
-]
-
-[[package]]
-name = "pantsu-iqdb"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "pantsu-domain",
- "pantsu-worker",
- "tokio",
-]
-
-[[package]]
-name = "pantsu-openapi"
-version = "0.1.0"
-dependencies = [
- "ammonia",
- "async-trait",
- "axum",
- "axum-extra",
- "base64",
- "bytes",
- "chrono",
- "frunk",
- "frunk-enum-core",
- "frunk-enum-derive",
- "frunk_core",
- "frunk_derives",
- "headers",
- "http",
- "lazy_static",
- "regex",
- "serde",
- "serde_html_form",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uuid",
- "validator",
-]
-
-[[package]]
-name = "pantsu-postgres"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "assertables",
- "chrono",
- "diesel",
- "diesel-derive-enum",
- "diesel_migrations",
- "kani-domain-api-model",
- "kani-domain-api-outgoing",
- "r2d2",
- "rand 0.10.1",
- "serial_test",
- "tracing",
-]
-
-[[package]]
-name = "pantsu-server"
-version = "0.1.0"
-dependencies = [
- "byte-unit",
- "chrono",
- "figment",
- "pantsu-domain",
- "pantsu-fs",
- "pantsu-http-api",
- "pantsu-iqdb",
- "pantsu-postgres",
- "pantsu-worker",
- "serde",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "yansi",
-]
-
-[[package]]
-name = "pantsu-worker"
-version = "0.1.0"
-dependencies = [
- "futures",
- "pantsu-domain",
- "tokio",
- "tokio-stream",
-]
 
 [[package]]
 name = "parking_lot"
