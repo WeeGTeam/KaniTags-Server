@@ -58,7 +58,7 @@ mod test {
     use diesel::r2d2::R2D2Connection;
 
     pub fn test_db() -> Postgres {
-        let db = Postgres::new("localhost:55432", "postgres" , "postgres").unwrap();
+        let db = Postgres::new("localhost:55432/kanidb", "postgres" , "postgres").unwrap();
         let mut connection = db.get_connection().unwrap();
         connection
             .batch_execute(

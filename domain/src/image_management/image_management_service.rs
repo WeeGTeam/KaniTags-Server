@@ -6,8 +6,10 @@ use tracing::{info, warn};
 
 use crate::image::thumbnail::{create_thumbnail_in_memory, GALLERY_THUMBNAIL_OPTIONS};
 use crate::image::try_create_pantsu_image;
-use kani_domain_api_incoming::image_management::{ImageManagementService, ImportImageError};
+use kani_domain_api_incoming::image_management::{ImageManagementService, ImportImageError, StartImportSessionError};
 use kani_domain_api_model::image::CreatePantsuImage;
+use kani_domain_api_model::import::ImportSession;
+use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::Database;
 use kani_domain_api_outgoing::image_repository::{ImageRepository, StoreImageError};
 
@@ -42,6 +44,8 @@ impl ImageManagementServiceImpl {
 impl ImageManagementService for ImageManagementServiceImpl {
     async fn import_image(
         &self,
+        user: &User,
+        import_session_id: i64,
         image_name: String,
         image_data: Bytes,
     ) -> Result<(), ImportImageError> {
@@ -58,9 +62,17 @@ impl ImageManagementService for ImageManagementServiceImpl {
         allow_existing_image(self.image_repository.store_image(image.clone(), image_data.clone()).await)?;
         let _ = self.create_thumbnail(&image, image_data).await.inspect_err(|e| warn!("Failed to create thumbnail: {}", e));
 
-        self.database.store_image(&image)?;
+        let stored_image = self.database.store_image(&user, import_session_id, &image)?;
+        info!("Stored image '{}' with id '{}'", image_name, stored_image.id);
 
         Ok(())
+    }
+
+    async fn start_import_session(&self, user: &User) -> Result<ImportSession, StartImportSessionError> {
+        info!("Starting import session");
+        let session = self.database.start_import_session(&user)?;
+        info!("Started import session with id '{}'", session.id);
+        Ok(session)
     }
 }
 
