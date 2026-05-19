@@ -1,8 +1,11 @@
 use crate::models::image::{ImageInsertRow, ImageRow};
+use crate::models::import_session::ImportSessionRow;
 use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_hash::{IdHash, PerceptualHash};
 use kani_domain_api_model::image_id::ImageId;
+use kani_domain_api_model::import::ImportSession;
+
 impl TryFrom<ImageRow> for PantsuImage {
     type Error = anyhow::Error;
 
@@ -47,6 +50,15 @@ impl From<&ImageFormat> for crate::models::ImageFormat {
         match value {
             ImageFormat::PNG => crate::models::ImageFormat::PNG,
             ImageFormat::JPG => crate::models::ImageFormat::JPG,
+        }
+    }
+}
+
+impl Into<ImportSession> for ImportSessionRow {
+    fn into(self) -> ImportSession {
+        ImportSession {
+            id: self.id,
+            user_id: self.user_id,
         }
     }
 }
