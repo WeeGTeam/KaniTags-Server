@@ -32,4 +32,4 @@ yansi = { workspace = true }
 
 [features]
 default = ["mock-user"]
-mock-user = ["kani-http-api/mock-user"]
+mock-user = ["kani-http-api/mock-user", "kani-postgres/mock-user"]
