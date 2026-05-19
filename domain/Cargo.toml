@@ -1,5 +1,5 @@
 [package]
-name = "pantsu-domain"
+name = "kani-domain"
 version = "0.1.0"
 edition = "2024"
 
@@ -18,5 +18,5 @@ image = { workspace = true }
 lz_fnv = { workspace = true }
 regex = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true, features = ["sync"]}
+tokio = { workspace = true, features = ["sync"] }
 tracing = { workspace = true }

@@ -1,7 +1,7 @@
 use byte_unit::{Byte, Unit};
 use figment::providers::{Env, Format, Yaml};
 use figment::Figment;
-use pantsu_domain::common::error::Error;
+use kani_domain::common::error::Error;
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::str::FromStr;

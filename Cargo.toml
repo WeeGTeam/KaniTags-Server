@@ -2,12 +2,12 @@
 resolver = "2"
 
 members = [
-    "pantsu_server",
+    "kani_server",
     "domain",
     "domain-api/incoming",
     "domain-api/model",
     "domain-api/outgoing",
-    "incoming/pantsu_openapi",
+    "incoming/kani_openapi",
     "incoming/http-api",
     "outgoing/iqdb",
     "outgoing/fs",
@@ -16,51 +16,49 @@ members = [
 ]
 
 [workspace.dependencies]
-pantsu-domain = { path = "domain" }
+kani-domain = { path = "domain" }
 kani-domain-api-incoming = { path = "domain-api/incoming" }
 kani-domain-api-model = { path = "domain-api/model" }
 kani-domain-api-outgoing = { path = "domain-api/outgoing" }
-pantsu-openapi = { path = "incoming/pantsu_openapi" }
-pantsu-http-api = { path = "incoming/http-api" }
-pantsu-fs = { path = "outgoing/fs" }
-pantsu-iqdb = { path = "outgoing/iqdb" }
-pantsu-worker = { path = "outgoing/shared/worker" }
-pantsu-postgres = { path = "outgoing/postgres" }
+kani-openapi = { path = "incoming/kani_openapi" }
+kani-http-api = { path = "incoming/http-api" }
+kani-fs = { path = "outgoing/fs" }
+kani-iqdb = { path = "outgoing/iqdb" }
+kani-worker = { path = "outgoing/shared/worker" }
+kani-postgres = { path = "outgoing/postgres" }
 
 anyhow = "1.0.102"
 async-trait = "0.1.89"
-axum = { version = "0.8.7", features = ["multipart"] }
-axum-macros = "0.5.0"
-axum_typed_multipart = "0.16.4"
+axum = "0.8.9"
+axum-macros = "0.5.1"
+axum_typed_multipart = "0.16.5"
 blockhash = "1.0.0"
 byte-unit = "5.2.0"
-bytes = "1.11.0"
-chrono = "0.4.42"
-diesel = { version = "2.3.9" }
-diesel-derive-enum = { version = "2.1.0" }
-diesel_migrations = { version = "2.3.2" }
-figment = { version = "0.10.19", features = ["env", "yaml"] }
-futures = "0.3.31"
-image = "0.25.9"
+bytes = "1.11.1"
+chrono = "0.4.44"
+diesel = "2.3.9"
+diesel-derive-enum = "2.1.0"
+diesel_migrations = "2.3.2"
+figment = "0.10.19"
+futures = "0.3.32"
+image = "0.25.10"
 lz_fnv = "0.1.2"
-regex = "1.12.2"
-r2d2 = { version = "0.8.10" }
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.145"
-strum = { version = "0.28.0" }
-strum_macros = { version = "0.28.0" }
-thiserror = "2.0.17"
-tokio = { version = "1.48.0", features = ["rt-multi-thread", "macros", "fs"] }
-tokio-stream = "0.1.17"
-tower-http = { version = "0.6.7", features = ["trace", "request-id"] }
-tracing = "0.1.43"
-tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
-uuid = { version = "1.19.0", features = ["v4"] }
+regex = "1.12.3"
+r2d2 = "0.8.10"
+serde = "1.0.228"
+serde_json = "1.0.149"
+strum = "0.28.0"
+strum_macros = "0.28.0"
+thiserror = "2.0.18"
+tokio = { version = "1.52.3", features = ["rt-multi-thread"] }
+tokio-stream = "0.1.18"
+tower-http = "0.6.11"
+tracing = "0.1.44"
+tracing-subscriber = "0.3.23"
 yansi = "1.0.1"
 headers = "0.4.1"
-axum-extra = "0.12.2"
+axum-extra = "0.12.6"
 #dev-dependencies
-assertables = { version = "9.9.0" }
-rand = { version = "0.10.1" }
-serial_test = { version = "3.4.0" }
-
+assertables = "9.9.0"
+rand = "0.10.1"
+serial_test = "3.4.0"

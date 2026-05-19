@@ -1,0 +1,35 @@
+[package]
+name = "kani-server"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[[bin]]
+name = "kani_server"
+path = "src/bin/main.rs"
+
+[lib]
+name = "kani_lib"
+path = "src/lib/lib.rs"
+
+[dependencies]
+kani-domain = { workspace = true }
+kani-http-api = { workspace = true }
+kani-fs = { workspace = true }
+kani-iqdb = { workspace = true }
+kani-worker = { workspace = true }
+kani-postgres = { workspace = true }
+
+byte-unit = { workspace = true }
+chrono = { workspace = true }
+figment = { workspace = true, features = ["env", "yaml"] }
+serde = { workspace = true }
+tokio = { workspace = true, features = ["macros"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+yansi = { workspace = true }
+
+[features]
+default = ["mock-user"]
+mock-user = ["kani-http-api/mock-user"]

@@ -1,8 +1,8 @@
+use kani_domain::common::error::Error;
+use kani_domain::reverse_image_search::ReverseImageSearchService;
 use kani_domain_api_incoming::image_management::ImageManagementService;
 use kani_domain_api_incoming::login_service::LoginService;
-use pantsu_domain::common::error::Error;
-use pantsu_domain::reverse_image_search::ReverseImageSearchService;
-use pantsu_openapi::apis::ErrorHandler;
+use kani_openapi::apis::ErrorHandler;
 use std::sync::Arc;
 
 pub mod image_download;

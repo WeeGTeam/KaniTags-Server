@@ -3,12 +3,12 @@ use async_trait::async_trait;
 use axum::http::Method;
 use axum_extra::extract::cookie::CookieJar;
 use headers::Host;
-use pantsu_domain::common::error::Error;
-use pantsu_openapi::apis::image_download::{
+use kani_domain::common::error::Error;
+use kani_openapi::apis::image_download::{
     GetFullImageResponse, GetThumbnailImageResponse, ImageDownload,
 };
-use pantsu_openapi::models::{GetFullImagePathParams, GetThumbnailImagePathParams};
-use pantsu_openapi::types::ByteArray;
+use kani_openapi::models::{GetFullImagePathParams, GetThumbnailImagePathParams};
+use kani_openapi::types::ByteArray;
 use tracing::info;
 
 #[async_trait]

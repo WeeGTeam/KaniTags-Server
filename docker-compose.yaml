@@ -1,17 +1,17 @@
 services:
-  PantsuDB:
+  KaniDB:
     image: 'postgres:latest'
     ports:
       - '5432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: pantsudb
-  PantsuDBTest:
+      POSTGRES_DB: kanidb
+  KaniDBTest:
     image: 'postgres:latest'
     ports:
       - '55432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: pantsudb
+      POSTGRES_DB: kanidb

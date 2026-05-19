@@ -1,8 +1,8 @@
-use pantsu_domain::common::{error::Error, result::Result};
+use kani_domain::common::{error::Error, result::Result};
 
 use super::iqdb_service::IqdbJob;
-use pantsu_worker::worker_connection::WorkerConnectionRx;
-use pantsu_worker::JobResponder;
+use kani_worker::worker_connection::WorkerConnectionRx;
+use kani_worker::JobResponder;
 use std::time::Duration;
 use tokio::time::sleep;
 

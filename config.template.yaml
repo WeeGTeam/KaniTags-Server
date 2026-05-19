@@ -3,5 +3,5 @@
 # db_username: "postgres"
 # db_password: "postgres"
 # db_url: "localhost:5432"
-# library_path: "pantsu_library",
+# library_path: "kani_library",
 # request_body_limit: "25MB"

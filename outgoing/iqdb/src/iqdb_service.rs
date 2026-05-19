@@ -1,8 +1,8 @@
 use async_trait::async_trait;
-use pantsu_domain::common::result::Result;
-use pantsu_domain::reverse_image_search::ReverseImageSearchService;
-use pantsu_worker::worker_connection::WorkerConnectionTx;
-use pantsu_worker::JobResponder;
+use kani_domain::common::result::Result;
+use kani_domain::reverse_image_search::ReverseImageSearchService;
+use kani_worker::worker_connection::WorkerConnectionTx;
+use kani_worker::JobResponder;
 use tokio::sync::oneshot;
 
 pub enum IqdbJob {

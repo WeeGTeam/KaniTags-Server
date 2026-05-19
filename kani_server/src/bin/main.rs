@@ -1,12 +1,12 @@
-use pantsu_domain::reverse_image_search::ReverseImageSearchService;
-use pantsu_domain::user::login_service::LoginServiceImpl;
-use pantsu_domain::{common::error::Error, image_management::image_management_service::ImageManagementServiceImpl};
-use pantsu_fs::fs_image_repository::FsImageRepository;
-use pantsu_http_api::launch_server;
-use pantsu_lib::config::ServerConfig;
-use pantsu_lib::log::setup_logger;
-use pantsu_lib::worker_init;
-use pantsu_postgres::Postgres;
+use kani_domain::reverse_image_search::ReverseImageSearchService;
+use kani_domain::user::login_service::LoginServiceImpl;
+use kani_domain::{common::error::Error, image_management::image_management_service::ImageManagementServiceImpl};
+use kani_fs::fs_image_repository::FsImageRepository;
+use kani_http_api::launch_server;
+use kani_lib::config::ServerConfig;
+use kani_lib::log::setup_logger;
+use kani_lib::worker_init;
+use kani_postgres::Postgres;
 use std::sync::Arc;
 use tracing::{debug, info, Level};
 

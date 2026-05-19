@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Pantsu Server
+  title: Kani Server
   summary: A image library and sauce lookup service for pantsu
   description: API to import images, filter and download images, manage tags, lookup sources and tags
   version: 0.1.0
