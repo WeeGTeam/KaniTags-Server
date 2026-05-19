@@ -1,18 +1,21 @@
 use crate::dao::auto_tag_session::AutoTagDao;
 use crate::dao::collection::CollectionDao;
 use crate::dao::image::ImageDao;
+use crate::dao::import_session::ImportSessionDao;
 use crate::dao::tag::TagDao;
 use crate::dao::user::UserDao;
 
 pub mod auto_tag_session;
 pub mod collection;
 pub mod image;
+pub mod import_session;
 pub mod tag;
 pub mod user;
 
 pub trait Dao {
     fn user_dao(&mut self) -> UserDao<'_>;
     fn image_dao(&mut self) -> ImageDao<'_>;
+    fn import_session_dao(&mut self) -> ImportSessionDao<'_>;
     fn collection_dao(&mut self) -> CollectionDao<'_>;
     fn auto_tag_dao(&mut self) -> AutoTagDao<'_>;
     fn tag_dao(&mut self) -> TagDao<'_>;
@@ -25,6 +28,10 @@ impl Dao for diesel::PgConnection {
 
     fn image_dao(&mut self) -> ImageDao<'_> {
         ImageDao::new(self)
+    }
+
+    fn import_session_dao(&mut self) -> ImportSessionDao<'_> {
+        ImportSessionDao::new(self)
     }
 
     fn collection_dao(&mut self) -> CollectionDao<'_> {
@@ -55,6 +62,8 @@ pub mod test {
     use crate::models::image::{ImageInsertRow, ImageRow};
     use crate::models::image_source::{ImageSourceInsertRow, ImageSourceRow};
     use crate::models::image_tag::{ImageTagInsertRow, ImageTagRow};
+    use crate::models::import_session::{ImportSessionInsertRow, ImportSessionRow};
+    use crate::models::import_session_image::{ImportSessionImageInsertRow, ImportSessionImageRow};
     use crate::models::tag::{TagInsertRow, TagRow};
     use crate::models::user_account::{UserAccountInsertRow, UserAccountRow};
     use crate::models::user_image::{UserImageInsertRow, UserImageRow};
@@ -104,6 +113,27 @@ pub mod test {
             source_url: Some("example.com".to_string()),
             certainty: 0.76,
         })
+    }
+
+    pub fn insert_test_import_session(
+        c: &mut PgConnection,
+        user_id: i64,
+    ) -> Result<ImportSessionRow, Error> {
+        c.import_session_dao()
+            .insert_import_session(&ImportSessionInsertRow { user_id })
+    }
+
+    pub fn insert_test_import_session_image(
+        c: &mut PgConnection,
+        import_session_id: i64,
+        image_id: i64,
+    ) -> Result<ImportSessionImageRow, Error> {
+        c.import_session_dao()
+            .insert_import_session_images(&[ImportSessionImageInsertRow {
+                import_id: import_session_id,
+                image_id,
+            }])
+            .map(|v| v.into_iter().next().unwrap())
     }
 
     pub fn insert_test_tag(c: &mut PgConnection) -> Result<TagRow, Error> {

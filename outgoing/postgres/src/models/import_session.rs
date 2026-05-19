@@ -17,5 +17,4 @@ pub struct ImportSessionRow {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ImportSessionInsertRow {
     pub user_id: i64,
-    pub closed_at: Option<DateTime<Utc>>,
 }
