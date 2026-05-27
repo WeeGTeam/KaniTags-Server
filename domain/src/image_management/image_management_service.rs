@@ -6,12 +6,13 @@ use tracing::{info, warn};
 
 use crate::image::thumbnail::{create_thumbnail_in_memory, GALLERY_THUMBNAIL_OPTIONS};
 use crate::image::try_create_pantsu_image;
-use kani_domain_api_incoming::image_management::{ImageManagementService, ImportImageError, StartImportSessionError};
+use kani_domain_api_incoming::image_management::{GetImageError, ImageManagementService, ImportImageError, StartImportSessionError};
+use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::import::ImportSession;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::Database;
-use kani_domain_api_outgoing::image_repository::{ImageRepository, StoreImageError};
+use kani_domain_api_outgoing::image_repository::{ImageRepository, LoadImageError, StoreImageError};
 
 
 pub struct ImageManagementServiceImpl {
@@ -74,6 +75,21 @@ impl ImageManagementService for ImageManagementServiceImpl {
         let session = self.database.start_import_session(&user)?;
         info!("Started import session with id '{}'", session.id);
         Ok(session)
+    }
+
+    async fn get_image(&self, image_id: ImageId) -> Result<(Bytes, ImageFormat), GetImageError> {
+        let db_image = self.database
+            .get_image_by_image_id(&image_id)?
+            .ok_or_else(|| GetImageError::ImageNotFound(image_id.clone()))?;
+
+        let loaded_image = self.image_repository
+            .load_image(&db_image).await
+            .map_err(|e| match e {
+                LoadImageError::ImageNotFound(_) => GetImageError::ImageNotFound(image_id.clone()),
+                unknown @ LoadImageError::Unknown(_) => GetImageError::Unknown(unknown.into()),
+            })?;
+
+        Ok((loaded_image, db_image.format))
     }
 }
 
