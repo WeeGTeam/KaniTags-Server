@@ -1,6 +1,6 @@
 services:
   KaniDB:
-    image: 'postgres:latest'
+    image: 'pgvector/pgvector:pg18-trixie'
     ports:
       - '5432:5432'
     environment:
@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: kanidb
   KaniDBTest:
-    image: 'postgres:latest'
+    image: 'pgvector/pgvector:pg18-trixie'
     ports:
       - '55432:5432'
     environment:

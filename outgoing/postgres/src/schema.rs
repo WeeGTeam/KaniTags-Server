@@ -28,6 +28,7 @@ pub mod sql_types {
 
 diesel::table! {
     use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
     use super::sql_types::ReverseLookupSite;
 
     auto_tag_session (id) {
@@ -42,6 +43,7 @@ diesel::table! {
 
 diesel::table! {
     use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
     use super::sql_types::AutoTagStatus;
 
     auto_tag_session_image (id) {
@@ -56,6 +58,7 @@ diesel::table! {
 
 diesel::table! {
     use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
     use super::sql_types::SourceSiteName;
 
     auto_tag_session_image_option (id) {
@@ -71,6 +74,9 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
+
     collection (id) {
         id -> Int8,
         created_at -> Timestamptz,
@@ -82,6 +88,9 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
+
     collection_image (id) {
         id -> Int8,
         created_at -> Timestamptz,
@@ -93,6 +102,7 @@ diesel::table! {
 
 diesel::table! {
     use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
     use super::sql_types::ImageFormat;
 
     image (id) {
@@ -100,7 +110,8 @@ diesel::table! {
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
         id_hash -> Bytea,
-        perceptual_hash -> Bytea,
+        #[max_length = 144]
+        perceptual_hash -> Bit,
         #[max_length = 60]
         file_name -> Varchar,
         image_format -> ImageFormat,
@@ -111,6 +122,7 @@ diesel::table! {
 
 diesel::table! {
     use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
     use super::sql_types::ReverseLookupSite;
     use super::sql_types::SourceSiteName;
     use super::sql_types::SourceStatus;
@@ -131,6 +143,7 @@ diesel::table! {
 
 diesel::table! {
     use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
     use super::sql_types::SourceSiteName;
 
     image_tag (id) {
@@ -145,6 +158,9 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
+
     import_session (id) {
         id -> Int8,
         created_at -> Timestamptz,
@@ -155,6 +171,9 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
+
     import_session_image (id) {
         id -> Int8,
         created_at -> Timestamptz,
@@ -166,6 +185,7 @@ diesel::table! {
 
 diesel::table! {
     use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
     use super::sql_types::TagType;
 
     tag (id) {
@@ -179,6 +199,9 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
+
     user_account (id) {
         id -> Int8,
         created_at -> Timestamptz,
@@ -191,6 +214,9 @@ diesel::table! {
 }
 
 diesel::table! {
+    use diesel::sql_types::*;
+    use pgvector::sql_types::Bit;
+
     user_image (id) {
         id -> Int8,
         created_at -> Timestamptz,

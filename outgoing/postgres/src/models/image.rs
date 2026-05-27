@@ -1,6 +1,7 @@
 use crate::models::ImageFormat;
 use chrono::{DateTime, Utc};
 use diesel::{Insertable, Queryable, Selectable};
+use pgvector::Bit;
 
 #[derive(Queryable, Selectable, Debug)]
 #[diesel(table_name = crate::schema::image)]
@@ -10,7 +11,7 @@ pub struct ImageRow {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub id_hash: Vec<u8>,
-    pub perceptual_hash: Vec<u8>,
+    pub perceptual_hash: Bit,
     pub file_name: String,
     pub image_format: ImageFormat,
     pub res_width: i32,
@@ -22,7 +23,7 @@ pub struct ImageRow {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ImageInsertRow {
     pub id_hash: Vec<u8>,
-    pub perceptual_hash: Vec<u8>,
+    pub perceptual_hash: Bit,
     pub file_name: String,
     pub image_format: ImageFormat,
     pub res_width: i32,

@@ -102,7 +102,9 @@ impl<'c> ImageDao<'c> {
 
 #[cfg(test)]
 mod test {
-    use crate::dao::test::{insert_test_image, insert_test_image_source, insert_test_user, insert_test_user_image};
+    use crate::dao::test::{
+        insert_test_image, insert_test_image_source, insert_test_user, insert_test_user_image,
+    };
     use crate::dao::Dao;
     use crate::models::image::ImageInsertRow;
     use crate::models::image_source::ImageSourceInsertRow;
@@ -111,6 +113,7 @@ mod test {
     use crate::test::test_db;
     use assertables::{assert_len_eq_x, assert_matches, assert_some};
     use diesel::Connection;
+    use pgvector::Bit;
 
     #[test]
     #[serial_test::serial]
@@ -120,7 +123,9 @@ mod test {
         let _result = conn.test_transaction(|c| {
             c.image_dao().insert_image(&ImageInsertRow {
                 id_hash: vec![0, 1, 2, 3, 4, 5, 6, 7],
-                perceptual_hash: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+                perceptual_hash: Bit::from_bytes(&vec![
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,
+                ]),
                 file_name: "test_image.jpg".to_string(),
                 image_format: ImageFormat::JPG,
                 res_width: 1920,
@@ -223,5 +228,55 @@ mod test {
             c.image_dao().get_image_sources_by_image(image.id)
         });
         assert_len_eq_x!(results, 1);
+    }
+}
+
+#[cfg(test)]
+mod test_data {
+    use crate::models::image::ImageInsertRow;
+    use crate::models::ImageFormat;
+    use crate::test::test_db;
+    use diesel::{PgConnection, RunQueryDsl};
+    use pgvector::Bit;
+    use rand::RngExt;
+
+    fn random_byte_array<const N: usize>() -> [u8; N] {
+        let mut rng = rand::rng();
+        (0..N)
+            .map(|_| rng.random::<u8>())
+            .collect::<Vec<_>>()
+            .try_into()
+            .unwrap()
+    }
+
+    fn insert_test_image(c: &mut PgConnection, rows: &[ImageInsertRow]) {
+        diesel::insert_into(crate::schema::image::table)
+            .values(rows)
+            .execute(c)
+            .unwrap();
+    }
+
+    fn create_insert_row(index: usize) -> ImageInsertRow {
+        ImageInsertRow {
+            id_hash: random_byte_array::<8>().to_vec(),
+            perceptual_hash: Bit::from_bytes(&random_byte_array::<18>()),
+            file_name: format!("test_image_{}.png", index),
+            image_format: ImageFormat::PNG,
+            res_width: 0,
+            res_height: 0,
+        }
+    }
+
+    #[test]
+    #[ignore = "This test is slow"]
+    fn create_test_images() {
+        let db = test_db();
+        let test_images = (0..10000).map(create_insert_row).collect::<Vec<_>>();
+        let test_images2 = (10000..20000).map(create_insert_row).collect::<Vec<_>>();
+        let test_images3 = (20000..30000).map(create_insert_row).collect::<Vec<_>>();
+        let mut conn = db.get_connection().unwrap();
+        insert_test_image(&mut conn, &test_images);
+        insert_test_image(&mut conn, &test_images2);
+        insert_test_image(&mut conn, &test_images3);
     }
 }
