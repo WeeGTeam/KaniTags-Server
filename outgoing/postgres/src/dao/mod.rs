@@ -72,6 +72,7 @@ pub mod test {
     };
     use anyhow::Error;
     use diesel::PgConnection;
+    use pgvector::Bit;
     use rand::random;
 
     pub fn insert_test_user(c: &mut PgConnection) -> Result<UserAccountRow, Error> {
@@ -84,7 +85,7 @@ pub mod test {
     pub fn insert_test_image(c: &mut PgConnection) -> Result<ImageRow, Error> {
         c.image_dao().insert_image(&ImageInsertRow {
             id_hash: vec![0, 1, 2, 3, 4, 5, 6, random::<u8>()],
-            perceptual_hash: vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+            perceptual_hash: Bit::from_bytes(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]),
             file_name: "test_image.jpg".to_string(),
             image_format: ImageFormat::JPG,
             res_width: 1920,

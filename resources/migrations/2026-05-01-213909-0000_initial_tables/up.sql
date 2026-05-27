@@ -20,12 +20,13 @@ CREATE TABLE image
     created_at      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at      TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     id_hash         bytea                                              NOT NULL UNIQUE, -- e.g. '3b6368639f3e17fa'
-    perceptual_hash bytea                                              NOT NULL,        -- e.g. '3803887ff7833837f03e43e43e21303b61fe'
+    perceptual_hash bit(144)                                           NOT NULL,        -- e.g. '3803887ff7833837f03e43e43e21303b61fe'
     file_name       VARCHAR(60)                                        NOT NULL,
     image_format    image_format                                       NOT NULL,
     res_width       INT                                                NOT NULL,
     res_height      INT                                                NOT NULL
 );
+CREATE INDEX idx__image__perceptual_hash ON image USING hnsw (perceptual_hash bit_hamming_ops);
 
 CREATE TABLE image_source
 (

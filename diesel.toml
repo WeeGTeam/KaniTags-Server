@@ -4,6 +4,7 @@
 [print_schema]
 file = "outgoing//postgres/src/schema.rs"
 custom_type_derives = ["diesel::query_builder::QueryId"]
+import_types = ["diesel::sql_types::*", "pgvector::sql_types::Bit"]
 
 [migrations_directory]
 dir = "resources/migrations"
