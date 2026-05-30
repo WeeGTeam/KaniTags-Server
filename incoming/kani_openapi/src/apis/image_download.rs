@@ -39,7 +39,7 @@ pub enum GetThumbnailImageResponse {
 #[async_trait]
 #[allow(clippy::ptr_arg)]
 pub trait ImageDownload<E: std::fmt::Debug + Send + Sync + 'static = ()>: super::ErrorHandler<E> {
-    /// GetFullImage - GET /image/{id}/full
+    /// GetFullImage - GET /image/{id}
     async fn get_full_image(
     &self,
     
@@ -49,7 +49,7 @@ pub trait ImageDownload<E: std::fmt::Debug + Send + Sync + 'static = ()>: super:
       path_params: &models::GetFullImagePathParams,
     ) -> Result<GetFullImageResponse, E>;
 
-    /// GetThumbnailImage - GET /image/{id}/thumbnail
+    /// GetThumbnailImage - GET /image/thumbnail/{id}
     async fn get_thumbnail_image(
     &self,
     

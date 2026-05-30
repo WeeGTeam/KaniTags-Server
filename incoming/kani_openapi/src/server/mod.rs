@@ -37,14 +37,14 @@ where
         .route("/image/importSession",
             post(start_import_session::<I, A, E>)
         )
-        .route("/image/{id}/full",
+        .route("/image/thumbnail/{id}",
+            get(get_thumbnail_image::<I, A, E>)
+        )
+        .route("/image/{id}",
             get(get_full_image::<I, A, E>)
         )
         .route("/image/{id}/tags",
             get(get_image_tags::<I, A, E>)
-        )
-        .route("/image/{id}/thumbnail",
-            get(get_thumbnail_image::<I, A, E>)
         )
         .route("/images",
             get(get_images::<I, A, E>)
@@ -66,7 +66,7 @@ Ok((
   path_params,
 ))
 }
-/// GetFullImage - GET /image/{id}/full
+/// GetFullImage - GET /image/{id}
 #[tracing::instrument(skip_all)]
 async fn get_full_image<I, A, E>(
   method: Method,
@@ -159,7 +159,7 @@ Ok((
   path_params,
 ))
 }
-/// GetThumbnailImage - GET /image/{id}/thumbnail
+/// GetThumbnailImage - GET /image/thumbnail/{id}
 #[tracing::instrument(skip_all)]
 async fn get_thumbnail_image<I, A, E>(
   method: Method,
