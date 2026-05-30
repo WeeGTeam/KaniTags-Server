@@ -1,10 +1,9 @@
 use crate::auth_middleware::{AuthConfig, AuthState};
 use crate::router::{AppState, OpenApiRouter};
+use anyhow::Context;
 use axum::extract::DefaultBodyLimit;
 use axum::http::HeaderName;
 use axum::middleware;
-use kani_domain::common::error::Error;
-use kani_domain::common::result::Result;
 use kani_domain_api_incoming::image_management::ImageManagementService;
 use kani_domain_api_incoming::login_service::LoginService;
 use kani_openapi::server;
@@ -15,6 +14,7 @@ use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetReques
 use tower_http::trace::TraceLayer;
 
 pub mod auth_middleware;
+mod error;
 mod request_tracing;
 pub mod router;
 
@@ -24,20 +24,20 @@ pub async fn launch_server<IS, LS>(
     request_body_limit: usize,
     server_port: u16,
     auth_user_header: String,
-) -> Result<()>
+) -> Result<(), anyhow::Error>
 where
     IS: ImageManagementService + Send + Sync + 'static,
     LS: LoginService + Send + Sync + 'static,
 {
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", server_port))
         .await
-        .map_err(|_| Error::TodoError())?;
+        .with_context(|| format!("Failed to bind to port {}", server_port))?;
 
     let auth_layer = middleware::from_fn_with_state(
         AuthState {
             login_service: login_service.clone(),
             auth_config: AuthConfig {
-                user_header: HeaderName::from_str(&auth_user_header).map_err(|_| Error::TodoError())?,
+                user_header: HeaderName::from_str(&auth_user_header).context("Invalid auth user header name configured")?,
             },
         },
         auth_middleware::auth_middleware
@@ -58,7 +58,7 @@ where
     axum::serve(listener, router)
         .with_graceful_shutdown(shutdown_signal())
         .await
-        .map_err(|_| Error::TodoError())?;
+        .context("Failed to launch service")?;
 
     Ok(())
 }

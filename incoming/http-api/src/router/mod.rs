@@ -1,4 +1,4 @@
-use kani_domain::common::error::Error;
+use crate::error::HttpApiUnhandledError;
 use kani_domain_api_incoming::image_management::ImageManagementService;
 use kani_domain_api_incoming::login_service::LoginService;
 use kani_openapi::apis::ErrorHandler;
@@ -18,7 +18,7 @@ impl AsRef<AppState> for OpenApiRouter {
     }
 }
 
-impl ErrorHandler<Error> for AppState {}
+impl ErrorHandler<HttpApiUnhandledError> for AppState {}
 
 #[derive(Clone)]
 pub struct AppState {

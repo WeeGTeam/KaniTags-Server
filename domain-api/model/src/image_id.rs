@@ -2,7 +2,6 @@ use std::fmt::{Display, Formatter};
 use std::num::ParseIntError;
 use std::str::FromStr;
 
-use crate::image_format::ImageFormat;
 use crate::image_hash::{hash_to_hex, IdHash};
 use anyhow::{anyhow, Context};
 use regex::Regex;
@@ -11,15 +10,7 @@ use regex::Regex;
 pub struct ImageId(pub IdHash);
 
 impl ImageId {
-    pub fn filename_format(&self) -> String {
-        self.format_id_hash()
-    }
-
-    pub fn filename_with_custom_extension(&self, format: ImageFormat) -> String {
-        format!("{}.{}", self.filename_format(), format.extension())
-    }
-
-    fn format_id_hash(&self) -> String {
+    pub fn format_id_hash(&self) -> String {
         hash_to_hex(&self.0)
     }
 }
@@ -49,7 +40,7 @@ fn hex_to_hash<const SIZE: usize>(str: &str) -> Result<[u8; SIZE], anyhow::Error
 
 impl Display for ImageId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.filename_format())
+        write!(f, "{}", self.format_id_hash())
     }
 }
 

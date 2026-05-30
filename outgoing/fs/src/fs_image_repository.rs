@@ -3,11 +3,12 @@ use std::path::{Path, PathBuf};
 use anyhow::Context;
 use async_trait::async_trait;
 use bytes::Bytes;
+use kani_domain_api_model::image::PantsuImage;
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::thumbnail::ThumbnailOptions;
-use kani_domain_api_outgoing::image_repository::{ImageRepository, StoreImageError};
-use tokio::{fs::{DirBuilder, OpenOptions}, io::{self, AsyncWriteExt}};
+use kani_domain_api_outgoing::image_repository::{ImageRepository, LoadImageError, StoreImageError};
+use tokio::{fs, fs::{DirBuilder, OpenOptions}, io::{self, AsyncWriteExt}};
 
 pub struct FsImageRepository {
     lib_path: PathBuf,
@@ -15,7 +16,7 @@ pub struct FsImageRepository {
 
 impl FsImageRepository {
     pub fn new(library_path: PathBuf) -> Self {
-        return FsImageRepository { lib_path: library_path };
+        FsImageRepository { lib_path: library_path }
     }
 
     async fn get_library_directory(&self) -> Result<&Path, anyhow::Error> {
@@ -33,9 +34,14 @@ impl FsImageRepository {
 
 #[async_trait]
 impl ImageRepository for FsImageRepository {
-    async fn store_image(&self, image_id: &ImageId, file_content: Bytes) -> Result<(), StoreImageError> {
+    async fn store_image(
+        &self,
+        image_id: &ImageId,
+        format: &ImageFormat,
+        file_content: Bytes,
+    ) -> Result<(), StoreImageError> {
         let library_dir = self.get_library_directory().await?;
-        let path = library_dir.join(image_id.filename_format());
+        let path = library_dir.join(get_image_filename(&image_id, &format));
 
         write_image_to_new_file(&file_content, &path, &image_id).await
     }
@@ -47,9 +53,16 @@ impl ImageRepository for FsImageRepository {
         options: ThumbnailOptions
     ) -> Result<(), StoreImageError> {
         let thumbnail_dir = self.get_thumbnail_directory(options).await?;
-        let path = thumbnail_dir.join(image_id.filename_with_custom_extension(ImageFormat::JPG));
+        let path = thumbnail_dir.join(get_image_filename(&image_id, &ImageFormat::JPG));
 
         write_image_to_new_file(&file_content, &path, &image_id).await
+    }
+
+    async fn load_image(&self, image: &PantsuImage) -> Result<Bytes, LoadImageError> {
+        let library_dir = self.get_library_directory().await?;
+        let path = library_dir.join(get_image_filename(&image.image_id, &image.format));
+
+        read_image(&path).await
     }
 }
 
@@ -82,6 +95,21 @@ async fn write_image_to_new_file(file_content: &Bytes, path: &Path, image_id: &I
     )
 }
 
+async fn read_image(path: &Path) -> Result<Bytes, LoadImageError> {
+    fs::read(&path).await
+        .map(|loaded_image| Bytes::from(loaded_image))
+        .map_err(|e| match e.kind() {
+            io::ErrorKind::NotFound => {
+                LoadImageError::ImageNotFound(path.to_owned())
+            }
+            _ => LoadImageError::Unknown(e.into())
+        })
+}
+
 fn get_thumbnail_directory_name(options: &ThumbnailOptions) -> String {
     format!("{}x{}", options.max_size, options.max_size)
+}
+
+pub fn get_image_filename(id: &ImageId, format: &ImageFormat) -> String {
+    format!("{}.{}", id.format_id_hash(), format.extension())
 }
