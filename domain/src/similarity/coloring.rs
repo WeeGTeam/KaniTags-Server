@@ -34,7 +34,7 @@ fn color_similarity_groups<'i, I: Eq + Hash>(all_groups: &mut HashMap<&'i I, Col
         .filter(|n| n.is_some())
         .map(|n| n.unwrap().color)
         .collect::<HashSet<_>>();
-    if colors.len() == 1 {
+    if colors.len() <= 1 {
         return;
     }
     let new_color = colors.into_iter().min().unwrap();
