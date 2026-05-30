@@ -37,10 +37,10 @@ impl ImageManagementServiceImpl {
         image_id: &ImageId,
         image_data: Bytes,
         kind: &ThumbnailKind,
-    ) -> Result<Bytes, ImportImageError> {
+    ) -> Result<Bytes, anyhow::Error> {
         let options = get_thumbnail_options(&kind);
         let thumbnail = create_thumbnail_in_memory(image_id.clone(), image_data, options.clone()).await?;
-        self.image_repository.store_jpg_thumbnail(&image_id, thumbnail.clone(), options).await.map_err(|e| ImportImageError::Unknown(e.into()))?;
+        self.image_repository.store_jpg_thumbnail(&image_id, thumbnail.clone(), options).await?;
         Ok(thumbnail)
     }
 }
@@ -102,7 +102,7 @@ impl ImageManagementService for ImageManagementServiceImpl {
             Err(LoadImageError::ImageNotFound(_)) => {
                 info!("Thumbnail for image '{}' not found, creating it", image_id);
                 let (loaded_image, _) = self.get_image(image_id.clone()).await?;
-                let thumbnail = self.create_thumbnail(&image_id, loaded_image, &kind).await.map_err(|e| GetImageError::Unknown(e.into()))?;
+                let thumbnail = self.create_thumbnail(&image_id, loaded_image, &kind).await.map_err(|e| GetImageError::Unknown(e))?;
                 Ok((thumbnail, ImageFormat::JPG))
             }
             Err(unknown @ LoadImageError::Unknown(_)) => Err(GetImageError::Unknown(unknown.into())),
