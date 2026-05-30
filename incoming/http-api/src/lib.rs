@@ -15,6 +15,7 @@ use tower_http::request_id::{MakeRequestUuid, PropagateRequestIdLayer, SetReques
 use tower_http::trace::TraceLayer;
 
 pub mod auth_middleware;
+mod error;
 mod request_tracing;
 pub mod router;
 

@@ -1645,6 +1645,7 @@ dependencies = [
 name = "kani-http-api"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "async-trait",
  "axum",
  "axum-extra",
@@ -1654,6 +1655,7 @@ dependencies = [
  "kani-domain-api-incoming",
  "kani-domain-api-model",
  "kani-openapi",
+ "thiserror",
  "tokio",
  "tower-http",
  "tracing",
