@@ -52,7 +52,6 @@ impl ImageManagementService for ImageManagementServiceImpl {
     ) -> Result<(), ImportImageError> {
         let image = try_create_pantsu_image(&image_name, &image_data)?;
         let image_id = ImageId(image.id_hash);
-        // image_id::verify_image_id(&image_import.image_id, image.id())?;
 
         let db_image = self.database.get_image_by_image_id(&image_id)
             .context("Failed attempt to load image from database")?;
