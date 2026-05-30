@@ -3,6 +3,7 @@ use bytes::Bytes;
 use thiserror::Error;
 
 use kani_domain_api_model::image_format::ImageFormatError;
+use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::import::ImportSession;
 use kani_domain_api_model::user::User;
 
@@ -25,7 +26,7 @@ pub enum ImportImageError {
     InvalidImage(image::ImageError),
 
     #[error("Image already imported: {0}")]
-    ImageAlreadyImported(i64),
+    ImageAlreadyImported(ImageId),
 }
 
 #[derive(Error, Debug)]

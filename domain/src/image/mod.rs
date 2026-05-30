@@ -1,7 +1,7 @@
 use blockhash::Image;
 
 use kani_domain_api_incoming::image_management::ImportImageError;
-use kani_domain_api_model::{image::CreatePantsuImage, image_format::ImageFormat, image_id::ImageId};
+use kani_domain_api_model::{image::CreatePantsuImage, image_format::ImageFormat};
 
 pub mod hash;
 pub mod thumbnail;
@@ -17,7 +17,8 @@ pub fn try_create_pantsu_image(filename: &str, bytes: &[u8]) -> Result<CreatePan
     )?;
     Ok(
         CreatePantsuImage {
-            id: ImageId::new(image_id_hash, image_perceptual_hash),
+            id_hash: image_id_hash,
+            perceptual_hash: image_perceptual_hash,
             upload_filename: filename.to_string(),
             format: image_format,
             dimensions: image_dimensions,

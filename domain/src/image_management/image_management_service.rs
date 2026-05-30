@@ -7,7 +7,7 @@ use tracing::{info, warn};
 use crate::image::thumbnail::{create_thumbnail_in_memory, GALLERY_THUMBNAIL_OPTIONS};
 use crate::image::try_create_pantsu_image;
 use kani_domain_api_incoming::image_management::{ImageManagementService, ImportImageError, StartImportSessionError};
-use kani_domain_api_model::image::CreatePantsuImage;
+use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::import::ImportSession;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::Database;
@@ -32,11 +32,11 @@ impl ImageManagementServiceImpl {
 
     async fn create_thumbnail(
         &self,
-        image: &CreatePantsuImage,
+        image_id: &ImageId,
         image_data: Bytes,
     ) -> Result<(), ImportImageError> {
-        let thumbnail = create_thumbnail_in_memory(image.id.clone(), image_data, GALLERY_THUMBNAIL_OPTIONS).await?;
-        self.image_repository.store_jpg_thumbnail(&image, thumbnail, GALLERY_THUMBNAIL_OPTIONS).await.map_err(|e| ImportImageError::Unknown(e.into()))
+        let thumbnail = create_thumbnail_in_memory(image_id.clone(), image_data, GALLERY_THUMBNAIL_OPTIONS).await?;
+        self.image_repository.store_jpg_thumbnail(&image_id, thumbnail, GALLERY_THUMBNAIL_OPTIONS).await.map_err(|e| ImportImageError::Unknown(e.into()))
     }
 }
 
@@ -50,20 +50,21 @@ impl ImageManagementService for ImageManagementServiceImpl {
         image_data: Bytes,
     ) -> Result<(), ImportImageError> {
         let image = try_create_pantsu_image(&image_name, &image_data)?;
+        let image_id = ImageId(image.id_hash);
         // image_id::verify_image_id(&image_import.image_id, image.id())?;
 
-        let db_image = self.database.get_image_by_id_hash(image.id.get_id_hash())
+        let db_image = self.database.get_image_by_image_id(&image_id)
             .context("Failed attempt to load image from database")?;
         if let Some(db_image) = db_image {
-            return Err(ImportImageError::ImageAlreadyImported(db_image.id));
+            return Err(ImportImageError::ImageAlreadyImported(db_image.image_id));
         }
 
-        info!("Store image '{}' in library: '{}'", image_name, image.filename());
-        allow_existing_image(self.image_repository.store_image(image.clone(), image_data.clone()).await)?;
-        let _ = self.create_thumbnail(&image, image_data).await.inspect_err(|e| warn!("Failed to create thumbnail: {}", e));
+        info!("Store image '{}' in library: '{}'", image_name, image_id.filename_format());
+        allow_existing_image(self.image_repository.store_image(&image_id, image_data.clone()).await)?;
+        let _ = self.create_thumbnail(&image_id, image_data).await.inspect_err(|e| warn!("Failed to create thumbnail: {}", e));
 
         let stored_image = self.database.store_image(&user, import_session_id, &image)?;
-        info!("Stored image '{}' with id '{}'", image_name, stored_image.id);
+        info!("Stored image '{}' with id '{}'", image_name, stored_image.image_id);
 
         Ok(())
     }

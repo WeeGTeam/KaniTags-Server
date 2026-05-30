@@ -3,7 +3,6 @@ use std::path::{Path, PathBuf};
 use anyhow::Context;
 use async_trait::async_trait;
 use bytes::Bytes;
-use kani_domain_api_model::image::CreatePantsuImage;
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::thumbnail::ThumbnailOptions;
@@ -34,23 +33,23 @@ impl FsImageRepository {
 
 #[async_trait]
 impl ImageRepository for FsImageRepository {
-    async fn store_image(&self, image: CreatePantsuImage, file_content: Bytes) -> Result<(), StoreImageError> {
+    async fn store_image(&self, image_id: &ImageId, file_content: Bytes) -> Result<(), StoreImageError> {
         let library_dir = self.get_library_directory().await?;
-        let path = library_dir.join(image.filename());
+        let path = library_dir.join(image_id.filename_format());
 
-        write_image_to_new_file(&file_content, &path, &image.id).await
+        write_image_to_new_file(&file_content, &path, &image_id).await
     }
 
     async fn store_jpg_thumbnail(
         &self,
-        image: &CreatePantsuImage,
+        image_id: &ImageId,
         file_content: Bytes,
         options: ThumbnailOptions
     ) -> Result<(), StoreImageError> {
         let thumbnail_dir = self.get_thumbnail_directory(options).await?;
-        let path = thumbnail_dir.join(image.filename_with_custom_extension(ImageFormat::JPG));
+        let path = thumbnail_dir.join(image_id.filename_with_custom_extension(ImageFormat::JPG));
 
-        write_image_to_new_file(&file_content, &path, &image.id).await
+        write_image_to_new_file(&file_content, &path, &image_id).await
     }
 }
 
