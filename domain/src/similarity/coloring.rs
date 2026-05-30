@@ -1,4 +1,3 @@
-use kani_domain_api_model::image_id::ImageId;
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
@@ -7,12 +6,12 @@ pub struct ColoredGroup<'i, I> {
     pub items: &'i [&'i I],
 }
 
-pub fn color_and_merge_groups(image_groups: HashMap<&ImageId, Vec<&ImageId>>) -> Vec<Vec<ImageId>> {
-    let mut colored_image_groups = init_colored_groups(&image_groups);
-    for image_id in image_groups.keys() {
-        color_similarity_groups(&mut colored_image_groups, &image_id);
+pub fn color_and_merge_groups<'i, I: Hash + Eq + Clone>(item_groups: HashMap<&'i I, Vec<&'i I>>) -> Vec<Vec<I>> {
+    let mut colored_item_groups = init_colored_groups(&item_groups);
+    for item in item_groups.keys() {
+        color_similarity_groups(&mut colored_item_groups, &item);
     }
-    merge_groups(colored_image_groups)
+    merge_groups(colored_item_groups)
 }
 
 fn init_colored_groups<'i, I: Eq + Hash>(item_groups: &'i HashMap<&'i I, Vec<&'i I>>) -> HashMap<&'i I, ColoredGroup<'i, I>> {
@@ -31,11 +30,10 @@ fn color_similarity_groups<'i, I: Eq + Hash>(all_groups: &mut HashMap<&'i I, Col
     };
     let group_items = colored_group.items;
     let colors = group_items.iter()
-        .map(|item_id| all_groups.get(item_id))
-        .filter(|n| n.is_some())
-        .map(|n| n.unwrap().color)
+        .flat_map(|item_id| all_groups.get(item_id))
+        .map(|n| n.color)
         .collect::<HashSet<_>>();
-    if colors.len() == 1 {
+    if colors.len() <= 1 {
         return;
     }
     let new_color = colors.into_iter().min().unwrap();
