@@ -12,6 +12,12 @@ pub struct SimilarityServiceImpl {
     database: Arc<dyn SimilarityDatabase + Sync + Send>,
 }
 
+impl SimilarityServiceImpl {
+    pub fn new(database: Arc<dyn SimilarityDatabase + Send + Sync>) -> Self {
+        Self { database }
+    }
+}
+
 impl SimilarityService for SimilarityServiceImpl {
     fn get_similar_images(&self, image_id: &ImageId) -> Result<Vec<SimilarImage>, GetSimilarImagesError> {
         Ok(self.database.get_similar_images(image_id)?)

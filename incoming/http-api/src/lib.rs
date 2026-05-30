@@ -6,6 +6,7 @@ use axum::http::HeaderName;
 use axum::middleware;
 use kani_domain_api_incoming::image_management::ImageManagementService;
 use kani_domain_api_incoming::login_service::LoginService;
+use kani_domain_api_incoming::similarity_service::SimilarityService;
 use kani_openapi::server;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -18,9 +19,10 @@ mod error;
 mod request_tracing;
 pub mod router;
 
-pub async fn launch_server<IS, LS>(
+pub async fn launch_server<IS, LS, SS>(
     image_management_service: Arc<IS>,
     login_service: Arc<LS>,
+    similarity_service: Arc<SS>,
     request_body_limit: usize,
     server_port: u16,
     auth_user_header: String,
@@ -28,6 +30,7 @@ pub async fn launch_server<IS, LS>(
 where
     IS: ImageManagementService + Send + Sync + 'static,
     LS: LoginService + Send + Sync + 'static,
+    SS: SimilarityService + Send + Sync + 'static,
 {
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", server_port))
         .await
@@ -45,6 +48,7 @@ where
     let shared_state = AppState::new(
         image_management_service,
         login_service,
+        similarity_service,
     );
 
     let body_limit = DefaultBodyLimit::max(request_body_limit);
