@@ -6,7 +6,8 @@ use crate::models::user_image::UserImageInsertRow;
 use crate::Postgres;
 use diesel::Connection;
 use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
-use kani_domain_api_model::image_hash::{hash_to_hex, IdHash};
+use kani_domain_api_model::image_hash::hash_to_hex;
+use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::import::ImportSession;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::ImageDatabase;
@@ -15,16 +16,12 @@ use tracing::debug;
 mod converter;
 
 impl ImageDatabase for Postgres {
-    fn get_image_by_id_hash(&self, id_hash: &IdHash) -> Result<Option<PantsuImage>, anyhow::Error> {
-        debug!("Getting image by id hash: {}", hash_to_hex(id_hash));
+    fn get_image_by_image_id(&self, image_id: &ImageId) -> Result<Option<PantsuImage>, anyhow::Error> {
+        debug!("Getting image by image id: {}", image_id);
         let mut connection = self.get_connection()?;
         let image_row =
-            connection.transaction(|conn| conn.image_dao().get_image_by_id_hash(id_hash))?;
-        debug!(
-            "Got image by id hash: {}: {}",
-            hash_to_hex(id_hash),
-            image_row.is_some()
-        );
+            connection.transaction(|conn| conn.image_dao().get_image_by_id_hash(&image_id.0))?;
+        debug!("Got image by image id: {}: {}", image_id, image_row.is_some());
         Ok(image_row.map(TryInto::try_into).transpose()?)
     }
 
@@ -34,7 +31,7 @@ impl ImageDatabase for Postgres {
         import_session_id: i64,
         image: &CreatePantsuImage,
     ) -> Result<PantsuImage, anyhow::Error> {
-        debug!("Storing image: {}", image.id);
+        debug!("Storing image: {}", hash_to_hex(&image.id_hash));
         let mut connection = self.get_connection()?;
         let image_row = connection.transaction(|conn| {
             let session = conn
@@ -54,7 +51,7 @@ impl ImageDatabase for Postgres {
             })?;
             Ok::<ImageRow, anyhow::Error>(image)
         })?;
-        debug!("Stored image: {}", image.id);
+        debug!("Stored image: {}", hash_to_hex(&image.id_hash));
         image_row.try_into()
     }
 
@@ -77,7 +74,7 @@ mod test {
     use crate::test::test_db;
     use assertables::{assert_none, assert_ok};
     use kani_domain_api_model::image_format::ImageFormat;
-    use kani_domain_api_model::image_id::ImageId;
+    use kani_domain_api_model::image_hash::IdHash;
 
     #[test]
     #[serial_test::serial]
@@ -85,7 +82,7 @@ mod test {
         let db = test_db();
         let mut connection = db.get_connection().unwrap();
         let db_image = insert_test_image(&mut connection).unwrap();
-        assert_ok!(db.get_image_by_id_hash(&IdHash::try_from(db_image.id_hash).unwrap()));
+        assert_ok!(db.get_image_by_image_id(&ImageId(IdHash::try_from(db_image.id_hash).unwrap())));
     }
 
     #[test]
@@ -93,7 +90,7 @@ mod test {
     fn test_get_error() {
         let db = test_db();
         assert_none!(assert_ok!(
-            db.get_image_by_id_hash(&[1, 2, 3, 4, 5, 6, 7, 8])
+            db.get_image_by_image_id(&ImageId([1, 2, 3, 4, 5, 6, 7, 8]))
         ))
     }
 
@@ -110,12 +107,8 @@ mod test {
             display_name: user_row.display_name,
         };
         let create_image = CreatePantsuImage {
-            id: ImageId::new(
-                [1, 2, 3, 4, 5, 6, 7, 8],
-                [
-                    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-                ],
-            ),
+            id_hash: [1, 2, 3, 4, 5, 6, 7, 8],
+            perceptual_hash: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, ],
             upload_filename: "test_file_name".to_string(),
             format: ImageFormat::PNG,
             dimensions: (0, 0),
