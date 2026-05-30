@@ -1,6 +1,6 @@
-use kani_domain::reverse_image_search::ReverseImageSearchService;
 use kani_domain::user::login_service::LoginServiceImpl;
 use kani_domain::{common::error::Error, image_management::image_management_service::ImageManagementServiceImpl};
+use kani_domain_api_outgoing::reverse_image_search::ReverseImageSearchService;
 use kani_fs::fs_image_repository::FsImageRepository;
 use kani_http_api::launch_server;
 use kani_lib::config::ServerConfig;
@@ -11,7 +11,7 @@ use std::sync::Arc;
 use tracing::{debug, info, Level};
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<(), anyhow::Error> {
     setup_logger(Level::DEBUG);
     let config = ServerConfig::load_config().map_err(|_| Error::TodoError())?;
     println!("{:?}", config);
@@ -63,7 +63,6 @@ async fn main() -> Result<(), Error> {
     */
 
     launch_server(
-        Arc::new(iqdb_service),
         Arc::new(image_management_service),
         Arc::new(login_service),
         config.request_body_limit.as_u64() as usize,

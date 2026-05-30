@@ -1663,8 +1663,9 @@ dependencies = [
 name = "kani-iqdb"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "async-trait",
- "kani-domain",
+ "kani-domain-api-outgoing",
  "kani-worker",
  "tokio",
 ]
@@ -1722,10 +1723,12 @@ dependencies = [
 name = "kani-server"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "byte-unit",
  "chrono",
  "figment",
  "kani-domain",
+ "kani-domain-api-outgoing",
  "kani-fs",
  "kani-http-api",
  "kani-iqdb",
@@ -1742,8 +1745,8 @@ dependencies = [
 name = "kani-worker"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "futures",
- "kani-domain",
  "tokio",
  "tokio-stream",
 ]
