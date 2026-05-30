@@ -5,7 +5,6 @@ use axum::http::HeaderName;
 use axum::middleware;
 use kani_domain::common::error::Error;
 use kani_domain::common::result::Result;
-use kani_domain::reverse_image_search::ReverseImageSearchService;
 use kani_domain_api_incoming::image_management::ImageManagementService;
 use kani_domain_api_incoming::login_service::LoginService;
 use kani_openapi::server;
@@ -19,8 +18,7 @@ pub mod auth_middleware;
 mod request_tracing;
 pub mod router;
 
-pub async fn launch_server<RS, IS, LS>(
-    reverse_image_search_service: Arc<RS>,
+pub async fn launch_server<IS, LS>(
     image_management_service: Arc<IS>,
     login_service: Arc<LS>,
     request_body_limit: usize,
@@ -28,7 +26,6 @@ pub async fn launch_server<RS, IS, LS>(
     auth_user_header: String,
 ) -> Result<()>
 where
-    RS: ReverseImageSearchService + Send + Sync + 'static,
     IS: ImageManagementService + Send + Sync + 'static,
     LS: LoginService + Send + Sync + 'static,
 {
@@ -46,7 +43,6 @@ where
         auth_middleware::auth_middleware
     );
     let shared_state = AppState::new(
-        reverse_image_search_service,
         image_management_service,
         login_service,
     );
