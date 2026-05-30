@@ -41,7 +41,7 @@ pub async fn auth_middleware(
         }
     };
 
-    let user_result = state.login_service.load_user_by_user_name(&user_name).await;
+    let user_result = state.login_service.load_user_by_user_name(&user_name);
     let user = user_result.map_err(|e| match e {
         UserLoadError::Unknown(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
         UserLoadError::UserMissingError(e) => (StatusCode::UNAUTHORIZED, e),

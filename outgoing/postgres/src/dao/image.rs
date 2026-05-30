@@ -9,7 +9,7 @@ use crate::schema::user_image::dsl as user_image_dsl;
 use crate::schema::user_image::dsl::user_image;
 use anyhow::Context;
 use anyhow::Error;
-use diesel::sql_types::{BigInt, Integer};
+use diesel::sql_types::{BigInt, Bytea, Integer};
 use diesel::{ExpressionMethods, OptionalExtension};
 use diesel::{QueryDsl, RunQueryDsl, SelectableHelper};
 
@@ -100,25 +100,25 @@ impl<'c> ImageDao<'c> {
             .context("Failed to get image sources by image from database")
     }
 
-    pub fn get_similar_images(&mut self, image_id: i64, max_distance: i32, neighbors_per_row: i64) -> Result<Vec<SimilarImagePairRow>, Error> {
+    pub fn get_similar_images_by_id_hash(&mut self, id_hash: &[u8], max_distance: i32, neighbors_per_row: i64) -> Result<Vec<SimilarImagePairRow>, Error> {
         diesel::sql_query(
             r#"
-            SELECT i1.id AS id1,
-                   i2.id AS id2,
+            SELECT i1.id_hash AS id_hash1,
+                   i2.id_hash AS id_hash2,
                    (i1.perceptual_hash <~> i2.perceptual_hash)::int AS dist
             FROM image i1
                      CROSS JOIN LATERAL (
-                SELECT id, perceptual_hash
+                SELECT id, id_hash, perceptual_hash
                 FROM image
                 ORDER BY perceptual_hash <~> i1.perceptual_hash
                 LIMIT $1
                 ) i2
-            WHERE i1.id = $2 AND i1.id <> i2.id
+            WHERE i1.id_hash = $2 AND i1.id <> i2.id
               AND i1.perceptual_hash <~> i2.perceptual_hash < $3;
             "#,
         )
             .bind::<BigInt, _>(neighbors_per_row)
-            .bind::<BigInt, _>(image_id)
+            .bind::<Bytea, _>(id_hash)
             .bind::<Integer, _>(max_distance)
             .load::<SimilarImagePairRow>(self.connection)
             .context("Failed to get similar images from database")
@@ -127,12 +127,12 @@ impl<'c> ImageDao<'c> {
     pub fn get_all_similar_images(&mut self, max_distance: i32, neighbors_per_row: i64) -> Result<Vec<SimilarImagePairRow>, Error> {
         diesel::sql_query(
             r#"
-            SELECT i1.id AS id1,
-                   i2.id AS id2,
+            SELECT i1.id_hash AS id_hash1,
+                   i2.id_hash AS id_hash2,
                    (i1.perceptual_hash <~> i2.perceptual_hash)::int AS dist
             FROM image i1
                      CROSS JOIN LATERAL (
-                SELECT id, perceptual_hash
+                SELECT id, id_hash, perceptual_hash
                 FROM image
                 ORDER BY perceptual_hash <~> i1.perceptual_hash
                 LIMIT $1
@@ -287,7 +287,7 @@ mod test {
         let results = conn.test_transaction(|c| {
             let image = insert_test_image(c)?;
             let _image2 = insert_test_image(c)?;
-            c.image_dao().get_similar_images(image.id, 30, 40)
+            c.image_dao().get_similar_images_by_id_hash(&image.id_hash, 30, 40)
         });
         assert_len_eq_x!(results, 1);
     }

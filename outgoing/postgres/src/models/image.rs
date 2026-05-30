@@ -1,6 +1,6 @@
 use crate::models::ImageFormat;
 use chrono::{DateTime, Utc};
-use diesel::sql_types::BigInt;
+use diesel::pg::sql_types::Bytea;
 use diesel::sql_types::Integer;
 use diesel::{Insertable, Queryable, QueryableByName, Selectable};
 use pgvector::Bit;
@@ -34,10 +34,10 @@ pub struct ImageInsertRow {
 
 #[derive(QueryableByName, Debug)]
 pub struct SimilarImagePairRow {
-    #[diesel(sql_type = BigInt)]
-    pub id1: i64,
-    #[diesel(sql_type = BigInt)]
-    pub id2: i64,
+    #[diesel(sql_type = Bytea)]
+    pub id_hash1: Vec<u8>,
+    #[diesel(sql_type = Bytea)]
+    pub id_hash2: Vec<u8>,
     #[diesel(sql_type = Integer)]
     pub dist: i32,
 }

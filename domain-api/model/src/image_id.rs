@@ -6,7 +6,7 @@ use crate::image_hash::{hash_to_hex, IdHash};
 use anyhow::{anyhow, Context};
 use regex::Regex;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ImageId(pub IdHash);
 
 impl ImageId {
