@@ -4,12 +4,13 @@ use bytes::Bytes;
 use std::sync::Arc;
 use tracing::{info, warn};
 
-use crate::image::thumbnail::{create_thumbnail_in_memory, GALLERY_THUMBNAIL_OPTIONS};
+use crate::image::thumbnail::{create_thumbnail_in_memory, get_thumbnail_options};
 use crate::image::try_create_pantsu_image;
 use kani_domain_api_incoming::image_management::{GetImageError, ImageManagementService, ImportImageError, StartImportSessionError};
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::import::ImportSession;
+use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::Database;
 use kani_domain_api_outgoing::image_repository::{ImageRepository, LoadImageError, StoreImageError};
@@ -35,9 +36,11 @@ impl ImageManagementServiceImpl {
         &self,
         image_id: &ImageId,
         image_data: Bytes,
+        kind: &ThumbnailKind,
     ) -> Result<(), ImportImageError> {
-        let thumbnail = create_thumbnail_in_memory(image_id.clone(), image_data, GALLERY_THUMBNAIL_OPTIONS).await?;
-        self.image_repository.store_jpg_thumbnail(&image_id, thumbnail, GALLERY_THUMBNAIL_OPTIONS).await.map_err(|e| ImportImageError::Unknown(e.into()))
+        let options = get_thumbnail_options(&kind);
+        let thumbnail = create_thumbnail_in_memory(image_id.clone(), image_data, options.clone()).await?;
+        self.image_repository.store_jpg_thumbnail(&image_id, thumbnail, options).await.map_err(|e| ImportImageError::Unknown(e.into()))
     }
 }
 
@@ -61,7 +64,7 @@ impl ImageManagementService for ImageManagementServiceImpl {
 
         info!("Store image '{}' in library", image_id);
         allow_existing_image(self.image_repository.store_image(&image_id, &image.format, image_data.clone()).await)?;
-        let _ = self.create_thumbnail(&image_id, image_data).await.inspect_err(|e| warn!("Failed to create thumbnail: {}", e));
+        let _ = self.create_thumbnail(&image_id, image_data, &ThumbnailKind::Gallery).await.inspect_err(|e| warn!("Failed to create thumbnail: {}", e));
 
         let stored_image = self.database.store_image(&user, import_session_id, &image)?;
         info!("Stored image '{}' with id '{}'", image_name, stored_image.image_id);
