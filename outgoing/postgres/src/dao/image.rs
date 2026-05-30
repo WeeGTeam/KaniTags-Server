@@ -114,7 +114,8 @@ impl<'c> ImageDao<'c> {
                 LIMIT $1
                 ) i2
             WHERE i1.id_hash = $2 AND i1.id <> i2.id
-              AND i1.perceptual_hash <~> i2.perceptual_hash < $3;
+              AND i1.perceptual_hash <~> i2.perceptual_hash < $3
+            ORDER BY dist;
             "#,
         )
             .bind::<BigInt, _>(neighbors_per_row)
