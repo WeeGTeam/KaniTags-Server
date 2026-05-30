@@ -1,7 +1,7 @@
 use crate::similarity::coloring::color_and_merge_groups;
-use kani_domain_api_incoming::similarity_service::{CalculateSimilarityGroupsError, SimilarityService};
+use kani_domain_api_incoming::similarity_service::{CalculateSimilarityGroupsError, GetSimilarImagesError, SimilarityService};
 use kani_domain_api_model::image_id::ImageId;
-use kani_domain_api_model::similarity::SimilarImagePair;
+use kani_domain_api_model::similarity::{SimilarImage, SimilarImagePair};
 use kani_domain_api_outgoing::database::similarity_database::SimilarityDatabase;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -13,6 +13,10 @@ pub struct SimilarityServiceImpl {
 }
 
 impl SimilarityService for SimilarityServiceImpl {
+    fn get_similar_images(&self, image_id: &ImageId) -> Result<Vec<SimilarImage>, GetSimilarImagesError> {
+        Ok(self.database.get_similar_images(image_id)?)
+    }
+
     fn calculate_similarity_groups(&self) -> Result<Vec<Vec<ImageId>>, CalculateSimilarityGroupsError> {
         let image_pairs = self.database.get_all_similar_images()?;
         let image_groups = create_similar_groups_by_images(&image_pairs);
