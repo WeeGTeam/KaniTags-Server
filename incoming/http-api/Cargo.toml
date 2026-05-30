@@ -4,8 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-# TODO remove dependency when possible
-kani-domain = { workspace = true }
 kani-domain-api-incoming = { workspace = true }
 kani-domain-api-model = { workspace = true }
 kani-openapi = { workspace = true }

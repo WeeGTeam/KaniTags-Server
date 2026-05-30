@@ -1651,7 +1651,6 @@ dependencies = [
  "axum-extra",
  "chrono",
  "headers",
- "kani-domain",
  "kani-domain-api-incoming",
  "kani-domain-api-model",
  "kani-openapi",

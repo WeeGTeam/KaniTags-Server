@@ -1,9 +1,8 @@
-use anyhow::Context;
+use anyhow::{anyhow, Context};
 use diesel::r2d2::ConnectionManager;
 use diesel::PgConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use r2d2::{Pool, PooledConnection};
-use std::error::Error;
 use std::time::Duration;
 use tracing::info;
 
@@ -31,10 +30,10 @@ impl Postgres {
         Ok(Postgres { pool })
     }
 
-    pub fn setup(&self) -> Result<(), Box<dyn Error + Send + Sync>> {
+    pub fn setup(&self) -> Result<(), anyhow::Error> {
         info!("setting up database");
         let mut connection = self.pool.get()?;
-        connection.run_pending_migrations(MIGRATIONS)?;
+        connection.run_pending_migrations(MIGRATIONS).map_err(|e| anyhow!(e).context("Failed to run database migrations"))?;
         #[cfg(feature = "mock-user")]
         {
             use diesel::connection::SimpleConnection;

@@ -1,5 +1,6 @@
+use anyhow::Context;
+use kani_domain::image_management::image_management_service::ImageManagementServiceImpl;
 use kani_domain::user::login_service::LoginServiceImpl;
-use kani_domain::{common::error::Error, image_management::image_management_service::ImageManagementServiceImpl};
 use kani_domain_api_outgoing::reverse_image_search::ReverseImageSearchService;
 use kani_fs::fs_image_repository::FsImageRepository;
 use kani_http_api::launch_server;
@@ -13,8 +14,7 @@ use tracing::{debug, info, Level};
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     setup_logger(Level::DEBUG);
-    let config = ServerConfig::load_config().map_err(|_| Error::TodoError())?;
-    println!("{:?}", config);
+    let config = ServerConfig::load_config().context("Failed to load config")?;
     debug!("{:?}", config);
 
     let iqdb_service = worker_init::init_iqdb();
@@ -22,8 +22,8 @@ async fn main() -> Result<(), anyhow::Error> {
     info!("the sauce of {} is {}", "Megumin", sauce);
 
     let fs_image_repository = FsImageRepository::new(config.library_path.clone());
-    let database = Postgres::new(&config.db_url, &config.db_username, &config.db_password).map_err(|_| Error::TodoError())?;
-    database.setup().map_err(|_| Error::TodoError())?;
+    let database = Postgres::new(&config.db_url, &config.db_username, &config.db_password).context("Failed to initialize database")?;
+    database.setup().context("Failed to setup database")?;
 
     let image_management_service = ImageManagementServiceImpl::new(
         Arc::new(fs_image_repository),
