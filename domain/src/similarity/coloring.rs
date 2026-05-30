@@ -30,9 +30,8 @@ fn color_similarity_groups<'i, I: Eq + Hash>(all_groups: &mut HashMap<&'i I, Col
     };
     let group_items = colored_group.items;
     let colors = group_items.iter()
-        .map(|item_id| all_groups.get(item_id))
-        .filter(|n| n.is_some())
-        .map(|n| n.unwrap().color)
+        .flat_map(|item_id| all_groups.get(item_id))
+        .map(|n| n.color)
         .collect::<HashSet<_>>();
     if colors.len() <= 1 {
         return;
