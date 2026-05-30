@@ -5,15 +5,20 @@ use bytes::Bytes;
 use image::codecs::jpeg::JpegEncoder;
 use tokio::task::spawn_blocking;
 
+use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_domain_api_model::{image_id::ImageId, thumbnail::ThumbnailOptions};
 
 
-pub const GALLERY_THUMBNAIL_OPTIONS: ThumbnailOptions = ThumbnailOptions {
-    max_size: 512,
-    jpg_quality: 80,
-};
 const INITIAL_THUMBNAIL_BUFFER_SIZE: usize = usize::pow(2, 14);
 
+pub const fn get_thumbnail_options(kind: &ThumbnailKind) -> ThumbnailOptions {
+    match kind {
+        ThumbnailKind::Gallery => ThumbnailOptions {
+            max_size: 512,
+            jpg_quality: 80,
+        },
+    }
+}
 
 pub async fn create_thumbnail_in_memory(
     image_id: ImageId,

@@ -69,15 +69,15 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
 
     #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
     #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
-    pub struct GetFullImagePathParams {
+    pub struct GetImagePathParams {
                 #[validate(
-                          regex(path = *RE_GETFULLIMAGEPATHPARAMS_ID),
+                          regex(path = *RE_GETIMAGEPATHPARAMS_ID),
             )]
                 pub id: String,
     }
 
     lazy_static::lazy_static! {
-        static ref RE_GETFULLIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9a-f]{16}$").unwrap();
+        static ref RE_GETIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9a-f]{16}$").unwrap();
     }
 
 

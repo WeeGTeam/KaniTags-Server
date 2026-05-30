@@ -11,7 +11,7 @@ use crate::{models, types::*};
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
 #[allow(clippy::large_enum_variant)]
-pub enum GetFullImageResponse {
+pub enum GetImageResponse {
     /// Ok
     Status200_Ok
     (ByteArray, String)
@@ -39,17 +39,17 @@ pub enum GetThumbnailImageResponse {
 #[async_trait]
 #[allow(clippy::ptr_arg)]
 pub trait ImageDownload<E: std::fmt::Debug + Send + Sync + 'static = ()>: super::ErrorHandler<E> {
-    /// GetFullImage - GET /image/{id}/full
-    async fn get_full_image(
+    /// GetImage - GET /image/{id}
+    async fn get_image(
     &self,
     
     method: &Method,
     host: &Host,
     cookies: &CookieJar,
-      path_params: &models::GetFullImagePathParams,
-    ) -> Result<GetFullImageResponse, E>;
+      path_params: &models::GetImagePathParams,
+    ) -> Result<GetImageResponse, E>;
 
-    /// GetThumbnailImage - GET /image/{id}/thumbnail
+    /// GetThumbnailImage - GET /image/thumbnail/{id}
     async fn get_thumbnail_image(
     &self,
     

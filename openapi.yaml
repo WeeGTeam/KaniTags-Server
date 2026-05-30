@@ -49,11 +49,11 @@ paths:
           description: imported
         "409":
           description: image already exists
-  /image/{id}/full:
+  /image/{id}:
     get:
       tags:
         - imageDownload
-      operationId: getFullImage
+      operationId: getImage
       parameters:
         - in: path
           name: id
@@ -74,7 +74,7 @@ paths:
                 format: binary
         "404":
           description: image not found
-  /image/{id}/thumbnail:
+  /image/thumbnail/{id}:
     get:
       tags:
         - imageDownload

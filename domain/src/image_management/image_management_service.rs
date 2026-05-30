@@ -4,12 +4,13 @@ use bytes::Bytes;
 use std::sync::Arc;
 use tracing::{info, warn};
 
-use crate::image::thumbnail::{create_thumbnail_in_memory, GALLERY_THUMBNAIL_OPTIONS};
+use crate::image::thumbnail::{create_thumbnail_in_memory, get_thumbnail_options};
 use crate::image::try_create_pantsu_image;
 use kani_domain_api_incoming::image_management::{GetImageError, ImageManagementService, ImportImageError, StartImportSessionError};
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::import::ImportSession;
+use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::Database;
 use kani_domain_api_outgoing::image_repository::{ImageRepository, LoadImageError, StoreImageError};
@@ -35,9 +36,12 @@ impl ImageManagementServiceImpl {
         &self,
         image_id: &ImageId,
         image_data: Bytes,
-    ) -> Result<(), ImportImageError> {
-        let thumbnail = create_thumbnail_in_memory(image_id.clone(), image_data, GALLERY_THUMBNAIL_OPTIONS).await?;
-        self.image_repository.store_jpg_thumbnail(&image_id, thumbnail, GALLERY_THUMBNAIL_OPTIONS).await.map_err(|e| ImportImageError::Unknown(e.into()))
+        kind: &ThumbnailKind,
+    ) -> Result<Bytes, anyhow::Error> {
+        let options = get_thumbnail_options(&kind);
+        let thumbnail = create_thumbnail_in_memory(image_id.clone(), image_data, options.clone()).await?;
+        self.image_repository.store_jpg_thumbnail(&image_id, thumbnail.clone(), options).await?;
+        Ok(thumbnail)
     }
 }
 
@@ -61,7 +65,7 @@ impl ImageManagementService for ImageManagementServiceImpl {
 
         info!("Store image '{}' in library", image_id);
         allow_existing_image(self.image_repository.store_image(&image_id, &image.format, image_data.clone()).await)?;
-        let _ = self.create_thumbnail(&image_id, image_data).await.inspect_err(|e| warn!("Failed to create thumbnail: {}", e));
+        let _ = self.create_thumbnail(&image_id, image_data, &ThumbnailKind::Gallery).await.inspect_err(|e| warn!("Failed to create thumbnail: {}", e));
 
         let stored_image = self.database.store_image(&user, import_session_id, &image)?;
         info!("Stored image '{}' with id '{}'", image_name, stored_image.image_id);
@@ -90,14 +94,28 @@ impl ImageManagementService for ImageManagementServiceImpl {
 
         Ok((loaded_image, db_image.format))
     }
+
+    async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<(Bytes, ImageFormat), GetImageError> {
+        let thumbnail_options = get_thumbnail_options(&kind);
+        match self.image_repository.load_jpg_thumbnail(&image_id, &thumbnail_options).await {
+            Ok(loaded_thumbnail) => Ok((loaded_thumbnail, ImageFormat::JPG)),
+            Err(LoadImageError::ImageNotFound(_)) => {
+                info!("Thumbnail for image '{}' not found, creating it", image_id);
+                let (loaded_image, _) = self.get_image(image_id.clone()).await?;
+                let thumbnail = self.create_thumbnail(&image_id, loaded_image, &kind).await.map_err(|e| GetImageError::Unknown(e))?;
+                Ok((thumbnail, ImageFormat::JPG))
+            }
+            Err(unknown @ LoadImageError::Unknown(_)) => Err(GetImageError::Unknown(unknown.into())),
+        }
+    }
 }
 
 fn allow_existing_image(store_result: Result<(), StoreImageError>) -> Result<(), ImportImageError> {
     match store_result {
         Ok(it) => Ok(it),
         Err(unknown @ StoreImageError::Unknown(_)) => Err(ImportImageError::Unknown(unknown.into())),
-        Err(StoreImageError::ImageAlreadyExists(e)) => {
-            warn!("Failed to store image: {}", e.display());
+        Err(e @ StoreImageError::ImageAlreadyExists(_)) => {
+            warn!("Failed to store image: {}", e);
             Ok(())
         },
     }
