@@ -25,7 +25,16 @@ pub trait ImageRepository {
         options: ThumbnailOptions,
     ) -> Result<(), StoreImageError>;
 
-    async fn load_image(&self, image: &PantsuImage) -> Result<Bytes, LoadImageError>;
+    async fn load_image(
+        &self,
+        image: &PantsuImage,
+    ) -> Result<Bytes, LoadImageError>;
+
+    async fn load_jpg_thumbnail(
+        &self,
+        image_id: &ImageId,
+        options: ThumbnailOptions,
+    ) -> Result<Bytes, LoadImageError>;
 }
 
 #[derive(Error, Debug)]

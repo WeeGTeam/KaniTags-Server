@@ -58,9 +58,23 @@ impl ImageRepository for FsImageRepository {
         write_image_to_new_file(&file_content, &path, &image_id).await
     }
 
-    async fn load_image(&self, image: &PantsuImage) -> Result<Bytes, LoadImageError> {
+    async fn load_image(
+        &self,
+        image: &PantsuImage,
+    ) -> Result<Bytes, LoadImageError> {
         let library_dir = self.get_library_directory().await?;
         let path = library_dir.join(get_image_filename(&image.image_id, &image.format));
+
+        read_image(&path).await
+    }
+
+    async fn load_jpg_thumbnail(
+        &self,
+        image_id: &ImageId,
+        options: ThumbnailOptions,
+    ) -> Result<Bytes, LoadImageError> {
+        let thumbnail_dir = self.get_thumbnail_directory(options).await?;
+        let path = thumbnail_dir.join(get_image_filename(image_id, &ImageFormat::JPG));
 
         read_image(&path).await
     }
