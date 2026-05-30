@@ -53,7 +53,7 @@ paths:
     get:
       tags:
         - imageDownload
-      operationId: getFullImage
+      operationId: getImage
       parameters:
         - in: path
           name: id

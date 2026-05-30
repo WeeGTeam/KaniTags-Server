@@ -41,7 +41,7 @@ where
             get(get_thumbnail_image::<I, A, E>)
         )
         .route("/image/{id}",
-            get(get_full_image::<I, A, E>)
+            get(get_image::<I, A, E>)
         )
         .route("/image/{id}/tags",
             get(get_image_tags::<I, A, E>)
@@ -54,10 +54,10 @@ where
 
 
 #[tracing::instrument(skip_all)]
-fn get_full_image_validation(
-  path_params: models::GetFullImagePathParams,
+fn get_image_validation(
+  path_params: models::GetImagePathParams,
 ) -> std::result::Result<(
-  models::GetFullImagePathParams,
+  models::GetImagePathParams,
 ), ValidationErrors>
 {
   path_params.validate()?;
@@ -66,13 +66,13 @@ Ok((
   path_params,
 ))
 }
-/// GetFullImage - GET /image/{id}
+/// GetImage - GET /image/{id}
 #[tracing::instrument(skip_all)]
-async fn get_full_image<I, A, E>(
+async fn get_image<I, A, E>(
   method: Method,
   TypedHeader(host): TypedHeader<Host>,
   cookies: CookieJar,
-  Path(path_params): Path<models::GetFullImagePathParams>,
+  Path(path_params): Path<models::GetImagePathParams>,
  State(api_impl): State<I>,
 ) -> Result<Response, StatusCode>
 where
@@ -86,7 +86,7 @@ where
 
       #[allow(clippy::redundant_closure)]
       let validation = tokio::task::spawn_blocking(move ||
-    get_full_image_validation(
+    get_image_validation(
         path_params,
     )
   ).await.unwrap();
@@ -102,7 +102,7 @@ where
 
 
 
-let result = api_impl.as_ref().get_full_image(
+let result = api_impl.as_ref().get_image(
       
       &method,
       &host,
@@ -114,7 +114,7 @@ let result = api_impl.as_ref().get_full_image(
 
   let resp = match result {
                                             Ok(rsp) => match rsp {
-                                                apis::image_download::GetFullImageResponse::Status200_Ok
+                                                apis::image_download::GetImageResponse::Status200_Ok
                                                     (body, content_type)
                                                 => {
                                                   let mut response = response.status(200);
@@ -128,7 +128,7 @@ let result = api_impl.as_ref().get_full_image(
                                                   let body_content = body.0;
                                                   response.body(Body::from(body_content))
                                                 },
-                                                apis::image_download::GetFullImageResponse::Status404_ImageNotFound
+                                                apis::image_download::GetImageResponse::Status404_ImageNotFound
                                                 => {
                                                   let mut response = response.status(404);
                                                   response.body(Body::empty())
