@@ -7,6 +7,7 @@ use headers::Host;
 use kani_domain_api_incoming::image_management::GetImageError;
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
+use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_openapi::apis::image_download::{
     GetFullImageResponse, GetThumbnailImageResponse, ImageDownload,
 };
@@ -51,13 +52,25 @@ impl ImageDownload<HttpApiUnhandledError> for AppState {
         _cookies: &CookieJar,
         _path_params: &GetThumbnailImagePathParams,
     ) -> Result<GetThumbnailImageResponse, HttpApiUnhandledError> {
-        let bytes: Vec<u8> =
-            tokio::fs::read("3b6368639f3e17fa-3803887ff7833837f03e43e43e21303b61fe.png").await
-                .map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
-        Ok(GetThumbnailImageResponse::Status200_Ok(
-            ByteArray(bytes),
-            "image/png".to_owned(),
-        ))
+        let id = match ImageId::from_str(&_path_params.id) {
+            Ok(id) => id,
+            Err(e) => {
+                info!("Invalid image id: {}", e);
+                return Ok(GetThumbnailImageResponse::Status404_ImageNotFound);
+            }
+        };
+
+        match self.image_management_service.get_thumbnail(id, ThumbnailKind::Gallery).await {
+            Ok((bytes, format)) => Ok(GetThumbnailImageResponse::Status200_Ok(
+                ByteArray(bytes.to_vec()),
+                to_image_content_type(format),
+            )),
+            Err(GetImageError::ImageNotFound(image_id)) => {
+                info!("Image not found: {}", image_id);
+                Ok(GetThumbnailImageResponse::Status404_ImageNotFound)
+            }
+            Err(GetImageError::Unknown(e)) => Err(HttpApiUnhandledError::Unknown(e.into())),
+        }
     }
 }
 

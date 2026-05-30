@@ -33,7 +33,7 @@ pub trait ImageRepository {
     async fn load_jpg_thumbnail(
         &self,
         image_id: &ImageId,
-        options: ThumbnailOptions,
+        options: &ThumbnailOptions,
     ) -> Result<Bytes, LoadImageError>;
 }
 

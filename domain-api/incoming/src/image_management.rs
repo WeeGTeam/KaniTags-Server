@@ -5,6 +5,7 @@ use thiserror::Error;
 use kani_domain_api_model::image_format::{ImageFormat, ImageFormatError};
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::import::ImportSession;
+use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_domain_api_model::user::User;
 
 #[async_trait]
@@ -14,6 +15,8 @@ pub trait ImageManagementService {
     async fn start_import_session(&self, user: &User) -> Result<ImportSession, StartImportSessionError>;
 
     async fn get_image(&self, image_id: ImageId) -> Result<(Bytes, ImageFormat), GetImageError>;
+
+    async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<(Bytes, ImageFormat), GetImageError>;
 }
 
 #[derive(Error, Debug)]

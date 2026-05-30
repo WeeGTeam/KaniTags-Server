@@ -24,7 +24,7 @@ impl FsImageRepository {
         Ok(self.lib_path.as_path())
     }
 
-    async fn get_thumbnail_directory(&self, options: ThumbnailOptions) -> Result<PathBuf, anyhow::Error> {
+    async fn get_thumbnail_directory(&self, options: &ThumbnailOptions) -> Result<PathBuf, anyhow::Error> {
         let common_thumbnails_dir = self.lib_path.join("thumbnails");
         let thumbnail_dir = common_thumbnails_dir.join(get_thumbnail_directory_name(&options));
         ensure_directory_exists(&thumbnail_dir).await?;
@@ -52,7 +52,7 @@ impl ImageRepository for FsImageRepository {
         file_content: Bytes,
         options: ThumbnailOptions
     ) -> Result<(), StoreImageError> {
-        let thumbnail_dir = self.get_thumbnail_directory(options).await?;
+        let thumbnail_dir = self.get_thumbnail_directory(&options).await?;
         let path = thumbnail_dir.join(get_image_filename(&image_id, &ImageFormat::JPG));
 
         write_image_to_new_file(&file_content, &path, &image_id).await
@@ -71,7 +71,7 @@ impl ImageRepository for FsImageRepository {
     async fn load_jpg_thumbnail(
         &self,
         image_id: &ImageId,
-        options: ThumbnailOptions,
+        options: &ThumbnailOptions,
     ) -> Result<Bytes, LoadImageError> {
         let thumbnail_dir = self.get_thumbnail_directory(options).await?;
         let path = thumbnail_dir.join(get_image_filename(image_id, &ImageFormat::JPG));
