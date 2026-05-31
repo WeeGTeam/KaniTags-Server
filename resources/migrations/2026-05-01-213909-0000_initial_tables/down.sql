@@ -1,6 +1,6 @@
 -- This file should undo anything in `up.sql`
 
-DROP TABLE auto_tag_session_image_option;
+DROP TABLE auto_tag_session_image_result;
 DROP TABLE auto_tag_session_image;
 DROP TABLE auto_tag_session;
 DROP TABLE import_session_image;

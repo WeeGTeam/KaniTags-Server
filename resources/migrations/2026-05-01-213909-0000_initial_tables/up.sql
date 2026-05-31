@@ -146,7 +146,7 @@ CREATE TABLE auto_tag_session_image
 );
 SELECT manage_audit_fields('auto_tag_session_image');
 
-CREATE TABLE auto_tag_session_image_option
+CREATE TABLE auto_tag_session_image_result
 (
     id               BIGSERIAL PRIMARY KEY                              NOT NULL,
     created_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -156,5 +156,5 @@ CREATE TABLE auto_tag_session_image_option
     source_url       VARCHAR(256)                                       NOT NULL,
     certainty        FLOAT                                              NOT NULL
 );
-CREATE INDEX idx__auto_tag_session_image_option__auto_tag_session_image ON auto_tag_session_image_option (session_image_id);
-SELECT manage_audit_fields('auto_tag_session_image_option');
+CREATE INDEX idx__auto_tag_session_image_result__auto_tag_session_image ON auto_tag_session_image_result (session_image_id);
+SELECT manage_audit_fields('auto_tag_session_image_result');

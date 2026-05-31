@@ -54,8 +54,8 @@ pub mod test {
     use crate::models::auto_tag_session_image::{
         AutoTagSessionImageInsertRow, AutoTagSessionImageRow,
     };
-    use crate::models::auto_tag_session_image_option::{
-        AutoTagSessionImageOptionInsertRow, AutoTagSessionImageOptionRow,
+    use crate::models::auto_tag_session_image_result::{
+        AutoTagSessionImageResultInsertRow, AutoTagSessionImageResultRow,
     };
     use crate::models::collection::{CollectionInsertRow, CollectionRow};
     use crate::models::collection_image::{CollectionImageInsertRow, CollectionImageRow};
@@ -207,12 +207,12 @@ pub mod test {
             .map(|v| v.into_iter().next().unwrap())
     }
 
-    pub fn insert_test_auto_tag_session_image_option(
+    pub fn insert_test_auto_tag_session_image_results(
         c: &mut PgConnection,
         session_image_id: i64,
-    ) -> Result<Vec<AutoTagSessionImageOptionRow>, Error> {
-        c.auto_tag_dao().insert_auto_tag_session_image_options(&[
-            AutoTagSessionImageOptionInsertRow {
+    ) -> Result<Vec<AutoTagSessionImageResultRow>, Error> {
+        c.auto_tag_dao().insert_auto_tag_session_image_results(&[
+            AutoTagSessionImageResultInsertRow {
                 session_image_id,
                 source_site: SourceSiteName::GELBOORU,
                 source_url: "example.com".to_string(),
