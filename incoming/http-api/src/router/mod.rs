@@ -1,4 +1,8 @@
 use crate::error::HttpApiUnhandledError;
+use axum::http::{Method, StatusCode};
+use axum::response::Response;
+use axum_extra::extract::CookieJar;
+use headers::Host;
 use kani_domain_api_incoming::image_management::ImageManagementService;
 use kani_domain_api_incoming::image_search_service::ImageSearchService;
 use kani_domain_api_incoming::login_service::LoginService;
@@ -20,7 +24,27 @@ impl AsRef<AppState> for OpenApiRouter {
     }
 }
 
-impl ErrorHandler<HttpApiUnhandledError> for AppState {}
+#[async_trait::async_trait]
+impl ErrorHandler<HttpApiUnhandledError> for AppState {
+    async fn handle_error(&self, _method: &Method, _host: &Host, _cookies: &CookieJar, error: HttpApiUnhandledError) -> Result<Response, StatusCode> {
+        match error {
+            HttpApiUnhandledError::Unknown(_) => {
+                tracing::error!("Unhandled error: {:?}", error);
+                Response::builder()
+                    .status(StatusCode::INTERNAL_SERVER_ERROR)
+                    .body(axum::body::Body::empty())
+                    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+            }
+            HttpApiUnhandledError::GenericBadRequest(_) => {
+                tracing::error!("Unhandled error: {:?}", error);
+                Response::builder()
+                    .status(StatusCode::BAD_REQUEST)
+                    .body(axum::body::Body::empty())
+                    .map_err(|_| StatusCode::BAD_REQUEST)
+            }
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct AppState {
