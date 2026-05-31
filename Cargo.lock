@@ -1655,6 +1655,7 @@ dependencies = [
  "kani-domain-api-incoming",
  "kani-domain-api-model",
  "kani-openapi",
+ "strum",
  "thiserror",
  "tokio",
  "tower-http",
