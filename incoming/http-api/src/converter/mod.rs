@@ -1,6 +1,8 @@
-pub mod image_list;
 pub mod image;
+pub mod image_list;
+pub mod image_tag_converter;
 pub mod import;
+pub mod tag_converter;
 
 pub trait ToDomain<D> {
     fn to_domain(self) -> D;

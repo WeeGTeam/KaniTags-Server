@@ -1,13 +1,16 @@
+use crate::auth_middleware::current_user;
+use crate::converter::{FromDomain, TryToDomain};
 use crate::error::HttpApiUnhandledError;
 use crate::router::AppState;
 use async_trait::async_trait;
 use axum::http::Method;
 use axum_extra::extract::CookieJar;
-use chrono::Utc;
 use headers::Host;
+use kani_domain_api_model::image_id::ImageId;
 use kani_openapi::apis::image_tag::{AddImageTagsResponse, GetImageTagsResponse, ImageTag};
-use kani_openapi::models;
 use kani_openapi::models::{AddImageTagsPathParams, GetImageTagsPathParams, NewImageTag};
+use std::str::FromStr;
+use tracing::info;
 
 #[async_trait]
 impl ImageTag<HttpApiUnhandledError> for AppState {
@@ -16,10 +19,31 @@ impl ImageTag<HttpApiUnhandledError> for AppState {
         _method: &Method,
         _host: &Host,
         _cookies: &CookieJar,
-        _path_params: &AddImageTagsPathParams,
-        _body: &Vec<NewImageTag>,
+        path_params: &AddImageTagsPathParams,
+        body: &Vec<NewImageTag>,
     ) -> Result<AddImageTagsResponse, HttpApiUnhandledError> {
-        todo!()
+        let user = current_user();
+        let id = match ImageId::from_str(&path_params.id) {
+            Ok(id) => id,
+            Err(e) => {
+                info!("Invalid image id: {}", e);
+                return Ok(AddImageTagsResponse::Status400_InvalidTagOrImageId);
+            }
+        };
+
+        let added_tags_result = match body.iter()
+            .map(|new_tag| new_tag.try_to_domain())
+            .collect() {
+            Ok(new_tags) => self.tag_service.add_image_tags(id, new_tags, user),
+            Err(_) => return Ok(AddImageTagsResponse::Status400_InvalidTagOrImageId),
+        };
+
+        match added_tags_result {
+            Ok(added_tags) => Ok(AddImageTagsResponse::Status201_TagsAddedToImage(
+                FromDomain::from_domain(added_tags)
+            )),
+            Err(e) => Err(HttpApiUnhandledError::Unknown(e.into())),
+        }
     }
 
     async fn get_image_tags(
@@ -27,14 +51,21 @@ impl ImageTag<HttpApiUnhandledError> for AppState {
         _method: &Method,
         _host: &Host,
         _cookies: &CookieJar,
-        _path_params: &GetImageTagsPathParams,
+        path_params: &GetImageTagsPathParams,
     ) -> Result<GetImageTagsResponse, HttpApiUnhandledError> {
-        Ok(GetImageTagsResponse::Status200_Ok(vec![
-            models::ImageTag {
-                tag_id: "12345".to_owned(),
-                created_by: Some("12345".to_owned()),
-                created_at: Utc::now(),
-            },
-        ]))
+        let id = match ImageId::from_str(&path_params.id) {
+            Ok(id) => id,
+            Err(e) => {
+                info!("Invalid image id: {}", e);
+                return Ok(GetImageTagsResponse::Status404_ImageNotFound);
+            }
+        };
+
+        let image_tags = self.tag_service.get_image_tags(id)
+            .map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
+
+        Ok(GetImageTagsResponse::Status200_Ok(
+            FromDomain::from_domain(image_tags)
+        ))
     }
 }

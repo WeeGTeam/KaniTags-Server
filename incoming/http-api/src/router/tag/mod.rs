@@ -1,3 +1,4 @@
+use crate::converter::FromDomain;
 use crate::error::HttpApiUnhandledError;
 use crate::router::AppState;
 use async_trait::async_trait;
@@ -14,6 +15,12 @@ impl Tag<HttpApiUnhandledError> for AppState {
         _host: &Host,
         _cookies: &CookieJar,
     ) -> Result<GetTagsResponse, HttpApiUnhandledError> {
-        todo!()
+        let tags = self.tag_service.get_tags()
+            .map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
+
+
+        Ok(GetTagsResponse::Status200_Ok(
+            FromDomain::from_domain(tags)
+        ))
     }
 }
