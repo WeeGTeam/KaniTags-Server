@@ -9,7 +9,7 @@ use diesel::expression::expression_types::NotSelectable;
 use diesel::pg::Pg;
 use diesel::{AggregateExpressionMethods, BoxableExpression, ExpressionMethods, PgConnection, QueryDsl, QueryResult, RunQueryDsl, SelectableHelper};
 use kani_domain_api_model::collection::CollectionId;
-use kani_domain_api_model::image_search::{ImageSearchFilter, SortOption, SortOrder};
+use kani_domain_api_model::image_search::{ImageSearchFilter, Layout, SortOption, SortOrder};
 use kani_domain_api_model::tag::TagId;
 
 type ImageQuery<'a> = crate::schema::image::BoxedQuery<'a, Pg>;
@@ -35,6 +35,19 @@ impl<'a> ImageSearchQueryBuilder<'a> {
         if let Some(v) = filter.max_width  { self.query = self.query.filter(image_dsl::res_width.le(v as i32)); }
         if let Some(v) = filter.min_height { self.query = self.query.filter(image_dsl::res_height.ge(v as i32)); }
         if let Some(v) = filter.max_height { self.query = self.query.filter(image_dsl::res_height.le(v as i32)); }
+        self
+    }
+
+    pub fn with_layout(mut self, layout: Option<&Layout>) -> Self {
+        if let Some(layout) = layout {
+            self.query = match layout {
+                Layout::Portrait => self.query.filter(image_dsl::res_width.lt(image_dsl::res_height)),
+                Layout::Landscape => self.query.filter(image_dsl::res_width.gt(image_dsl::res_height)),
+                Layout::Square => self.query.filter(diesel::dsl::sql::<diesel::sql_types::Bool>(
+                    "res_width * 100 BETWEEN res_height * 95 AND res_height * 105"
+                )),
+            };
+        }
         self
     }
 

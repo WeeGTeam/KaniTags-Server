@@ -66,6 +66,7 @@ impl<'c> ImageDao<'c> {
     pub fn search_images(&mut self, user_id: i64, filter: &ImageSearchFilter) -> Result<Vec<ImageRow>, Error> {
         ImageSearchQueryBuilder::for_user(user_id)
             .with_dimensions(filter)
+            .with_layout(filter.layout.as_ref())
             .with_tags(&filter.tags)
             .excluding_tags(&filter.exclude_tags)
             .in_collection(filter.collection.as_ref())
