@@ -11,6 +11,7 @@ use diesel::{AggregateExpressionMethods, BoxableExpression, ExpressionMethods, P
 use kani_domain_api_model::collection::CollectionId;
 use kani_domain_api_model::image_search::{ImageSearchFilter, Layout, SortOption, SortOrder};
 use kani_domain_api_model::tag::TagId;
+use std::ops::Mul;
 
 type ImageQuery<'a> = crate::schema::image::BoxedQuery<'a, Pg>;
 
@@ -92,8 +93,8 @@ impl<'a> ImageSearchQueryBuilder<'a> {
                 SortOption::Id(SortOrder::Desc)         => Box::new(image_dsl::id.desc()),
                 SortOption::Date(SortOrder::Asc)        => Box::new(image_dsl::created_at.asc()),
                 SortOption::Date(SortOrder::Desc)       => Box::new(image_dsl::created_at.desc()),
-                SortOption::Resolution(SortOrder::Asc)  => Box::new(image_dsl::res_width.asc()),
-                SortOption::Resolution(SortOrder::Desc) => Box::new(image_dsl::res_width.desc()),
+                SortOption::Resolution(SortOrder::Asc)  => Box::new(image_dsl::res_width.mul(image_dsl::res_height).asc()),
+                SortOption::Resolution(SortOrder::Desc) => Box::new(image_dsl::res_width.mul(image_dsl::res_height).desc()),
             };
             if !ordered { self.query = self.query.order_by(col); ordered = true; }
             else        { self.query = self.query.then_order_by(col); }
