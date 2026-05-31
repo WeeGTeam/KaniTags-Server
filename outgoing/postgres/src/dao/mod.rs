@@ -11,6 +11,7 @@ pub mod image;
 pub mod import_session;
 pub mod tag;
 pub mod user;
+pub mod image_search_query;
 
 pub trait Dao {
     fn user_dao(&mut self) -> UserDao<'_>;
@@ -140,7 +141,7 @@ pub mod test {
     pub fn insert_test_tag(c: &mut PgConnection) -> Result<TagRow, Error> {
         c.tag_dao().insert_tag(&TagInsertRow {
             tag_type: TagType::CHARACTER,
-            tag_name: "Megumin".to_string(),
+            tag_name: format!("Megumin-{}", random::<u8>()),
         })
     }
 

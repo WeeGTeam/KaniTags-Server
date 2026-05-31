@@ -22,6 +22,15 @@ impl TryFrom<ImageRow> for PantsuImage {
     }
 }
 
+impl TryFrom<ImageRow> for ImageId {
+    type Error = anyhow::Error;
+
+    fn try_from(value: ImageRow) -> Result<Self, Self::Error> {
+        let id_hash: IdHash = value.id_hash.try_into().map_err(|v: Vec<u8>| anyhow::anyhow!("invalid id hash of size {}", v.len()))?;
+        Ok(ImageId(id_hash))
+    }
+}
+
 impl From<&CreatePantsuImage> for ImageInsertRow {
     fn from(value: &CreatePantsuImage) -> Self {
         ImageInsertRow {
