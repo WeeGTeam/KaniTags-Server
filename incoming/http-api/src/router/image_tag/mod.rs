@@ -30,7 +30,11 @@ impl ImageTag<HttpApiUnhandledError> for AppState {
         _path_params: &GetImageTagsPathParams,
     ) -> Result<GetImageTagsResponse, HttpApiUnhandledError> {
         Ok(GetImageTagsResponse::Status200_Ok(vec![
-            models::ImageTag::new("12345".to_owned(), "12345".to_owned(), Utc::now()),
+            models::ImageTag {
+                tag_id: "12345".to_owned(),
+                created_by: Some("12345".to_owned()),
+                created_at: Utc::now(),
+            },
         ]))
     }
 }

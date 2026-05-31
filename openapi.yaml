@@ -350,7 +350,6 @@ components:
           example: "2023-09-20T12:34:56Z"
       required:
         - tagId
-        - createdBy
         - createdAt
     ImageImport:
       type: object

@@ -331,7 +331,8 @@ pub struct ImageTag {
             regex(path = *RE_IMAGETAG_CREATED_BY),
           custom(function = "check_xss_string"),
     )]
-    pub created_by: String,
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub created_by: Option<String>,
 
     #[serde(rename = "createdAt")]
     pub created_at: chrono::DateTime::<chrono::Utc>,
@@ -348,10 +349,10 @@ lazy_static::lazy_static! {
 
 impl ImageTag {
     #[allow(clippy::new_without_default, clippy::too_many_arguments)]
-    pub fn new(tag_id: String, created_by: String, created_at: chrono::DateTime::<chrono::Utc>, ) -> ImageTag {
+    pub fn new(tag_id: String, created_at: chrono::DateTime::<chrono::Utc>, ) -> ImageTag {
         ImageTag {
  tag_id,
- created_by,
+ created_by: None,
  created_at,
         }
     }
@@ -368,8 +369,12 @@ impl std::fmt::Display for ImageTag {
             Some(self.tag_id.to_string()),
 
 
-            Some("createdBy".to_string()),
-            Some(self.created_by.to_string()),
+            self.created_by.as_ref().map(|created_by| {
+                [
+                    "createdBy".to_string(),
+                    created_by.to_string(),
+                ].join(",")
+            }),
 
             // Skipping createdAt in query parameter serialization
 
@@ -427,7 +432,7 @@ impl std::str::FromStr for ImageTag {
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(ImageTag {
             tag_id: intermediate_rep.tag_id.into_iter().next().ok_or_else(|| "tagId missing in ImageTag".to_string())?,
-            created_by: intermediate_rep.created_by.into_iter().next().ok_or_else(|| "createdBy missing in ImageTag".to_string())?,
+            created_by: intermediate_rep.created_by.into_iter().next(),
             created_at: intermediate_rep.created_at.into_iter().next().ok_or_else(|| "createdAt missing in ImageTag".to_string())?,
         })
     }
