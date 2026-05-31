@@ -113,20 +113,51 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
     #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
     #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
     pub struct GetImagesQueryParams {
-            /// limit search to this list
-                #[serde(rename = "list")]
+            /// limit search to this collection
+                #[serde(rename = "collection")]
+                #[validate(
+                          regex(path = *RE_GETIMAGESQUERYPARAMS_COLLECTION),
+              )]
                     #[serde(skip_serializing_if="Option::is_none")]
-                    pub list: Option<String>,
-            /// limit search to layout type
+                    pub collection: Option<String>,
+            /// limit search to layout type.
             /// Note: inline enums are not fully supported by openapi-generator
                 #[serde(rename = "layout")]
                     #[serde(skip_serializing_if="Option::is_none")]
                     pub layout: Option<String>,
+            /// limit search to images with minimum width
+                #[serde(rename = "minw")]
+                    #[serde(skip_serializing_if="Option::is_none")]
+                    pub minw: Option<i32>,
+            /// limit search to images with maximum width
+                #[serde(rename = "maxw")]
+                    #[serde(skip_serializing_if="Option::is_none")]
+                    pub maxw: Option<i32>,
+            /// limit search to images with minimum height
+                #[serde(rename = "minh")]
+                    #[serde(skip_serializing_if="Option::is_none")]
+                    pub minh: Option<i32>,
+            /// limit search to images with maximum height
+                #[serde(rename = "maxh")]
+                    #[serde(skip_serializing_if="Option::is_none")]
+                    pub maxh: Option<i32>,
+            /// limit search to images with these tags
                 #[serde(rename = "tag")]
                     #[serde(default)]
-                    pub tag: Vec<String>,
+                    pub tag: Vec<models::TagId>,
+            /// limit search to images without these tags
+                #[serde(rename = "etag")]
+                    #[serde(default)]
+                    pub etag: Vec<models::TagId>,
+            /// sort order for results. pattern = \"(id|date|resolution)(|:asc|:desc)\" omitting ascending or descending results in default sort order (desc). 
+                #[serde(rename = "sort")]
+                    #[serde(default)]
+                    pub sort: Vec<String>,
     }
 
+    lazy_static::lazy_static! {
+        static ref RE_GETIMAGESQUERYPARAMS_COLLECTION: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    }
 
     #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
     #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
@@ -140,6 +171,57 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
     lazy_static::lazy_static! {
         static ref RE_GETIMAGETAGSPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9a-f]{16}$").unwrap();
     }
+
+
+
+#[derive(Debug, Clone, PartialEq, PartialOrd,  serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+pub struct CollectionId(pub String);
+
+impl validator::Validate for CollectionId {
+    fn validate(&self) -> std::result::Result<(), validator::ValidationErrors> {
+
+        std::result::Result::Ok(())
+    }
+}
+
+impl std::convert::From<String> for CollectionId {
+    fn from(x: String) -> Self {
+        CollectionId(x)
+    }
+}
+
+impl std::fmt::Display for CollectionId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+       write!(f, "{}", self.0)
+    }
+}
+
+impl std::str::FromStr for CollectionId {
+    type Err = std::string::ParseError;
+    fn from_str(x: &str) -> std::result::Result<Self, Self::Err> {
+        std::result::Result::Ok(CollectionId(x.to_string()))
+    }
+}
+
+impl std::convert::From<CollectionId> for String {
+    fn from(x: CollectionId) -> Self {
+        x.0
+    }
+}
+
+impl std::ops::Deref for CollectionId {
+    type Target = String;
+    fn deref(&self) -> &String {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for CollectionId {
+    fn deref_mut(&mut self) -> &mut String {
+        &mut self.0
+    }
+}
 
 
 
@@ -189,128 +271,6 @@ impl std::ops::Deref for ImageId {
 impl std::ops::DerefMut for ImageId {
     fn deref_mut(&mut self) -> &mut String {
         &mut self.0
-    }
-}
-
-
-
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
-#[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
-pub struct ImageInfo {
-    #[serde(rename = "id")]
-    #[validate(
-            regex(path = *RE_IMAGEINFO_ID),
-          custom(function = "check_xss_string"),
-    )]
-    pub id: String,
-
-}
-
-
-lazy_static::lazy_static! {
-    static ref RE_IMAGEINFO_ID: regex::Regex = regex::Regex::new("^[0-9a-f]{16}$").unwrap();
-}
-
-impl ImageInfo {
-    #[allow(clippy::new_without_default, clippy::too_many_arguments)]
-    pub fn new(id: String, ) -> ImageInfo {
-        ImageInfo {
- id,
-        }
-    }
-}
-
-/// Converts the ImageInfo value to the Query Parameters representation (style=form, explode=false)
-/// specified in https://swagger.io/docs/specification/serialization/
-/// Should be implemented in a serde serializer
-impl std::fmt::Display for ImageInfo {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let params: Vec<Option<String>> = vec![
-
-            Some("id".to_string()),
-            Some(self.id.to_string()),
-
-        ];
-
-        write!(f, "{}", params.into_iter().flatten().collect::<Vec<_>>().join(","))
-    }
-}
-
-/// Converts Query Parameters representation (style=form, explode=false) to a ImageInfo value
-/// as specified in https://swagger.io/docs/specification/serialization/
-/// Should be implemented in a serde deserializer
-impl std::str::FromStr for ImageInfo {
-    type Err = String;
-
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        /// An intermediate representation of the struct to use for parsing.
-        #[derive(Default)]
-        #[allow(dead_code)]
-        struct IntermediateRep {
-            pub id: Vec<String>,
-        }
-
-        let mut intermediate_rep = IntermediateRep::default();
-
-        // Parse into intermediate representation
-        let mut string_iter = s.split(',');
-        let mut key_result = string_iter.next();
-
-        while key_result.is_some() {
-            let val = match string_iter.next() {
-                Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing ImageInfo".to_string())
-            };
-
-            if let Some(key) = key_result {
-                #[allow(clippy::match_single_binding)]
-                match key {
-                    #[allow(clippy::redundant_clone)]
-                    "id" => intermediate_rep.id.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing ImageInfo".to_string())
-                }
-            }
-
-            // Get the next key
-            key_result = string_iter.next();
-        }
-
-        // Use the intermediate representation to return the struct
-        std::result::Result::Ok(ImageInfo {
-            id: intermediate_rep.id.into_iter().next().ok_or_else(|| "id missing in ImageInfo".to_string())?,
-        })
-    }
-}
-
-// Methods for converting between header::IntoHeaderValue<ImageInfo> and HeaderValue
-
-#[cfg(feature = "server")]
-impl std::convert::TryFrom<header::IntoHeaderValue<ImageInfo>> for HeaderValue {
-    type Error = String;
-
-    fn try_from(hdr_value: header::IntoHeaderValue<ImageInfo>) -> std::result::Result<Self, Self::Error> {
-        let hdr_value = hdr_value.to_string();
-        match HeaderValue::from_str(&hdr_value) {
-             std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for ImageInfo - value: {hdr_value} is invalid {e}"#))
-        }
-    }
-}
-
-#[cfg(feature = "server")]
-impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<ImageInfo> {
-    type Error = String;
-
-    fn try_from(hdr_value: HeaderValue) -> std::result::Result<Self, Self::Error> {
-        match hdr_value.to_str() {
-             std::result::Result::Ok(value) => {
-                    match <ImageInfo as std::str::FromStr>::from_str(value) {
-                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into ImageInfo - {err}"#))
-                    }
-             },
-             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Unable to convert header: {hdr_value:?} to string: {e}"#))
-        }
     }
 }
 

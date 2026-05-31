@@ -1,3 +1,4 @@
+use crate::dao::image_search_query::ImageSearchQueryBuilder;
 use crate::models::image::{ImageInsertRow, ImageRow, SimilarImagePairRow};
 use crate::models::image_source::{ImageSourceInsertRow, ImageSourceRow};
 use crate::models::user_image::{UserImageInsertRow, UserImageRow};
@@ -12,6 +13,7 @@ use anyhow::Error;
 use diesel::sql_types::{BigInt, Bytea, Integer};
 use diesel::{ExpressionMethods, OptionalExtension};
 use diesel::{QueryDsl, RunQueryDsl, SelectableHelper};
+use kani_domain_api_model::image_search::ImageSearchFilter;
 
 pub struct ImageDao<'c> {
     connection: &'c mut diesel::PgConnection,
@@ -59,6 +61,18 @@ impl<'c> ImageDao<'c> {
             .filter(user_image_dsl::user_id.eq(user_id))
             .load(self.connection)
             .context("Failed to get images by user from database")
+    }
+
+    pub fn search_images(&mut self, user_id: i64, filter: &ImageSearchFilter) -> Result<Vec<ImageRow>, Error> {
+        ImageSearchQueryBuilder::for_user(user_id)
+            .with_dimensions(filter)
+            .with_layout(filter.layout.as_ref())
+            .with_tags(&filter.tags)
+            .excluding_tags(&filter.exclude_tags)
+            .in_collection(filter.collection.as_ref())
+            .sorted_by(&filter.sort)
+            .load(self.connection)
+            .context("Failed to search images by user and filter from database")
     }
 
     pub fn get_image_by_id(&mut self, id: i64) -> Result<ImageRow, Error> {
@@ -152,9 +166,7 @@ impl<'c> ImageDao<'c> {
 
 #[cfg(test)]
 mod test {
-    use crate::dao::test::{
-        insert_test_image, insert_test_image_source, insert_test_user, insert_test_user_image,
-    };
+    use crate::dao::test::{insert_test_image, insert_test_image_source, insert_test_image_tag, insert_test_tag, insert_test_user, insert_test_user_image};
     use crate::dao::Dao;
     use crate::models::image::ImageInsertRow;
     use crate::models::image_source::ImageSourceInsertRow;
@@ -163,6 +175,8 @@ mod test {
     use crate::test::test_db;
     use assertables::{assert_len_eq_x, assert_matches, assert_some};
     use diesel::Connection;
+    use kani_domain_api_model::image_search::ImageSearchFilter;
+    use kani_domain_api_model::tag::TagId;
     use pgvector::Bit;
 
     #[test]
@@ -221,6 +235,32 @@ mod test {
             let image = insert_test_image(c)?;
             let _user_image = insert_test_user_image(c, user.id, image.id)?;
             c.image_dao().get_all_images_by_user(user.id)
+        });
+        assert_len_eq_x!(result, 1);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_search_images() {
+        let postgres = test_db();
+        let mut conn = postgres.get_connection().unwrap();
+        let result = conn.test_transaction(|c| {
+            let user = insert_test_user(c)?;
+            let image = insert_test_image(c)?;
+            let image2 = insert_test_image(c)?;
+            let image3 = insert_test_image(c)?;
+            let _user_image = insert_test_user_image(c, user.id, image.id)?;
+            let _user_image2 = insert_test_user_image(c, user.id, image2.id)?;
+            let _user_image3 = insert_test_user_image(c, user.id, image3.id)?;
+            let tag = insert_test_tag(c)?;
+            let etag = insert_test_tag(c)?;
+            let _image_tag = insert_test_image_tag(c, image.id, tag.id, Some(user.id))?;
+            let _image_tag2 = insert_test_image_tag(c, image2.id, tag.id, Some(user.id))?;
+            let _image_etag2 = insert_test_image_tag(c, image2.id, etag.id, Some(user.id))?;
+            let mut filter = ImageSearchFilter::default();
+            filter.tags.push(TagId(tag.id));
+            filter.exclude_tags.push(TagId(etag.id));
+            c.image_dao().search_images(user.id, &filter)
         });
         assert_len_eq_x!(result, 1);
     }

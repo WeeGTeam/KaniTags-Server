@@ -8,6 +8,7 @@ use diesel::Connection;
 use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
 use kani_domain_api_model::image_hash::hash_to_hex;
 use kani_domain_api_model::image_id::ImageId;
+use kani_domain_api_model::image_search::ImageSearchFilter;
 use kani_domain_api_model::import::ImportSession;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::ImageDatabase;
@@ -64,6 +65,16 @@ impl ImageDatabase for Postgres {
         })?;
         debug!("Started import session with id: {}", row.id);
         Ok(row.into())
+    }
+
+    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, anyhow::Error> {
+        debug!("Starting image search for user '{}' and filter '{:?}'", user.id, filter);
+        let mut connection = self.get_connection()?;
+        let rows = connection.transaction(|conn| {{
+            conn.image_dao().search_images(user.id, filter)
+        }})?;
+        debug!("Finished image search with {} results", rows.len());
+        rows.into_iter().map(TryInto::try_into).collect()
     }
 }
 

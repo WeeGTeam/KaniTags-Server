@@ -1,18 +1,21 @@
-trait ToDomain<D> {
+pub mod image_list;
+pub mod image;
+
+pub trait ToDomain<D> {
     fn to_domain(self) -> D;
 }
 
-trait TryToDomain<D> {
+pub trait TryToDomain<D> {
     type Error: std::error::Error;
 
     fn try_to_domain(self) -> Result<D, Self::Error>;
 }
 
-trait FromDomain<D> {
+pub trait FromDomain<D> {
     fn from_domain(value: D) -> Self;
 }
 
-trait TryFromDomain<D>: Sized {
+pub trait TryFromDomain<D>: Sized {
     type Error: std::error::Error;
 
     fn try_from_domain(value: D) -> Result<Self, Self::Error>;

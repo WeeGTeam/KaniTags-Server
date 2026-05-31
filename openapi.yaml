@@ -128,20 +128,63 @@ paths:
       operationId: getImages
       parameters:
         - in: query
-          name: list
-          description: limit search to this list
+          name: collection
+          description: limit search to this collection
           required: false
           schema:
-            type: string
+            $ref: '#/components/schemas/CollectionId'
         - in: query
           name: layout
-          description: limit search to layout type
+          description: limit search to layout type.
           required: false
           schema:
             type: string
-            enum: [ portrait, landscape ]
+            enum: [ portrait, landscape, square ]
+        - in: query
+          name: minw
+          description: limit search to images with minimum width
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: maxw
+          description: limit search to images with maximum width
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: minh
+          description: limit search to images with minimum height
+          required: false
+          schema:
+            type: integer
+        - in: query
+          name: maxh
+          description: limit search to images with maximum height
+          required: false
+          schema:
+            type: integer
         - in: query
           name: tag
+          description: limit search to images with these tags
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TagId'
+        - in: query
+          name: etag
+          description: limit search to images without these tags
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/TagId'
+        - in: query
+          name: sort
+          description: |
+            sort order for results. pattern = "(id|date|resolution)(|:asc|:desc)"
+            omitting ascending or descending results in default sort order (desc).
           required: false
           schema:
             type: array
@@ -155,7 +198,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ImageInfo'
+                  $ref: '#/components/schemas/ImageId'
 components:
   schemas:
     ImportSession:
@@ -178,6 +221,10 @@ components:
       example: "123456789"
       pattern: "^[0-9]+$"
     UserId:
+      type: string
+      example: "123456789"
+      pattern: "^[0-9]+$"
+    CollectionId:
       type: string
       example: "123456789"
       pattern: "^[0-9]+$"
@@ -204,10 +251,3 @@ components:
           format: binary
       required:
         - file
-    ImageInfo:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/ImageId'
-      required:
-        - id

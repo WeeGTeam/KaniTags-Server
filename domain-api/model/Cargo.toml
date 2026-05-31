@@ -8,4 +8,5 @@ anyhow = { workspace = true }
 chrono = { workspace = true }
 image = { workspace = true }
 regex = { workspace = true }
+strum = { workspace = true, features = ["derive"] }
 thiserror = { workspace = true }
