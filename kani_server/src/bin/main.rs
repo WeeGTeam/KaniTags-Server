@@ -15,7 +15,7 @@ use tracing::{debug, info, Level};
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     setup_logger(Level::DEBUG);
-    let config = ServerConfig::load_config().context("Failed to load config")?;
+    let config = ServerConfig::load_config()?;
     debug!("{:?}", config);
 
     let iqdb_service = worker_init::init_iqdb();

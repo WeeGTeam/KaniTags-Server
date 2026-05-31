@@ -1,7 +1,7 @@
+use anyhow::{anyhow, Context};
 use byte_unit::{Byte, Unit};
 use figment::providers::{Env, Format, Yaml};
 use figment::Figment;
-use kani_domain::common::error::Error;
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -26,14 +26,14 @@ fn parse_byte<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<Byte,
 
 impl ServerConfig {
 
-    pub fn load_config() -> Result<Self, Error> {
+    pub fn load_config() -> Result<Self, anyhow::Error> {
         Figment::default()
             .merge(Yaml::file("/etc/pantsu-server/config.yaml"))
             .merge(Yaml::file("/config/config.yaml"))
             .merge(Yaml::file("./config.yaml"))
             .merge(Env::prefixed("PANTSU_SERVER_"))
             .extract::<ServerConfig>()
-            .or_else(|_| Err(Error::TodoError()))
+            .map_err(|e| anyhow!(e)).context("Failed to load config")
     }
 }
 
