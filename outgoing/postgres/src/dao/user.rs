@@ -72,6 +72,9 @@ mod test {
             let _user = insert_test_user(c)?;
             c.user_dao().get_all_users()
         });
+        #[cfg(feature = "mock-user")]
+        assert_len_eq_x!(results, 2);
+        #[cfg(not(feature = "mock-user"))]
         assert_len_eq_x!(results, 1);
     }
 
