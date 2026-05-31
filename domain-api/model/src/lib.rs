@@ -6,3 +6,6 @@ pub mod thumbnail;
 pub mod user;
 pub mod import;
 pub mod similarity;
+pub mod image_search;
+pub mod tag;
+pub mod collection;

@@ -5,6 +5,7 @@ use axum::extract::DefaultBodyLimit;
 use axum::http::HeaderName;
 use axum::middleware;
 use kani_domain_api_incoming::image_management::ImageManagementService;
+use kani_domain_api_incoming::image_search_service::ImageSearchService;
 use kani_domain_api_incoming::login_service::LoginService;
 use kani_domain_api_incoming::similarity_service::SimilarityService;
 use kani_openapi::server;
@@ -20,8 +21,9 @@ mod error;
 mod request_tracing;
 pub mod router;
 
-pub async fn launch_server<IS, LS, SS>(
+pub async fn launch_server<IS, ISS, LS, SS>(
     image_management_service: Arc<IS>,
+    image_search_service: Arc<ISS>,
     login_service: Arc<LS>,
     similarity_service: Arc<SS>,
     request_body_limit: usize,
@@ -30,6 +32,7 @@ pub async fn launch_server<IS, LS, SS>(
 ) -> Result<(), anyhow::Error>
 where
     IS: ImageManagementService + Send + Sync + 'static,
+    ISS: ImageSearchService + Send + Sync + 'static,
     LS: LoginService + Send + Sync + 'static,
     SS: SimilarityService + Send + Sync + 'static,
 {
@@ -48,6 +51,7 @@ where
     );
     let shared_state = AppState::new(
         image_management_service,
+        image_search_service,
         login_service,
         similarity_service,
     );

@@ -1,5 +1,6 @@
 use crate::error::HttpApiUnhandledError;
 use kani_domain_api_incoming::image_management::ImageManagementService;
+use kani_domain_api_incoming::image_search_service::ImageSearchService;
 use kani_domain_api_incoming::login_service::LoginService;
 use kani_domain_api_incoming::similarity_service::SimilarityService;
 use kani_openapi::apis::ErrorHandler;
@@ -24,23 +25,27 @@ impl ErrorHandler<HttpApiUnhandledError> for AppState {}
 #[derive(Clone)]
 pub struct AppState {
     pub image_management_service: Arc<dyn ImageManagementService + Send + Sync>,
+    pub image_search_service: Arc<dyn ImageSearchService + Send + Sync>,
     pub login_service: Arc<dyn LoginService + Send + Sync>,
     pub similarity_service: Arc<dyn SimilarityService + Send + Sync>,
 }
 
 impl AppState {
-    pub fn new<IS, LS, SS>(
+    pub fn new<IS, ISS, LS, SS>(
         image_management_service: Arc<IS>,
+        image_search_service: Arc<ISS>,
         login_service: Arc<LS>,
         similarity_service: Arc<SS>,
     ) -> Self
     where
         IS: ImageManagementService + Send + Sync + 'static,
+        ISS: ImageSearchService + Send + Sync + 'static,
         LS: LoginService + Send + Sync + 'static,
         SS: SimilarityService + Send + Sync + 'static,
     {
         Self {
             image_management_service,
+            image_search_service,
             login_service,
             similarity_service,
         }

@@ -1,5 +1,6 @@
 use anyhow::Context;
 use kani_domain::image_management::image_management_service::ImageManagementServiceImpl;
+use kani_domain::image_search::ImageSearchServiceImpl;
 use kani_domain::similarity::SimilarityServiceImpl;
 use kani_domain::user::login_service::LoginServiceImpl;
 use kani_domain_api_outgoing::reverse_image_search::ReverseImageSearchService;
@@ -29,6 +30,9 @@ async fn main() -> Result<(), anyhow::Error> {
     let image_management_service = ImageManagementServiceImpl::new(
         Arc::new(fs_image_repository),
         Arc::new(database.clone()),
+    );
+    let image_search_service = ImageSearchServiceImpl::new(
+        Arc::new(database.clone())
     );
 
     let login_service = LoginServiceImpl::new(
@@ -69,6 +73,7 @@ async fn main() -> Result<(), anyhow::Error> {
 
     launch_server(
         Arc::new(image_management_service),
+        Arc::new(image_search_service),
         Arc::new(login_service),
         Arc::new(similarity_service),
         config.request_body_limit.as_u64() as usize,
