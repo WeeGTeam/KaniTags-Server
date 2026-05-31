@@ -1,5 +1,6 @@
 pub mod convert;
 
+use crate::auth_middleware::current_user;
 use crate::error::HttpApiUnhandledError;
 use crate::router::image_list::convert::{convert_filter, convert_images};
 use crate::router::AppState;
@@ -19,8 +20,9 @@ impl ImageList<HttpApiUnhandledError> for AppState {
         _cookies: &CookieJar,
         query_params: &GetImagesQueryParams,
     ) -> Result<GetImagesResponse, HttpApiUnhandledError> {
+        let user = current_user();
         let filter = convert_filter(query_params)?;
-        let images = self.image_search_service.search_images(&filter).map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
+        let images = self.image_search_service.search_images(&user, &filter).map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
         let images = convert_images(images);
         Ok(GetImagesResponse::Status200_Ok(images))
     }

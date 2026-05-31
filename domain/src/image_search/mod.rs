@@ -1,9 +1,10 @@
 use kani_domain_api_incoming::image_search_service::{ImageSearchService, SearchImagesError};
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::image_search::ImageSearchFilter;
+use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::ImageDatabase;
-use std::str::FromStr;
 use std::sync::Arc;
+use tracing::info;
 
 pub struct ImageSearchServiceImpl {
     database: Arc<dyn ImageDatabase + Sync + Send>,
@@ -16,7 +17,8 @@ impl ImageSearchServiceImpl {
 }
 
 impl ImageSearchService for ImageSearchServiceImpl {
-    fn search_images(&self, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, SearchImagesError> {
-        Ok(vec![ImageId::from_str("3b6368639f3e17fa")?])
+    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, SearchImagesError> {
+        info!("searching images with filter '{:?}'", filter);
+        Ok(self.database.search_images(user, filter)?)
     }
 }
