@@ -13,6 +13,7 @@ CREATE TABLE user_account
     user_name    VARCHAR(40)                                        NOT NULL UNIQUE, -- e.g. authelia user name
     display_name VARCHAR(40)                                        NOT NULL
 );
+SELECT manage_audit_fields('user_account');
 
 CREATE TABLE image
 (
@@ -27,6 +28,7 @@ CREATE TABLE image
     res_height      INT                                                NOT NULL
 );
 CREATE INDEX idx__image__perceptual_hash ON image USING hnsw (perceptual_hash bit_hamming_ops);
+SELECT manage_audit_fields('image');
 
 CREATE TABLE image_source
 (
@@ -41,6 +43,7 @@ CREATE TABLE image_source
     certainty           FLOAT                                              NOT NULL,
     UNIQUE (image_id, reverse_lookup_site, source_site)
 );
+SELECT manage_audit_fields('image_source');
 
 CREATE TABLE user_image
 (
@@ -51,6 +54,7 @@ CREATE TABLE user_image
     image_id   BIGINT                                             NOT NULL REFERENCES image (id) ON DELETE CASCADE,
     UNIQUE (user_id, image_id)
 );
+SELECT manage_audit_fields('user_image');
 
 CREATE TABLE tag
 (
@@ -61,6 +65,7 @@ CREATE TABLE tag
     tag_name   VARCHAR(40)                                        NOT NULL,
     UNIQUE (tag_type, tag_name)
 );
+SELECT manage_audit_fields('tag');
 
 CREATE TABLE image_tag
 (
@@ -73,6 +78,7 @@ CREATE TABLE image_tag
     source_site source_site_name                                   NULL,
     UNIQUE (image_id, tag_id)
 );
+SELECT manage_audit_fields('image_tag');
 
 CREATE TABLE collection
 (
@@ -83,6 +89,7 @@ CREATE TABLE collection
     name       VARCHAR(40)                                        NOT NULL,
     UNIQUE (user_id, name)
 );
+SELECT manage_audit_fields('collection');
 
 CREATE TABLE collection_image
 (
@@ -93,6 +100,7 @@ CREATE TABLE collection_image
     collection_id BIGINT                                             NOT NULL REFERENCES collection (id) ON DELETE CASCADE,
     UNIQUE (image_id, collection_id)
 );
+SELECT manage_audit_fields('collection_image');
 
 CREATE TABLE import_session
 (
@@ -102,6 +110,7 @@ CREATE TABLE import_session
     user_id    BIGINT                                             NOT NULL REFERENCES user_account (id) ON DELETE CASCADE,
     closed_at  TIMESTAMP WITH TIME ZONE                           NULL
 );
+SELECT manage_audit_fields('import_session');
 
 CREATE TABLE import_session_image
 (
@@ -112,6 +121,7 @@ CREATE TABLE import_session_image
     image_id   BIGINT                                             NOT NULL REFERENCES image (id) ON DELETE CASCADE,
     UNIQUE (import_id, image_id)
 );
+SELECT manage_audit_fields('import_session_image');
 
 CREATE TABLE auto_tag_session
 (
@@ -122,6 +132,7 @@ CREATE TABLE auto_tag_session
     lookup_site reverse_lookup_site                                NOT NULL,
     closed_at   TIMESTAMP WITH TIME ZONE                           NULL
 );
+SELECT manage_audit_fields('auto_tag_session');
 
 CREATE TABLE auto_tag_session_image
 (
@@ -133,8 +144,9 @@ CREATE TABLE auto_tag_session_image
     status     auto_tag_status                                    NOT NULL,
     UNIQUE (session_id, image_id)
 );
+SELECT manage_audit_fields('auto_tag_session_image');
 
-CREATE TABLE auto_tag_session_image_option
+CREATE TABLE auto_tag_session_image_result
 (
     id               BIGSERIAL PRIMARY KEY                              NOT NULL,
     created_at       TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -144,4 +156,5 @@ CREATE TABLE auto_tag_session_image_option
     source_url       VARCHAR(256)                                       NOT NULL,
     certainty        FLOAT                                              NOT NULL
 );
-CREATE INDEX idx__auto_tag_session_image_option__auto_tag_session_image ON auto_tag_session_image_option (session_image_id);
+CREATE INDEX idx__auto_tag_session_image_result__auto_tag_session_image ON auto_tag_session_image_result (session_image_id);
+SELECT manage_audit_fields('auto_tag_session_image_result');

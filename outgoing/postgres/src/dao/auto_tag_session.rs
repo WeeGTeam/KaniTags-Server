@@ -1,12 +1,12 @@
 use crate::models::auto_tag_session::{AutoTagSessionInsertRow, AutoTagSessionRow};
 use crate::models::auto_tag_session_image::{AutoTagSessionImageInsertRow, AutoTagSessionImageRow};
-use crate::models::auto_tag_session_image_option::{
-    AutoTagSessionImageOptionInsertRow, AutoTagSessionImageOptionRow,
+use crate::models::auto_tag_session_image_result::{
+    AutoTagSessionImageResultInsertRow, AutoTagSessionImageResultRow,
 };
 use crate::schema::auto_tag_session::dsl::auto_tag_session;
 use crate::schema::auto_tag_session_image::dsl as auto_tag_session_image_dsl;
 use crate::schema::auto_tag_session_image::dsl::auto_tag_session_image;
-use crate::schema::auto_tag_session_image_option::dsl::auto_tag_session_image_option;
+use crate::schema::auto_tag_session_image_result::dsl::auto_tag_session_image_result;
 use anyhow::{Context, Error};
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
 
@@ -59,27 +59,27 @@ impl<'c> AutoTagDao<'c> {
             .context("Failed to insert auto tag session images into database")
     }
 
-    pub fn get_all_auto_tag_session_image_options(
+    pub fn get_all_auto_tag_session_image_results(
         &mut self,
         session_id: i64,
-    ) -> Result<Vec<AutoTagSessionImageOptionRow>, Error> {
-        auto_tag_session_image_option
-            .select(AutoTagSessionImageOptionRow::as_select())
+    ) -> Result<Vec<AutoTagSessionImageResultRow>, Error> {
+        auto_tag_session_image_result
+            .select(AutoTagSessionImageResultRow::as_select())
             .inner_join(auto_tag_session_image)
             .filter(auto_tag_session_image_dsl::session_id.eq(session_id))
             .load(self.connection)
-            .context("Failed to load auto tag session image options from database")
+            .context("Failed to load auto tag session image results from database")
     }
 
-    pub fn insert_auto_tag_session_image_options(
+    pub fn insert_auto_tag_session_image_results(
         &mut self,
-        insert_rows: &[AutoTagSessionImageOptionInsertRow],
-    ) -> Result<Vec<AutoTagSessionImageOptionRow>, Error> {
-        diesel::insert_into(auto_tag_session_image_option)
+        insert_rows: &[AutoTagSessionImageResultInsertRow],
+    ) -> Result<Vec<AutoTagSessionImageResultRow>, Error> {
+        diesel::insert_into(auto_tag_session_image_result)
             .values(insert_rows)
-            .returning(AutoTagSessionImageOptionRow::as_returning())
+            .returning(AutoTagSessionImageResultRow::as_returning())
             .load(self.connection)
-            .context("Failed to insert auto tag session image options into database")
+            .context("Failed to insert auto tag session image results into database")
     }
 }
 
@@ -87,12 +87,12 @@ impl<'c> AutoTagDao<'c> {
 mod test {
     use crate::dao::test::{
         insert_test_auto_tag_session, insert_test_auto_tag_session_image,
-        insert_test_auto_tag_session_image_option, insert_test_image, insert_test_user,
+        insert_test_auto_tag_session_image_results, insert_test_image, insert_test_user,
     };
     use crate::dao::Dao;
     use crate::models::auto_tag_session::AutoTagSessionInsertRow;
     use crate::models::auto_tag_session_image::AutoTagSessionImageInsertRow;
-    use crate::models::auto_tag_session_image_option::AutoTagSessionImageOptionInsertRow;
+    use crate::models::auto_tag_session_image_result::AutoTagSessionImageResultInsertRow;
     use crate::models::{AutoTagStatus, ReverseLookupSite, SourceSiteName};
     use crate::test::test_db;
     use assertables::{assert_len_eq_x, assert_matches};
@@ -164,7 +164,7 @@ mod test {
 
     #[test]
     #[serial_test::serial]
-    fn test_get_all_auto_tag_session_image_options() {
+    fn test_get_all_auto_tag_session_image_results() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
         let results = conn.test_transaction(|c| {
@@ -172,16 +172,16 @@ mod test {
             let image = insert_test_image(c)?;
             let session = insert_test_auto_tag_session(c, user.id)?;
             let session_image = insert_test_auto_tag_session_image(c, session.id, image.id)?;
-            let _options = insert_test_auto_tag_session_image_option(c, session_image.id)?;
+            let _results = insert_test_auto_tag_session_image_results(c, session_image.id)?;
             c.auto_tag_dao()
-                .get_all_auto_tag_session_image_options(session.id)
+                .get_all_auto_tag_session_image_results(session.id)
         });
         assert_len_eq_x!(results, 1);
     }
 
     #[test]
     #[serial_test::serial]
-    fn test_insert_auto_tag_session_image_options() {
+    fn test_insert_auto_tag_session_image_results() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
         let results = conn.test_transaction(|c| {
@@ -189,8 +189,8 @@ mod test {
             let session = insert_test_auto_tag_session(c, user.id)?;
             let image = insert_test_image(c)?;
             let session_image = insert_test_auto_tag_session_image(c, session.id, image.id)?;
-            c.auto_tag_dao().insert_auto_tag_session_image_options(&[
-                AutoTagSessionImageOptionInsertRow {
+            c.auto_tag_dao().insert_auto_tag_session_image_results(&[
+                AutoTagSessionImageResultInsertRow {
                     session_image_id: session_image.id,
                     source_site: SourceSiteName::GELBOORU,
                     source_url: "example.com".to_string(),

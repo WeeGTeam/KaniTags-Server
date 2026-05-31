@@ -61,7 +61,7 @@ diesel::table! {
     use pgvector::sql_types::Bit;
     use super::sql_types::SourceSiteName;
 
-    auto_tag_session_image_option (id) {
+    auto_tag_session_image_result (id) {
         id -> Int8,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
@@ -229,7 +229,7 @@ diesel::table! {
 diesel::joinable!(auto_tag_session -> user_account (user_id));
 diesel::joinable!(auto_tag_session_image -> auto_tag_session (session_id));
 diesel::joinable!(auto_tag_session_image -> image (image_id));
-diesel::joinable!(auto_tag_session_image_option -> auto_tag_session_image (session_image_id));
+diesel::joinable!(auto_tag_session_image_result -> auto_tag_session_image (session_image_id));
 diesel::joinable!(collection -> user_account (user_id));
 diesel::joinable!(collection_image -> collection (collection_id));
 diesel::joinable!(collection_image -> image (image_id));
@@ -246,7 +246,7 @@ diesel::joinable!(user_image -> user_account (user_id));
 diesel::allow_tables_to_appear_in_same_query!(
     auto_tag_session,
     auto_tag_session_image,
-    auto_tag_session_image_option,
+    auto_tag_session_image_result,
     collection,
     collection_image,
     image,

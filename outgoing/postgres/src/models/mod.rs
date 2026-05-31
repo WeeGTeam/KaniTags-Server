@@ -1,6 +1,6 @@
 pub mod auto_tag_session;
 pub mod auto_tag_session_image;
-pub mod auto_tag_session_image_option;
+pub mod auto_tag_session_image_result;
 pub mod collection;
 pub mod collection_image;
 pub mod image;
