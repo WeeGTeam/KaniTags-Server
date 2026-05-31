@@ -5,12 +5,23 @@ use axum::http::Method;
 use axum_extra::extract::CookieJar;
 use chrono::Utc;
 use headers::Host;
-use kani_openapi::apis::image_tag::{GetImageTagsResponse, ImageTag};
+use kani_openapi::apis::image_tag::{AddImageTagsResponse, GetImageTagsResponse, ImageTag};
 use kani_openapi::models;
-use kani_openapi::models::GetImageTagsPathParams;
+use kani_openapi::models::{AddImageTagsPathParams, GetImageTagsPathParams, NewImageTag};
 
 #[async_trait]
 impl ImageTag<HttpApiUnhandledError> for AppState {
+    async fn add_image_tags(
+        &self,
+        _method: &Method,
+        _host: &Host,
+        _cookies: &CookieJar,
+        _path_params: &AddImageTagsPathParams,
+        _body: &Vec<NewImageTag>,
+    ) -> Result<AddImageTagsResponse, HttpApiUnhandledError> {
+        todo!()
+    }
+
     async fn get_image_tags(
         &self,
         _method: &Method,

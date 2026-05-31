@@ -14,6 +14,7 @@ pub mod image_download;
 pub mod image_import;
 pub mod image_tag;
 pub mod image_list;
+pub mod tag;
 
 #[derive(Clone)]
 pub struct OpenApiRouter(pub AppState);
