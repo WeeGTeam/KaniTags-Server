@@ -13,13 +13,13 @@ impl SimilarityDatabase for Postgres {
         debug!("Getting similar images for image with id: {}", image_id);
         let mut connection = self.get_connection()?;
         let results = connection.transaction(|conn| conn.image_dao().get_similar_images_by_id_hash(&image_id.0, 30, 40))?;
-        Ok(results.into_iter().map(Into::into).collect::<Vec<_>>())
+        Ok(results.into_iter().map(TryInto::try_into).collect::<Result<Vec<_>, _>>()?)
     }
 
     fn get_all_similar_images(&self) -> Result<Vec<SimilarImagePair>, anyhow::Error> {
         debug!("Getting all similar images");
         let mut connection = self.get_connection()?;
         let results = connection.transaction(|conn| conn.image_dao().get_all_similar_images(30, 40))?;
-        Ok(results.into_iter().map(Into::into).collect::<Vec<_>>())
+        Ok(results.into_iter().map(TryInto::try_into).collect::<Result<Vec<_>, _>>()?)
     }
 }
