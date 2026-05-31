@@ -14,7 +14,7 @@ use crate::{models, types::*};
 pub enum GetImagesResponse {
     /// Ok
     Status200_Ok
-    (Vec<models::ImageInfo>)
+    (Vec<models::ImageId>)
 }
 
 
