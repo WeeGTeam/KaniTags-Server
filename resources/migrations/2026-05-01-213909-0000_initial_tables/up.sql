@@ -54,6 +54,7 @@ CREATE TABLE user_image
     image_id   BIGINT                                             NOT NULL REFERENCES image (id) ON DELETE CASCADE,
     UNIQUE (user_id, image_id)
 );
+CREATE INDEX idx__user_image__user__image ON user_image (user_id, image_id);
 SELECT manage_audit_fields('user_image');
 
 CREATE TABLE tag
@@ -78,6 +79,7 @@ CREATE TABLE image_tag
     source_site source_site_name                                   NULL,
     UNIQUE (image_id, tag_id)
 );
+CREATE INDEX idx__image_tag__tag__image ON image_tag (tag_id, image_id);
 SELECT manage_audit_fields('image_tag');
 
 CREATE TABLE collection
