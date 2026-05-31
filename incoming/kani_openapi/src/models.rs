@@ -186,6 +186,20 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
 
     #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
     #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+    pub struct AddImageTagsPathParams {
+                #[validate(
+                          regex(path = *RE_ADDIMAGETAGSPATHPARAMS_ID),
+            )]
+                pub id: String,
+    }
+
+    lazy_static::lazy_static! {
+        static ref RE_ADDIMAGETAGSPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9a-f]{16}$").unwrap();
+    }
+
+
+    #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
+    #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
     pub struct GetImageTagsPathParams {
                 #[validate(
                           regex(path = *RE_GETIMAGETAGSPATHPARAMS_ID),
@@ -196,6 +210,7 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
     lazy_static::lazy_static! {
         static ref RE_GETIMAGETAGSPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9a-f]{16}$").unwrap();
     }
+
 
 
 
@@ -656,6 +671,281 @@ impl std::ops::DerefMut for ImportSessionId {
 
 
 
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
+#[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+pub struct NewImageTag {
+    #[serde(rename = "tagType")]
+          #[validate(nested)]
+    pub tag_type: models::TagType,
+
+    /// max length: 40 characters
+    #[serde(rename = "tagName")]
+          #[validate(custom(function = "check_xss_string"))]
+    pub tag_name: String,
+
+}
+
+
+
+impl NewImageTag {
+    #[allow(clippy::new_without_default, clippy::too_many_arguments)]
+    pub fn new(tag_type: models::TagType, tag_name: String, ) -> NewImageTag {
+        NewImageTag {
+ tag_type,
+ tag_name,
+        }
+    }
+}
+
+/// Converts the NewImageTag value to the Query Parameters representation (style=form, explode=false)
+/// specified in https://swagger.io/docs/specification/serialization/
+/// Should be implemented in a serde serializer
+impl std::fmt::Display for NewImageTag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let params: Vec<Option<String>> = vec![
+            // Skipping tagType in query parameter serialization
+
+
+            Some("tagName".to_string()),
+            Some(self.tag_name.to_string()),
+
+        ];
+
+        write!(f, "{}", params.into_iter().flatten().collect::<Vec<_>>().join(","))
+    }
+}
+
+/// Converts Query Parameters representation (style=form, explode=false) to a NewImageTag value
+/// as specified in https://swagger.io/docs/specification/serialization/
+/// Should be implemented in a serde deserializer
+impl std::str::FromStr for NewImageTag {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
+        #[derive(Default)]
+        #[allow(dead_code)]
+        struct IntermediateRep {
+            pub tag_type: Vec<models::TagType>,
+            pub tag_name: Vec<String>,
+        }
+
+        let mut intermediate_rep = IntermediateRep::default();
+
+        // Parse into intermediate representation
+        let mut string_iter = s.split(',');
+        let mut key_result = string_iter.next();
+
+        while key_result.is_some() {
+            let val = match string_iter.next() {
+                Some(x) => x,
+                None => return std::result::Result::Err("Missing value while parsing NewImageTag".to_string())
+            };
+
+            if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
+                match key {
+                    #[allow(clippy::redundant_clone)]
+                    "tagType" => intermediate_rep.tag_type.push(<models::TagType as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "tagName" => intermediate_rep.tag_name.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    _ => return std::result::Result::Err("Unexpected key while parsing NewImageTag".to_string())
+                }
+            }
+
+            // Get the next key
+            key_result = string_iter.next();
+        }
+
+        // Use the intermediate representation to return the struct
+        std::result::Result::Ok(NewImageTag {
+            tag_type: intermediate_rep.tag_type.into_iter().next().ok_or_else(|| "tagType missing in NewImageTag".to_string())?,
+            tag_name: intermediate_rep.tag_name.into_iter().next().ok_or_else(|| "tagName missing in NewImageTag".to_string())?,
+        })
+    }
+}
+
+// Methods for converting between header::IntoHeaderValue<NewImageTag> and HeaderValue
+
+#[cfg(feature = "server")]
+impl std::convert::TryFrom<header::IntoHeaderValue<NewImageTag>> for HeaderValue {
+    type Error = String;
+
+    fn try_from(hdr_value: header::IntoHeaderValue<NewImageTag>) -> std::result::Result<Self, Self::Error> {
+        let hdr_value = hdr_value.to_string();
+        match HeaderValue::from_str(&hdr_value) {
+             std::result::Result::Ok(value) => std::result::Result::Ok(value),
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for NewImageTag - value: {hdr_value} is invalid {e}"#))
+        }
+    }
+}
+
+#[cfg(feature = "server")]
+impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<NewImageTag> {
+    type Error = String;
+
+    fn try_from(hdr_value: HeaderValue) -> std::result::Result<Self, Self::Error> {
+        match hdr_value.to_str() {
+             std::result::Result::Ok(value) => {
+                    match <NewImageTag as std::str::FromStr>::from_str(value) {
+                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
+                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into NewImageTag - {err}"#))
+                    }
+             },
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Unable to convert header: {hdr_value:?} to string: {e}"#))
+        }
+    }
+}
+
+
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
+#[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+pub struct Tag {
+    #[serde(rename = "id")]
+    #[validate(
+            regex(path = *RE_TAG_ID),
+          custom(function = "check_xss_string"),
+    )]
+    pub id: String,
+
+    #[serde(rename = "tagType")]
+          #[validate(nested)]
+    pub tag_type: models::TagType,
+
+    /// max length: 40 characters
+    #[serde(rename = "tagName")]
+          #[validate(custom(function = "check_xss_string"))]
+    pub tag_name: String,
+
+}
+
+
+lazy_static::lazy_static! {
+    static ref RE_TAG_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+}
+
+impl Tag {
+    #[allow(clippy::new_without_default, clippy::too_many_arguments)]
+    pub fn new(id: String, tag_type: models::TagType, tag_name: String, ) -> Tag {
+        Tag {
+ id,
+ tag_type,
+ tag_name,
+        }
+    }
+}
+
+/// Converts the Tag value to the Query Parameters representation (style=form, explode=false)
+/// specified in https://swagger.io/docs/specification/serialization/
+/// Should be implemented in a serde serializer
+impl std::fmt::Display for Tag {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let params: Vec<Option<String>> = vec![
+
+            Some("id".to_string()),
+            Some(self.id.to_string()),
+
+            // Skipping tagType in query parameter serialization
+
+
+            Some("tagName".to_string()),
+            Some(self.tag_name.to_string()),
+
+        ];
+
+        write!(f, "{}", params.into_iter().flatten().collect::<Vec<_>>().join(","))
+    }
+}
+
+/// Converts Query Parameters representation (style=form, explode=false) to a Tag value
+/// as specified in https://swagger.io/docs/specification/serialization/
+/// Should be implemented in a serde deserializer
+impl std::str::FromStr for Tag {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
+        #[derive(Default)]
+        #[allow(dead_code)]
+        struct IntermediateRep {
+            pub id: Vec<String>,
+            pub tag_type: Vec<models::TagType>,
+            pub tag_name: Vec<String>,
+        }
+
+        let mut intermediate_rep = IntermediateRep::default();
+
+        // Parse into intermediate representation
+        let mut string_iter = s.split(',');
+        let mut key_result = string_iter.next();
+
+        while key_result.is_some() {
+            let val = match string_iter.next() {
+                Some(x) => x,
+                None => return std::result::Result::Err("Missing value while parsing Tag".to_string())
+            };
+
+            if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
+                match key {
+                    #[allow(clippy::redundant_clone)]
+                    "id" => intermediate_rep.id.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "tagType" => intermediate_rep.tag_type.push(<models::TagType as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "tagName" => intermediate_rep.tag_name.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    _ => return std::result::Result::Err("Unexpected key while parsing Tag".to_string())
+                }
+            }
+
+            // Get the next key
+            key_result = string_iter.next();
+        }
+
+        // Use the intermediate representation to return the struct
+        std::result::Result::Ok(Tag {
+            id: intermediate_rep.id.into_iter().next().ok_or_else(|| "id missing in Tag".to_string())?,
+            tag_type: intermediate_rep.tag_type.into_iter().next().ok_or_else(|| "tagType missing in Tag".to_string())?,
+            tag_name: intermediate_rep.tag_name.into_iter().next().ok_or_else(|| "tagName missing in Tag".to_string())?,
+        })
+    }
+}
+
+// Methods for converting between header::IntoHeaderValue<Tag> and HeaderValue
+
+#[cfg(feature = "server")]
+impl std::convert::TryFrom<header::IntoHeaderValue<Tag>> for HeaderValue {
+    type Error = String;
+
+    fn try_from(hdr_value: header::IntoHeaderValue<Tag>) -> std::result::Result<Self, Self::Error> {
+        let hdr_value = hdr_value.to_string();
+        match HeaderValue::from_str(&hdr_value) {
+             std::result::Result::Ok(value) => std::result::Result::Ok(value),
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for Tag - value: {hdr_value} is invalid {e}"#))
+        }
+    }
+}
+
+#[cfg(feature = "server")]
+impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<Tag> {
+    type Error = String;
+
+    fn try_from(hdr_value: HeaderValue) -> std::result::Result<Self, Self::Error> {
+        match hdr_value.to_str() {
+             std::result::Result::Ok(value) => {
+                    match <Tag as std::str::FromStr>::from_str(value) {
+                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
+                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into Tag - {err}"#))
+                    }
+             },
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Unable to convert header: {hdr_value:?} to string: {e}"#))
+        }
+    }
+}
+
+
+
 #[derive(Debug, Clone, PartialEq, PartialOrd,  serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct TagId(pub String);
@@ -705,6 +995,113 @@ impl std::ops::DerefMut for TagId {
     }
 }
 
+
+
+/// max length: 40 characters
+#[derive(Debug, Clone, PartialEq, PartialOrd,  serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+pub struct TagName(pub String);
+
+impl validator::Validate for TagName {
+    fn validate(&self) -> std::result::Result<(), validator::ValidationErrors> {
+
+        std::result::Result::Ok(())
+    }
+}
+
+impl std::convert::From<String> for TagName {
+    fn from(x: String) -> Self {
+        TagName(x)
+    }
+}
+
+impl std::fmt::Display for TagName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+       write!(f, "{}", self.0)
+    }
+}
+
+impl std::str::FromStr for TagName {
+    type Err = std::string::ParseError;
+    fn from_str(x: &str) -> std::result::Result<Self, Self::Err> {
+        std::result::Result::Ok(TagName(x.to_string()))
+    }
+}
+
+impl std::convert::From<TagName> for String {
+    fn from(x: TagName) -> Self {
+        x.0
+    }
+}
+
+impl std::ops::Deref for TagName {
+    type Target = String;
+    fn deref(&self) -> &String {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for TagName {
+    fn deref_mut(&mut self) -> &mut String {
+        &mut self.0
+    }
+}
+
+
+
+/// Enumeration of values.
+/// Since this enum's variants do not hold data, we can easily define them as `#[repr(C)]`
+/// which helps with FFI.
+#[allow(non_camel_case_types, clippy::large_enum_variant)]
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "conversion", derive(frunk_enum_derive::LabelledGenericEnum))]
+pub enum TagType {
+    #[serde(rename = "rating")]
+    Rating,
+    #[serde(rename = "artist")]
+    Artist,
+    #[serde(rename = "source")]
+    Source,
+    #[serde(rename = "character")]
+    Character,
+    #[serde(rename = "general")]
+    General,
+}
+
+impl validator::Validate for TagType
+{
+    fn validate(&self) -> std::result::Result<(), validator::ValidationErrors> {
+        std::result::Result::Ok(())
+    }
+}
+
+impl std::fmt::Display for TagType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            TagType::Rating => write!(f, "rating"),
+            TagType::Artist => write!(f, "artist"),
+            TagType::Source => write!(f, "source"),
+            TagType::Character => write!(f, "character"),
+            TagType::General => write!(f, "general"),
+        }
+    }
+}
+
+impl std::str::FromStr for TagType {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s {
+            "rating" => std::result::Result::Ok(TagType::Rating),
+            "artist" => std::result::Result::Ok(TagType::Artist),
+            "source" => std::result::Result::Ok(TagType::Source),
+            "character" => std::result::Result::Ok(TagType::Character),
+            "general" => std::result::Result::Ok(TagType::General),
+            _ => std::result::Result::Err(format!(r#"Value not valid: {s}"#)),
+        }
+    }
+}
 
 
 #[derive(Debug, Clone, PartialEq, PartialOrd,  serde::Serialize, serde::Deserialize)]
