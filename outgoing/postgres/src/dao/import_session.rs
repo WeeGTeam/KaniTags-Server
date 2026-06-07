@@ -29,11 +29,10 @@ impl<'c> ImportSessionDao<'c> {
             .context("Failed to insert import session into database")
     }
 
-    pub fn get_import_session_by_id_and_user(&mut self, import_id: i64, user_id: i64) -> Result<Option<ImportSessionRow>, Error> {
+    pub fn get_open_import_session_by_id_and_user(&mut self, import_id: i64, user_id: i64) -> Result<Option<ImportSessionRow>, Error> {
         import_session.select(ImportSessionRow::as_select())
-            .filter(
-                import_session_dsl::id.eq(import_id).and(import_session_dsl::user_id.eq(user_id))
-            )
+            .filter(import_session_dsl::id.eq(import_id).and(import_session_dsl::user_id.eq(user_id)))
+            .filter(import_session_dsl::closed_at.is_null())
             .get_result(self.connection)
             .optional()
             .context("Failed to get import session from database")
@@ -98,7 +97,7 @@ mod test {
         let result = conn.test_transaction(|c| {
             let user = insert_test_user(c)?;
             let import_session = insert_test_import_session(c, user.id)?;
-            c.import_session_dao().get_import_session_by_id_and_user(import_session.id, user.id)
+            c.import_session_dao().get_open_import_session_by_id_and_user(import_session.id, user.id)
         });
         assert_some!(result);
     }
