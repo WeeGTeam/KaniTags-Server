@@ -38,8 +38,10 @@ impl<'c> ImportSessionDao<'c> {
             .context("Failed to get import session from database")
     }
 
-    pub fn get_all_import_sessions(&mut self) -> Result<Vec<ImportSessionRow>, Error> {
-        import_session.load(self.connection)
+    pub fn get_all_import_sessions_of_user(&mut self, user_id: i64) -> Result<Vec<ImportSessionRow>, Error> {
+        import_session.select(ImportSessionRow::as_select())
+            .filter(import_session_dsl::user_id.eq(user_id))
+            .get_results(self.connection)
             .context("Failed to get all import sessions from database")
     }
 
@@ -104,13 +106,15 @@ mod test {
 
     #[test]
     #[serial_test::serial]
-    fn test_get_all_import_sessions() {
+    fn test_get_all_import_sessions_by_user() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
         let result = conn.test_transaction(|c| {
             let user = insert_test_user(c)?;
+            let user2 = insert_test_user(c)?;
             let _import_session = insert_test_import_session(c, user.id)?;
-            c.import_session_dao().get_all_import_sessions()
+            let _import_session2 = insert_test_import_session(c, user2.id)?;
+            c.import_session_dao().get_all_import_sessions_of_user(user.id)
         });
         assert_len_eq_x!(result, 1);
     }

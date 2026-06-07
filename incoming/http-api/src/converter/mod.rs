@@ -1,5 +1,6 @@
 pub mod image_list;
 pub mod image;
+pub mod import;
 
 pub trait ToDomain<D> {
     fn to_domain(self) -> D;

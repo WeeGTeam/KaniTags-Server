@@ -57,7 +57,7 @@ impl ImageDatabase for Postgres {
     }
 
     fn start_import_session(&self, user: &User) -> Result<ImportSessionId, anyhow::Error> {
-        debug!("Starting import session for user: {}", user.id);
+        debug!("Starting import session for user: {}", user.user_name);
         let mut connection = self.get_connection()?;
         let row = connection.transaction(|conn| {
             conn.import_session_dao()
@@ -68,7 +68,7 @@ impl ImageDatabase for Postgres {
     }
 
     fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, anyhow::Error> {
-        debug!("Starting image search for user '{}' and filter '{:?}'", user.id, filter);
+        debug!("Starting image search for user '{}' and filter '{:?}'", user.user_name, filter);
         let mut connection = self.get_connection()?;
         let rows = connection.transaction(|conn| {{
             conn.image_dao().search_images(user.id, filter)

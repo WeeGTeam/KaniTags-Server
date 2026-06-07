@@ -6,10 +6,10 @@ use tracing::{info, warn};
 
 use crate::image::thumbnail::{create_thumbnail_in_memory, get_thumbnail_options};
 use crate::image::try_create_pantsu_image;
-use kani_domain_api_incoming::image_management::{GetImageError, ImageManagementService, ImportImageError, StartImportSessionError};
+use kani_domain_api_incoming::image_management::{GetImageError, GetImportSessionsError, ImageManagementService, ImportImageError, StartImportSessionError};
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
-use kani_domain_api_model::import::ImportSessionId;
+use kani_domain_api_model::import::{ImportSession, ImportSessionId};
 use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::Database;
@@ -79,6 +79,14 @@ impl ImageManagementService for ImageManagementServiceImpl {
         info!("Started import session with id '{}'", *session);
         Ok(session)
     }
+
+    async fn get_import_sessions(&self, user: &User) -> Result<Vec<ImportSession>, GetImportSessionsError> {
+        info!("Getting import sessions for user '{}'", user.user_name);
+        let sessions = self.database.get_import_sessions(&user)?;
+        info!("Retrieved {} import sessions for user '{}'", sessions.len(), user.user_name);
+        Ok(sessions)
+    }
+
 
     async fn get_image(&self, image_id: ImageId) -> Result<(Bytes, ImageFormat), GetImageError> {
         let db_image = self.database

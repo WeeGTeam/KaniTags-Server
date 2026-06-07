@@ -11,6 +11,15 @@ use crate::{models, types::*};
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
 #[allow(clippy::large_enum_variant)]
+pub enum GetImportSessionsResponse {
+    /// import sessions
+    Status200_ImportSessions
+    (Vec<models::ImportSession>)
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[must_use]
+#[allow(clippy::large_enum_variant)]
 pub enum ImportImageResponse {
     /// imported
     Status201_Imported
@@ -25,7 +34,7 @@ pub enum ImportImageResponse {
 pub enum StartImportSessionResponse {
     /// import session started
     Status201_ImportSessionStarted
-    (models::ImportSession)
+    (String)
 }
 
 
@@ -35,6 +44,15 @@ pub enum StartImportSessionResponse {
 #[async_trait]
 #[allow(clippy::ptr_arg)]
 pub trait ImageImport<E: std::fmt::Debug + Send + Sync + 'static = ()>: super::ErrorHandler<E> {
+    /// GetImportSessions - GET /image/importSession
+    async fn get_import_sessions(
+    &self,
+    
+    method: &Method,
+    host: &Host,
+    cookies: &CookieJar,
+    ) -> Result<GetImportSessionsResponse, E>;
+
     /// ImportImage - POST /image/import/{id}
     async fn import_image(
     &self,

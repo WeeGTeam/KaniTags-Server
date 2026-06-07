@@ -1,4 +1,5 @@
 use crate::auth_middleware::current_user;
+use crate::converter::FromDomain;
 use crate::error::HttpApiUnhandledError;
 use crate::router::AppState;
 use async_trait::async_trait;
@@ -7,7 +8,7 @@ use axum::http::Method;
 use axum_extra::extract::CookieJar;
 use headers::Host;
 use kani_openapi::apis::image_import::{
-    ImageImport, ImportImageResponse, StartImportSessionResponse,
+    GetImportSessionsResponse, ImageImport, ImportImageResponse, StartImportSessionResponse,
 };
 use kani_openapi::models::{ImportImagePathParams, ImportSession};
 
@@ -42,9 +43,21 @@ impl ImageImport<HttpApiUnhandledError> for AppState {
         let session = self.image_management_service.start_import_session(&user).await
             .map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
         Ok(StartImportSessionResponse::Status201_ImportSessionStarted(
-            ImportSession {
-                id: session.to_string(),
-            },
+            session.to_string(),
         ))
+    }
+
+    async fn get_import_sessions(
+        &self,
+        _method: &Method,
+        _host: &Host,
+        _cookies: &CookieJar,
+    ) -> Result<GetImportSessionsResponse, HttpApiUnhandledError> {
+        let user = current_user();
+
+        let sessions = self.image_management_service.get_import_sessions(&user).await
+            .map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
+        let sessions = Vec::<ImportSession>::from_domain(sessions);
+        Ok(GetImportSessionsResponse::Status200_ImportSessions(sessions))
     }
 }
