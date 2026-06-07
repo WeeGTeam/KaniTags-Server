@@ -9,7 +9,7 @@ use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
 use kani_domain_api_model::image_hash::hash_to_hex;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::image_search::ImageSearchFilter;
-use kani_domain_api_model::import::ImportSession;
+use kani_domain_api_model::import::ImportSessionId;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::ImageDatabase;
 use tracing::debug;
@@ -56,7 +56,7 @@ impl ImageDatabase for Postgres {
         image_row.try_into()
     }
 
-    fn start_import_session(&self, user: &User) -> Result<ImportSession, anyhow::Error> {
+    fn start_import_session(&self, user: &User) -> Result<ImportSessionId, anyhow::Error> {
         debug!("Starting import session for user: {}", user.id);
         let mut connection = self.get_connection()?;
         let row = connection.transaction(|conn| {

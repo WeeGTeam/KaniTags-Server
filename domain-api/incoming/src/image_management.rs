@@ -4,7 +4,7 @@ use thiserror::Error;
 
 use kani_domain_api_model::image_format::{ImageFormat, ImageFormatError};
 use kani_domain_api_model::image_id::ImageId;
-use kani_domain_api_model::import::ImportSession;
+use kani_domain_api_model::import::ImportSessionId;
 use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_domain_api_model::user::User;
 
@@ -12,7 +12,7 @@ use kani_domain_api_model::user::User;
 pub trait ImageManagementService {
     async fn import_image(&self, user: &User, import_session_id: i64, image_name: String, image_data: Bytes) -> Result<(), ImportImageError>;
 
-    async fn start_import_session(&self, user: &User) -> Result<ImportSession, StartImportSessionError>;
+    async fn start_import_session(&self, user: &User) -> Result<ImportSessionId, StartImportSessionError>;
 
     async fn get_image(&self, image_id: ImageId) -> Result<(Bytes, ImageFormat), GetImageError>;
 

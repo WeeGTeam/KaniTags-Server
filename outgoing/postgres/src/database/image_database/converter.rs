@@ -4,7 +4,7 @@ use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_hash::IdHash;
 use kani_domain_api_model::image_id::ImageId;
-use kani_domain_api_model::import::ImportSession;
+use kani_domain_api_model::import::{ImportSession, ImportSessionId};
 use pgvector::Bit;
 
 impl TryFrom<ImageRow> for PantsuImage {
@@ -59,6 +59,12 @@ impl From<&ImageFormat> for crate::models::ImageFormat {
             ImageFormat::PNG => crate::models::ImageFormat::PNG,
             ImageFormat::JPG => crate::models::ImageFormat::JPG,
         }
+    }
+}
+
+impl Into<ImportSessionId> for ImportSessionRow {
+    fn into(self) -> ImportSessionId {
+        ImportSessionId(self.id)
     }
 }
 
