@@ -3,6 +3,7 @@ use crate::schema::collection_image::dsl as collection_image_dsl;
 use crate::schema::image::dsl as image_dsl;
 use crate::schema::image::dsl::image;
 use crate::schema::image_tag::dsl as image_tag_dsl;
+use crate::schema::import_session_image::dsl as import_session_image_dsl;
 use crate::schema::user_image::dsl as user_image_dsl;
 use crate::schema::user_image::dsl::user_image;
 use diesel::expression::expression_types::NotSelectable;
@@ -10,6 +11,7 @@ use diesel::pg::Pg;
 use diesel::{AggregateExpressionMethods, BoxableExpression, ExpressionMethods, PgConnection, QueryDsl, QueryResult, RunQueryDsl, SelectableHelper};
 use kani_domain_api_model::collection::CollectionId;
 use kani_domain_api_model::image_search::{ImageSearchFilter, Layout, SortOption, SortOrder};
+use kani_domain_api_model::import::ImportSessionId;
 use kani_domain_api_model::tag::TagId;
 use std::ops::Mul;
 
@@ -72,6 +74,16 @@ impl<'a> ImageSearchQueryBuilder<'a> {
             .filter(image_tag_dsl::tag_id.eq_any(ids))
             .select(image_tag_dsl::image_id);
         self.query = self.query.filter(diesel::dsl::not(image_dsl::id.eq_any(sub)));
+        self
+    }
+
+    pub fn in_import_session(mut self, collection: Option<&ImportSessionId>) -> Self {
+        if let Some(iid) = collection {
+            let sub = import_session_image_dsl::import_session_image
+                .filter(import_session_image_dsl::import_id.eq(iid.0))
+                .select(import_session_image_dsl::image_id);
+            self.query = self.query.filter(image_dsl::id.eq_any(sub));
+        }
         self
     }
 

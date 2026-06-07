@@ -1,11 +1,14 @@
 use crate::converter::TryToDomain;
 use kani_domain_api_model::collection::CollectionId;
 use kani_domain_api_model::image_search::ImageSearchFilter;
+use kani_domain_api_model::import::ImportSessionId;
 use kani_domain_api_model::tag::TagId;
 use kani_openapi::models::GetImagesQueryParams;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ImageSearchFilterConvertError {
+    #[error("invalid import session id: {0}")]
+    InvalidImportSessionId(#[source] std::num::ParseIntError),
     #[error("invalid collection id: {0}")]
     InvalidCollectionId(#[source] std::num::ParseIntError),
     #[error("invalid layout: {0}")]
@@ -21,6 +24,9 @@ impl TryToDomain<ImageSearchFilter> for &GetImagesQueryParams {
 
     fn try_to_domain(self) -> Result<ImageSearchFilter, Self::Error> {
         Ok(ImageSearchFilter {
+            import_session: self.import_session.as_ref().map(|s| s.parse()).transpose()
+                .map_err(|e| ImageSearchFilterConvertError::InvalidImportSessionId(e))?
+                .map(|i| ImportSessionId(i)),
             collection: self.collection.as_ref().map(|c| c.parse()).transpose()
                 .map_err(|e| ImageSearchFilterConvertError::InvalidCollectionId(e))?
                 .map(|i| CollectionId(i)),
@@ -51,6 +57,7 @@ mod tests {
     #[test]
     fn test_convert_filter() {
         let params = GetImagesQueryParams {
+            import_session: Some("123456".to_owned()),
             collection: Some("12345".to_owned()),
             layout: Some("portrait".to_owned()),
             minw: Some(100),
@@ -67,6 +74,7 @@ mod tests {
         assert!(filter.is_ok());
         let filter = filter.unwrap();
         assert_eq!(filter, ImageSearchFilter {
+            import_session: Some(ImportSessionId(123456)),
             collection: Some(CollectionId(12345)),
             layout: Some(Layout::Portrait),
             min_width: Some(100),

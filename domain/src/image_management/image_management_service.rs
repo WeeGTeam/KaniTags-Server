@@ -9,7 +9,7 @@ use crate::image::try_create_pantsu_image;
 use kani_domain_api_incoming::image_management::{GetImageError, ImageManagementService, ImportImageError, StartImportSessionError};
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
-use kani_domain_api_model::import::ImportSession;
+use kani_domain_api_model::import::ImportSessionId;
 use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::Database;
@@ -73,10 +73,10 @@ impl ImageManagementService for ImageManagementServiceImpl {
         Ok(())
     }
 
-    async fn start_import_session(&self, user: &User) -> Result<ImportSession, StartImportSessionError> {
+    async fn start_import_session(&self, user: &User) -> Result<ImportSessionId, StartImportSessionError> {
         info!("Starting import session");
         let session = self.database.start_import_session(&user)?;
-        info!("Started import session with id '{}'", session.id);
+        info!("Started import session with id '{}'", *session);
         Ok(session)
     }
 

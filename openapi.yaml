@@ -134,6 +134,12 @@ paths:
           schema:
             $ref: '#/components/schemas/CollectionId'
         - in: query
+          name: import-session
+          description: limit search to this import session
+          required: false
+          schema:
+            $ref: '#/components/schemas/ImportSessionId'
+        - in: query
           name: layout
           description: limit search to layout type.
           required: false

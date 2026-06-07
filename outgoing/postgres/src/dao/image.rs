@@ -69,6 +69,7 @@ impl<'c> ImageDao<'c> {
             .with_layout(filter.layout.as_ref())
             .with_tags(&filter.tags)
             .excluding_tags(&filter.exclude_tags)
+            .in_import_session(filter.import_session.as_ref())
             .in_collection(filter.collection.as_ref())
             .sorted_by(&filter.sort)
             .load(self.connection)

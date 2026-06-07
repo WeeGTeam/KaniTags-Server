@@ -43,7 +43,7 @@ impl ImageImport<HttpApiUnhandledError> for AppState {
             .map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
         Ok(StartImportSessionResponse::Status201_ImportSessionStarted(
             ImportSession {
-                id: session.id.to_string(),
+                id: session.to_string(),
             },
         ))
     }

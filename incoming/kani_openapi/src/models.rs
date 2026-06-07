@@ -120,6 +120,13 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
               )]
                     #[serde(skip_serializing_if="Option::is_none")]
                     pub collection: Option<String>,
+            /// limit search to this import session
+                #[serde(rename = "import-session")]
+                #[validate(
+                          regex(path = *RE_GETIMAGESQUERYPARAMS_IMPORT_SESSION),
+              )]
+                    #[serde(skip_serializing_if="Option::is_none")]
+                    pub import_session: Option<String>,
             /// limit search to layout type.
             /// Note: inline enums are not fully supported by openapi-generator
                 #[serde(rename = "layout")]
@@ -157,6 +164,9 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
 
     lazy_static::lazy_static! {
         static ref RE_GETIMAGESQUERYPARAMS_COLLECTION: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    }
+    lazy_static::lazy_static! {
+        static ref RE_GETIMAGESQUERYPARAMS_IMPORT_SESSION: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
     }
 
     #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
