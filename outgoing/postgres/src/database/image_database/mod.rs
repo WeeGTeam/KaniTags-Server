@@ -37,7 +37,7 @@ impl ImageDatabase for Postgres {
         let image_row = connection.transaction(|conn| {
             let session = conn
                 .import_session_dao()
-                .get_import_session_by_id_and_user(import_session_id, user.id)?
+                .get_open_import_session_by_id_and_user(import_session_id, user.id)?
                 .ok_or_else(|| anyhow::anyhow!("Import session not found"))?;
             let image = conn.image_dao().insert_image(&image.into())?;
             let _session_images = conn.import_session_dao().insert_import_session_images(&[

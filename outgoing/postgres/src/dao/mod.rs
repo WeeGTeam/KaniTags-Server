@@ -85,7 +85,7 @@ pub mod test {
 
     pub fn insert_test_image(c: &mut PgConnection) -> Result<ImageRow, Error> {
         c.image_dao().insert_image(&ImageInsertRow {
-            id_hash: vec![0, 1, 2, 3, 4, 5, 6, random::<u8>()],
+            id_hash: vec![0, 1, 2, 3, 4, random::<u8>(), random::<u8>(), random::<u8>()],
             perceptual_hash: Bit::from_bytes(&vec![0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]),
             file_name: "test_image.jpg".to_string(),
             image_format: ImageFormat::JPG,
