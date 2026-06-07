@@ -14,6 +14,8 @@ pub trait ImageManagementService {
 
     async fn start_import_session(&self, user: &User) -> Result<ImportSessionId, StartImportSessionError>;
 
+    async fn close_import_session(&self, user: &User, import_session_id: ImportSessionId) -> Result<(), CloseImportSessionError>;
+
     async fn get_import_sessions(&self, user: &User) -> Result<Vec<ImportSession>, GetImportSessionsError>;
 
     async fn get_image(&self, image_id: ImageId) -> Result<(Bytes, ImageFormat), GetImageError>;
@@ -46,6 +48,18 @@ pub enum ImportImageError {
 pub enum StartImportSessionError {
     #[error("Import session internal server error: '{0}'")]
     Unknown(#[from] anyhow::Error),
+}
+
+#[derive(Error, Debug)]
+pub enum CloseImportSessionError {
+    #[error("Close import session internal server error: '{0}'")]
+    Unknown(#[from] anyhow::Error),
+
+    #[error("Import session does not exist: {0:?}")]
+    ImportSessionMissing(ImportSessionId),
+
+    #[error("Import session is already closed: {0:?}")]
+    ImportSessionClosed(ImportSessionId),
 }
 
 #[derive(Error, Debug)]

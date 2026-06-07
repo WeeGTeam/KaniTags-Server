@@ -11,5 +11,7 @@ pub trait ImageDatabase {
 
     fn start_import_session(&self, user: &User) -> Result<ImportSessionId, anyhow::Error>;
 
+    fn close_import_session(&self, import_session_id: ImportSessionId) -> Result<(), anyhow::Error>;
+
     fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, anyhow::Error>;
 }

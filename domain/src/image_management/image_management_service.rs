@@ -6,7 +6,7 @@ use tracing::{info, warn};
 
 use crate::image::thumbnail::{create_thumbnail_in_memory, get_thumbnail_options};
 use crate::image::try_create_pantsu_image;
-use kani_domain_api_incoming::image_management::{GetImageError, GetImportSessionsError, ImageManagementService, ImportImageError, StartImportSessionError};
+use kani_domain_api_incoming::image_management::{CloseImportSessionError, GetImageError, GetImportSessionsError, ImageManagementService, ImportImageError, StartImportSessionError};
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::import::{ImportSession, ImportSessionId};
@@ -85,6 +85,19 @@ impl ImageManagementService for ImageManagementServiceImpl {
         info!("Started import session with id '{}'", *session);
         Ok(session)
     }
+
+    async fn close_import_session(&self, user: &User, import_session_id: ImportSessionId) -> Result<(), CloseImportSessionError> {
+        info!("Closing import session with id '{}'", *import_session_id);
+        let import_session = self.database.get_import_session_by_id_and_user(&user, import_session_id.clone())?
+            .ok_or_else(|| CloseImportSessionError::ImportSessionMissing(import_session_id.clone()))?;
+        if import_session.closed_at.is_some() {
+            return Err(CloseImportSessionError::ImportSessionClosed(import_session_id));
+        }
+        self.database.close_import_session(ImportSessionId(import_session.id))?;
+        info!("Closed import session with id '{}'", import_session.id);
+        Ok(())
+    }
+
 
     async fn get_import_sessions(&self, user: &User) -> Result<Vec<ImportSession>, GetImportSessionsError> {
         info!("Getting import sessions for user '{}'", user.user_name);

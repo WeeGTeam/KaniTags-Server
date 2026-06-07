@@ -11,6 +11,20 @@ use crate::{models, types::*};
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
 #[allow(clippy::large_enum_variant)]
+pub enum CloseImportSessionResponse {
+    /// import session closed
+    Status204_ImportSessionClosed
+    ,
+    /// import session missing
+    Status404_ImportSessionMissing
+    ,
+    /// import session already closed
+    Status400_ImportSessionAlreadyClosed
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[must_use]
+#[allow(clippy::large_enum_variant)]
 pub enum GetImportSessionsResponse {
     /// import sessions
     Status200_ImportSessions
@@ -50,6 +64,16 @@ pub enum StartImportSessionResponse {
 #[async_trait]
 #[allow(clippy::ptr_arg)]
 pub trait ImageImport<E: std::fmt::Debug + Send + Sync + 'static = ()>: super::ErrorHandler<E> {
+    /// CloseImportSession - DELETE /image/importSession/{id}
+    async fn close_import_session(
+    &self,
+    
+    method: &Method,
+    host: &Host,
+    cookies: &CookieJar,
+      path_params: &models::CloseImportSessionPathParams,
+    ) -> Result<CloseImportSessionResponse, E>;
+
     /// GetImportSessions - GET /image/importSession
     async fn get_import_sessions(
     &self,

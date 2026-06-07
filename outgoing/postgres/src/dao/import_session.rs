@@ -29,6 +29,14 @@ impl<'c> ImportSessionDao<'c> {
             .context("Failed to insert import session into database")
     }
 
+    pub fn close_import_session(&mut self, import_id: i64) -> Result<ImportSessionRow, Error> {
+        diesel::update(import_session.filter(import_session_dsl::id.eq(import_id)))
+            .set(import_session_dsl::closed_at.eq(diesel::dsl::now))
+            .returning(ImportSessionRow::as_returning())
+            .get_result(self.connection)
+            .context("Failed to close import session")
+    }
+
     pub fn get_import_session_by_id_and_user(&mut self, import_id: i64, user_id: i64) -> Result<Option<ImportSessionRow>, Error> {
         import_session.select(ImportSessionRow::as_select())
             .filter(import_session_dsl::id.eq(import_id).and(import_session_dsl::user_id.eq(user_id)))
@@ -88,6 +96,21 @@ mod test {
                 user_id: user.id,
             })
         });
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_close_import_session() {
+        let postgres = test_db();
+        let mut conn = postgres.get_connection().unwrap();
+        let result = conn.test_transaction(|c| {
+            let user = insert_test_user(c)?;
+            let session = c.import_session_dao().insert_import_session(&ImportSessionInsertRow {
+                user_id: user.id,
+            })?;
+            c.import_session_dao().close_import_session(session.id)
+        });
+        assert_some!(result.closed_at);
     }
 
     #[test]

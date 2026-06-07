@@ -37,6 +37,9 @@ where
         .route("/image/importSession",
             get(get_import_sessions::<I, A, E>).post(start_import_session::<I, A, E>)
         )
+        .route("/image/importSession/{id}",
+            delete(close_import_session::<I, A, E>)
+        )
         .route("/image/thumbnail/{id}",
             get(get_thumbnail_image::<I, A, E>)
         )
@@ -224,6 +227,95 @@ let result = api_impl.as_ref().get_thumbnail_image(
                                                 apis::image_download::GetThumbnailImageResponse::Status404_ImageNotFound
                                                 => {
                                                   let mut response = response.status(404);
+                                                  response.body(Body::empty())
+                                                },
+                                            },
+                                            Err(why) => {
+                                                    // Application code returned an error. This should not happen, as the implementation should
+                                                    // return a valid response.
+                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
+                                            },
+                                        };
+
+
+                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
+}
+
+
+#[tracing::instrument(skip_all)]
+fn close_import_session_validation(
+  path_params: models::CloseImportSessionPathParams,
+) -> std::result::Result<(
+  models::CloseImportSessionPathParams,
+), ValidationErrors>
+{
+  path_params.validate()?;
+
+Ok((
+  path_params,
+))
+}
+/// CloseImportSession - DELETE /image/importSession/{id}
+#[tracing::instrument(skip_all)]
+async fn close_import_session<I, A, E>(
+  method: Method,
+  TypedHeader(host): TypedHeader<Host>,
+  cookies: CookieJar,
+  Path(path_params): Path<models::CloseImportSessionPathParams>,
+ State(api_impl): State<I>,
+) -> Result<Response, StatusCode>
+where
+    I: AsRef<A> + Send + Sync,
+    A: apis::image_import::ImageImport<E> + Send + Sync,
+    E: std::fmt::Debug + Send + Sync + 'static,
+        {
+
+
+
+
+      #[allow(clippy::redundant_closure)]
+      let validation = tokio::task::spawn_blocking(move ||
+    close_import_session_validation(
+        path_params,
+    )
+  ).await.unwrap();
+
+  let Ok((
+    path_params,
+  )) = validation else {
+    return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(validation.unwrap_err().to_string()))
+            .map_err(|_| StatusCode::BAD_REQUEST);
+  };
+
+
+
+let result = api_impl.as_ref().close_import_session(
+      
+      &method,
+      &host,
+      &cookies,
+        &path_params,
+  ).await;
+
+  let mut response = Response::builder();
+
+  let resp = match result {
+                                            Ok(rsp) => match rsp {
+                                                apis::image_import::CloseImportSessionResponse::Status204_ImportSessionClosed
+                                                => {
+                                                  let mut response = response.status(204);
+                                                  response.body(Body::empty())
+                                                },
+                                                apis::image_import::CloseImportSessionResponse::Status404_ImportSessionMissing
+                                                => {
+                                                  let mut response = response.status(404);
+                                                  response.body(Body::empty())
+                                                },
+                                                apis::image_import::CloseImportSessionResponse::Status400_ImportSessionAlreadyClosed
+                                                => {
+                                                  let mut response = response.status(400);
                                                   response.body(Body::empty())
                                                 },
                                             },

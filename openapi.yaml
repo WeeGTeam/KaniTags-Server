@@ -38,7 +38,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ImportSessionId'
-
+  /image/importSession/{id}:
+    delete:
+      tags:
+        - imageImport
+      operationId: closeImportSession
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImportSessionId'
+      responses:
+        "204":
+          description: import session closed
+        "404":
+          description: import session missing
+        "400":
+          description: import session already closed
   /image/import/{id}:
     post:
       tags:

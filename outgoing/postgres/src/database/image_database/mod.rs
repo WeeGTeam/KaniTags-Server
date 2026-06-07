@@ -9,7 +9,7 @@ use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
 use kani_domain_api_model::image_hash::hash_to_hex;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::image_search::ImageSearchFilter;
-use kani_domain_api_model::import::{ImportSession, ImportSessionId};
+use kani_domain_api_model::import::ImportSessionId;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::ImageDatabase;
 use tracing::debug;
@@ -63,8 +63,15 @@ impl ImageDatabase for Postgres {
         Ok(row.into())
     }
 
-    fn close_import_session(&self, user: &User, import_session_id: ImportSessionId) -> Result<(), anyhow::Error> {
-        todo!()
+    fn close_import_session(&self, import_session_id: ImportSessionId) -> Result<(), anyhow::Error> {
+        debug!("Closing import session with id: {}", *import_session_id);
+        let mut connection = self.get_connection()?;
+        connection.transaction(|conn| {
+            conn.import_session_dao()
+                .close_import_session(*import_session_id)
+        })?;
+        debug!("Closed import session with id: {}", *import_session_id);
+        Ok(())
     }
 
     fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, anyhow::Error> {
