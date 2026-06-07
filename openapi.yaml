@@ -24,7 +24,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ImportSession'
+                $ref: '#/components/schemas/ImportSessionId'
 
   /image/import/{id}:
     post:

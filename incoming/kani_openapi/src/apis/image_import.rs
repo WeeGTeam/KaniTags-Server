@@ -25,7 +25,7 @@ pub enum ImportImageResponse {
 pub enum StartImportSessionResponse {
     /// import session started
     Status201_ImportSessionStarted
-    (models::ImportSession)
+    (String)
 }
 
 

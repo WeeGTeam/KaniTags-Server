@@ -42,9 +42,7 @@ impl ImageImport<HttpApiUnhandledError> for AppState {
         let session = self.image_management_service.start_import_session(&user).await
             .map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
         Ok(StartImportSessionResponse::Status201_ImportSessionStarted(
-            ImportSession {
-                id: session.to_string(),
-            },
+            session.to_string(),
         ))
     }
 }
