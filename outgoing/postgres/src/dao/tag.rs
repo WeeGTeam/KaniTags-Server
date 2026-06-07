@@ -1,6 +1,7 @@
 use crate::models::image_tag::{ImageTagInsertRow, ImageTagRow};
 use crate::models::tag::{TagInsertRow, TagRow};
-use crate::schema::image_tag::dsl as image_tag_dsl;
+use crate::schema::image::dsl as image_dsl;
+use crate::schema::image::dsl::image;
 use crate::schema::image_tag::dsl::image_tag;
 use crate::schema::tag::dsl::tag;
 use anyhow::{Context, Error};
@@ -42,11 +43,13 @@ impl<'c> TagDao<'c> {
 
     pub fn get_all_image_tags_by_image(
         &mut self,
-        image_id: i64,
-    ) -> Result<Vec<ImageTagRow>, Error> {
+        image_id_hash: &[u8],
+    ) -> Result<Vec<(ImageTagRow, TagRow)>, Error> {
         image_tag
-            .filter(image_tag_dsl::image_id.eq(image_id))
-            .select(ImageTagRow::as_select())
+            .inner_join(image)
+            .filter(image_dsl::id_hash.eq(image_id_hash))
+            .inner_join(tag)
+            .select((ImageTagRow::as_select(), TagRow::as_select()))
             .load(self.connection)
             .context("Failed to load image tags from database")
     }
@@ -99,7 +102,7 @@ mod test {
             let tag = insert_test_tag(c)?;
             let user = insert_test_user(c)?;
             let _image_tag = insert_test_image_tag(c, image.id, tag.id, Some(user.id))?;
-            c.tag_dao().get_all_image_tags_by_image(image.id)
+            c.tag_dao().get_all_image_tags_by_image(image.id_hash.as_ref())
         });
         assert_len_eq_x!(result, 1);
     }
