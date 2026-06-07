@@ -12,6 +12,7 @@ use kani_domain_api_model::import::ImportSessionId;
 use kani_openapi::apis::image_import::{CloseImportSessionResponse, GetImportSessionsResponse, ImageImport, ImportImageResponse, StartImportSessionResponse};
 use kani_openapi::models::{CloseImportSessionPathParams, ImportImagePathParams, ImportSession};
 use std::num::ParseIntError;
+use tracing::error;
 
 #[async_trait]
 impl ImageImport<HttpApiUnhandledError> for AppState {
@@ -32,8 +33,14 @@ impl ImageImport<HttpApiUnhandledError> for AppState {
         let result = self.image_management_service.import_image(&user, ImportSessionId(import_session_id), file_name, file_data).await;
         match result {
             Ok(_) => Ok(ImportImageResponse::Status201_Imported),
-            Err(ImportImageError::MissingImportSession(_)) => Ok(ImportImageResponse::Status404_ImportSessionMissing),
-            Err(ImportImageError::ImportSessionClosed(_)) => Ok(ImportImageResponse::Status400_ImportSessionClosed),
+            Err(e @ ImportImageError::MissingImportSession(_)) => {
+                error!("Failed to import image: {}", e);
+                Ok(ImportImageResponse::Status404_ImportSessionMissing)
+            },
+            Err(e @ ImportImageError::ImportSessionClosed(_)) => {
+                error!("Failed to import image: {}", e);
+                Ok(ImportImageResponse::Status400_ImportSessionClosed)
+            },
             Err(e) => Err(HttpApiUnhandledError::Unknown(e.into())),
         }
     }
