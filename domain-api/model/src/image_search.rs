@@ -1,4 +1,5 @@
 use crate::collection::CollectionId;
+use crate::import::ImportSessionId;
 use crate::tag::TagId;
 use std::str::FromStr;
 use strum::EnumString;
@@ -30,6 +31,7 @@ pub enum SortOption {
 
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct ImageSearchFilter {
+    pub import_session: Option<ImportSessionId>,
     pub collection: Option<CollectionId>,
     pub layout: Option<Layout>,
     pub min_width: Option<u32>,
