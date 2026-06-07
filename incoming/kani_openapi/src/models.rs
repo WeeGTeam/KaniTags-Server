@@ -95,6 +95,20 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
     }
 
 
+    #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
+    #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+    pub struct CloseImportSessionPathParams {
+                #[validate(
+                          regex(path = *RE_CLOSEIMPORTSESSIONPATHPARAMS_ID),
+            )]
+                pub id: String,
+    }
+
+    lazy_static::lazy_static! {
+        static ref RE_CLOSEIMPORTSESSIONPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    }
+
+
 
     #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
     #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]

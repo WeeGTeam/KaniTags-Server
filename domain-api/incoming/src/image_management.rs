@@ -10,9 +10,11 @@ use kani_domain_api_model::user::User;
 
 #[async_trait]
 pub trait ImageManagementService {
-    async fn import_image(&self, user: &User, import_session_id: i64, image_name: String, image_data: Bytes) -> Result<(), ImportImageError>;
+    async fn import_image(&self, user: &User, import_session_id: ImportSessionId, image_name: String, image_data: Bytes) -> Result<(), ImportImageError>;
 
     async fn start_import_session(&self, user: &User) -> Result<ImportSessionId, StartImportSessionError>;
+
+    async fn close_import_session(&self, user: &User, import_session_id: ImportSessionId) -> Result<(), CloseImportSessionError>;
 
     async fn get_import_sessions(&self, user: &User) -> Result<Vec<ImportSession>, GetImportSessionsError>;
 
@@ -25,6 +27,12 @@ pub trait ImageManagementService {
 pub enum ImportImageError {
     #[error("Image import internal server error: '{0}'")]
     Unknown(#[from] anyhow::Error),
+
+    #[error("Import session does not exist: {0:?}")]
+    MissingImportSession(ImportSessionId),
+
+    #[error("Import session is closed: {0:?}")]
+    ImportSessionClosed(ImportSessionId),
 
     #[error("Image has unsupported format: {0:?}")]
     UnsupportedImageFormat(Option<image::ImageFormat>),
@@ -40,6 +48,18 @@ pub enum ImportImageError {
 pub enum StartImportSessionError {
     #[error("Import session internal server error: '{0}'")]
     Unknown(#[from] anyhow::Error),
+}
+
+#[derive(Error, Debug)]
+pub enum CloseImportSessionError {
+    #[error("Close import session internal server error: '{0}'")]
+    Unknown(#[from] anyhow::Error),
+
+    #[error("Import session does not exist: {0:?}")]
+    ImportSessionMissing(ImportSessionId),
+
+    #[error("Import session is already closed: {0:?}")]
+    ImportSessionClosed(ImportSessionId),
 }
 
 #[derive(Error, Debug)]

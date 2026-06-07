@@ -29,20 +29,16 @@ impl ImageDatabase for Postgres {
     fn store_image(
         &self,
         user: &User,
-        import_session_id: i64,
+        import_session_id: ImportSessionId,
         image: &CreatePantsuImage,
     ) -> Result<PantsuImage, anyhow::Error> {
         debug!("Storing image: {}", hash_to_hex(&image.id_hash));
         let mut connection = self.get_connection()?;
         let image_row = connection.transaction(|conn| {
-            let session = conn
-                .import_session_dao()
-                .get_open_import_session_by_id_and_user(import_session_id, user.id)?
-                .ok_or_else(|| anyhow::anyhow!("Import session not found"))?;
             let image = conn.image_dao().insert_image(&image.into())?;
             let _session_images = conn.import_session_dao().insert_import_session_images(&[
                 ImportSessionImageInsertRow {
-                    import_id: session.id,
+                    import_id: *import_session_id,
                     image_id: image.id,
                 },
             ])?;
@@ -65,6 +61,17 @@ impl ImageDatabase for Postgres {
         })?;
         debug!("Started import session with id: {}", row.id);
         Ok(row.into())
+    }
+
+    fn close_import_session(&self, import_session_id: ImportSessionId) -> Result<(), anyhow::Error> {
+        debug!("Closing import session with id: {}", *import_session_id);
+        let mut connection = self.get_connection()?;
+        connection.transaction(|conn| {
+            conn.import_session_dao()
+                .close_import_session(*import_session_id)
+        })?;
+        debug!("Closed import session with id: {}", *import_session_id);
+        Ok(())
     }
 
     fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, anyhow::Error> {
@@ -125,6 +132,6 @@ mod test {
             dimensions: (0, 0),
         };
 
-        assert_ok!(db.store_image(&user, session.id, &create_image));
+        assert_ok!(db.store_image(&user, ImportSessionId(session.id), &create_image));
     }
 }
