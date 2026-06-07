@@ -95,6 +95,7 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
     }
 
 
+
     #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
     #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
     pub struct ImportImagePathParams {
@@ -447,6 +448,16 @@ pub struct ImportSession {
     )]
     pub id: String,
 
+    #[serde(rename = "createdAt")]
+    pub created_at: chrono::DateTime::<chrono::Utc>,
+
+    #[serde(rename = "updatedAt")]
+    pub updated_at: chrono::DateTime::<chrono::Utc>,
+
+    #[serde(rename = "closedAt")]
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub closed_at: Option<chrono::DateTime::<chrono::Utc>>,
+
 }
 
 
@@ -456,9 +467,12 @@ lazy_static::lazy_static! {
 
 impl ImportSession {
     #[allow(clippy::new_without_default, clippy::too_many_arguments)]
-    pub fn new(id: String, ) -> ImportSession {
+    pub fn new(id: String, created_at: chrono::DateTime::<chrono::Utc>, updated_at: chrono::DateTime::<chrono::Utc>, ) -> ImportSession {
         ImportSession {
  id,
+ created_at,
+ updated_at,
+ closed_at: None,
         }
     }
 }
@@ -472,6 +486,12 @@ impl std::fmt::Display for ImportSession {
 
             Some("id".to_string()),
             Some(self.id.to_string()),
+
+            // Skipping createdAt in query parameter serialization
+
+            // Skipping updatedAt in query parameter serialization
+
+            // Skipping closedAt in query parameter serialization
 
         ];
 
@@ -491,6 +511,9 @@ impl std::str::FromStr for ImportSession {
         #[allow(dead_code)]
         struct IntermediateRep {
             pub id: Vec<String>,
+            pub created_at: Vec<chrono::DateTime::<chrono::Utc>>,
+            pub updated_at: Vec<chrono::DateTime::<chrono::Utc>>,
+            pub closed_at: Vec<chrono::DateTime::<chrono::Utc>>,
         }
 
         let mut intermediate_rep = IntermediateRep::default();
@@ -510,6 +533,12 @@ impl std::str::FromStr for ImportSession {
                 match key {
                     #[allow(clippy::redundant_clone)]
                     "id" => intermediate_rep.id.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "createdAt" => intermediate_rep.created_at.push(<chrono::DateTime::<chrono::Utc> as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "updatedAt" => intermediate_rep.updated_at.push(<chrono::DateTime::<chrono::Utc> as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "closedAt" => intermediate_rep.closed_at.push(<chrono::DateTime::<chrono::Utc> as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     _ => return std::result::Result::Err("Unexpected key while parsing ImportSession".to_string())
                 }
             }
@@ -521,6 +550,9 @@ impl std::str::FromStr for ImportSession {
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(ImportSession {
             id: intermediate_rep.id.into_iter().next().ok_or_else(|| "id missing in ImportSession".to_string())?,
+            created_at: intermediate_rep.created_at.into_iter().next().ok_or_else(|| "createdAt missing in ImportSession".to_string())?,
+            updated_at: intermediate_rep.updated_at.into_iter().next().ok_or_else(|| "updatedAt missing in ImportSession".to_string())?,
+            closed_at: intermediate_rep.closed_at.into_iter().next(),
         })
     }
 }

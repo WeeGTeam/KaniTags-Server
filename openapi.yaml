@@ -14,6 +14,19 @@ tags:
   - name: imageTag
 paths:
   /image/importSession:
+    get:
+      tags:
+        - imageImport
+      operationId: getImportSessions
+      responses:
+        "200":
+          description: import sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImportSession'
     post:
       tags:
         - imageImport
@@ -212,8 +225,22 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/ImportSessionId'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-07-01T12:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2023-07-01T12:00:00Z"
+        closedAt:
+          type: string
+          format: date-time
+          example: "2023-07-01T12:00:00Z"
       required:
         - id
+        - createdAt
+        - updatedAt
     ImportSessionId:
       type: string
       example: "1234567890"
