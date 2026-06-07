@@ -50,12 +50,18 @@ impl ImageManagementService for ImageManagementServiceImpl {
     async fn import_image(
         &self,
         user: &User,
-        import_session_id: i64,
+        import_session_id: ImportSessionId,
         image_name: String,
         image_data: Bytes,
     ) -> Result<(), ImportImageError> {
         let image = try_create_pantsu_image(&image_name, &image_data)?;
         let image_id = ImageId(image.id_hash);
+        let import_session = self.database.get_import_session_by_id_and_user(&user, import_session_id.clone())?
+            .ok_or_else(|| ImportImageError::MissingImportSession(import_session_id.clone()))?;
+
+        if import_session.closed_at.is_some() {
+            return Err(ImportImageError::ImportSessionClosed(ImportSessionId(import_session.id)));
+        }
 
         let db_image = self.database.get_image_by_image_id(&image_id)
             .context("Failed attempt to load image from database")?;
@@ -67,7 +73,7 @@ impl ImageManagementService for ImageManagementServiceImpl {
         allow_existing_image(self.image_repository.store_image(&image_id, &image.format, image_data.clone()).await)?;
         let _ = self.create_thumbnail(&image_id, image_data, &ThumbnailKind::Gallery).await.inspect_err(|e| warn!("Failed to create thumbnail: {}", e));
 
-        let stored_image = self.database.store_image(&user, import_session_id, &image)?;
+        let stored_image = self.database.store_image(&user, ImportSessionId(import_session.id), &image)?;
         info!("Stored image '{}' with id '{}'", image_name, stored_image.image_id);
 
         Ok(())

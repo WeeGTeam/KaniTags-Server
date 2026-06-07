@@ -62,6 +62,10 @@ paths:
           description: imported
         "409":
           description: image already exists
+        "404":
+          description: import session missing
+        "400":
+          description: import session closed
   /image/{id}:
     get:
       tags:

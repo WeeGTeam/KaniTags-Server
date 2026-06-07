@@ -7,7 +7,7 @@ use kani_domain_api_model::user::User;
 pub trait ImageDatabase {
     fn get_image_by_image_id(&self, id_hash: &ImageId) -> Result<Option<PantsuImage>, anyhow::Error>;
 
-    fn store_image(&self, user: &User, import_session_id: i64, image: &CreatePantsuImage) -> Result<PantsuImage, anyhow::Error>;
+    fn store_image(&self, user: &User, import_session_id: ImportSessionId, image: &CreatePantsuImage) -> Result<PantsuImage, anyhow::Error>;
 
     fn start_import_session(&self, user: &User) -> Result<ImportSessionId, anyhow::Error>;
 

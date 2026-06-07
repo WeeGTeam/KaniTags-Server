@@ -26,10 +26,15 @@ impl ImageImport<HttpApiUnhandledError> for AppState {
         let field = body.next_field().await.unwrap().unwrap();
         let file_name = field.file_name().unwrap().to_owned();
         let file_data = field.bytes().await.unwrap();
-        let import_session_id: i64 = path_params.id.parse().unwrap();
+        let import_session_id: i64 = path_params.id.parse().map_err(|e: ParseIntError| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
 
-        self.image_management_service.import_image(&user, import_session_id, file_name, file_data).await.map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
-        Ok(ImportImageResponse::Status201_Imported)
+        let result = self.image_management_service.import_image(&user, ImportSessionId(import_session_id), file_name, file_data).await;
+        match result {
+            Ok(_) => Ok(ImportImageResponse::Status201_Imported),
+            Err(ImportImageError::MissingImportSession(_)) => Ok(ImportImageResponse::Status404_ImportSessionMissing),
+            Err(ImportImageError::ImportSessionClosed(_)) => Ok(ImportImageResponse::Status400_ImportSessionClosed),
+            Err(e) => Err(HttpApiUnhandledError::Unknown(e.into())),
+        }
     }
 
     async fn start_import_session(

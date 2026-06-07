@@ -26,6 +26,12 @@ pub enum ImportImageResponse {
     ,
     /// image already exists
     Status409_ImageAlreadyExists
+    ,
+    /// import session missing
+    Status404_ImportSessionMissing
+    ,
+    /// import session closed
+    Status400_ImportSessionClosed
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

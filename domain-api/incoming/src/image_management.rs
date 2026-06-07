@@ -10,7 +10,7 @@ use kani_domain_api_model::user::User;
 
 #[async_trait]
 pub trait ImageManagementService {
-    async fn import_image(&self, user: &User, import_session_id: i64, image_name: String, image_data: Bytes) -> Result<(), ImportImageError>;
+    async fn import_image(&self, user: &User, import_session_id: ImportSessionId, image_name: String, image_data: Bytes) -> Result<(), ImportImageError>;
 
     async fn start_import_session(&self, user: &User) -> Result<ImportSessionId, StartImportSessionError>;
 
@@ -25,6 +25,12 @@ pub trait ImageManagementService {
 pub enum ImportImageError {
     #[error("Image import internal server error: '{0}'")]
     Unknown(#[from] anyhow::Error),
+
+    #[error("Import session does not exist: {0:?}")]
+    MissingImportSession(ImportSessionId),
+
+    #[error("Import session is closed: {0:?}")]
+    ImportSessionClosed(ImportSessionId),
 
     #[error("Image has unsupported format: {0:?}")]
     UnsupportedImageFormat(Option<image::ImageFormat>),

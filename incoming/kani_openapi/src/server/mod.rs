@@ -396,6 +396,16 @@ let result = api_impl.as_ref().import_image(
                                                   let mut response = response.status(409);
                                                   response.body(Body::empty())
                                                 },
+                                                apis::image_import::ImportImageResponse::Status404_ImportSessionMissing
+                                                => {
+                                                  let mut response = response.status(404);
+                                                  response.body(Body::empty())
+                                                },
+                                                apis::image_import::ImportImageResponse::Status400_ImportSessionClosed
+                                                => {
+                                                  let mut response = response.status(400);
+                                                  response.body(Body::empty())
+                                                },
                                             },
                                             Err(why) => {
                                                     // Application code returned an error. This should not happen, as the implementation should
