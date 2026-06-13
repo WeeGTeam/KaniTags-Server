@@ -33,6 +33,21 @@ impl ImageDatabase for Postgres {
         Ok(image_row.map(TryInto::try_into).transpose()?)
     }
 
+    fn get_images_by_image_ids(
+        &self,
+        user: &User,
+        image_ids: &[ImageId]
+    ) -> Result<Vec<PantsuImage>, anyhow::Error> {
+        debug!("Getting {} images by image ids", image_ids.len());
+        let mut connection = self.get_connection()?;
+        let image_rows = connection.transaction(|conn|
+            conn.image_dao().get_images_by_user_and_ids(user.id, &image_ids.iter().map(|id| id.0).collect::<Vec<_>>())
+        )?;
+        debug!("Got {} images by image ids", image_rows.len());
+        Ok(image_rows.into_iter().map(TryInto::try_into).collect::<Result<Vec<PantsuImage>, anyhow::Error>>()?)
+    }
+
+
     fn store_image(
         &self,
         user: &User,
