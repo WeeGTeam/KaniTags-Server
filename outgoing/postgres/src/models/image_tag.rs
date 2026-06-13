@@ -15,7 +15,7 @@ pub struct ImageTagRow {
     pub source_site: Option<SourceSiteName>,
 }
 
-#[derive(Queryable, Insertable, Debug)]
+#[derive(Queryable, Insertable, Clone, Debug)]
 #[diesel(table_name = crate::schema::image_tag)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct ImageTagInsertRow {

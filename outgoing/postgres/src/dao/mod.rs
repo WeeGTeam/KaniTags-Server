@@ -139,10 +139,23 @@ pub mod test {
     }
 
     pub fn insert_test_tag(c: &mut PgConnection) -> Result<TagRow, Error> {
-        c.tag_dao().insert_tag(&TagInsertRow {
+        let mut tags = c.tag_dao().insert_tags(&[TagInsertRow {
             tag_type: TagType::CHARACTER,
             tag_name: format!("Megumin-{}", random::<u8>()),
-        })
+        }])?;
+        Ok(tags.pop().unwrap())
+    }
+
+    pub fn insert_test_tag_with(
+        c: &mut PgConnection,
+        tag_type: TagType,
+        tag_name: String,
+    ) -> Result<TagRow, Error> {
+        let mut tags = c.tag_dao().insert_tags(&[TagInsertRow {
+            tag_type,
+            tag_name,
+        }])?;
+        Ok(tags.pop().unwrap())
     }
 
     pub fn insert_test_image_tag(
@@ -151,12 +164,13 @@ pub mod test {
         tag_id: i64,
         user_id: Option<i64>,
     ) -> Result<ImageTagRow, Error> {
-        c.tag_dao().insert_image_tag(&ImageTagInsertRow {
+        let mut image_tags = c.tag_dao().insert_image_tags(&[ImageTagInsertRow {
             image_id,
             tag_id,
             user_id,
             source_site: None,
-        })
+        }])?;
+        Ok(image_tags.pop().unwrap())
     }
 
     pub fn insert_test_collection(

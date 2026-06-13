@@ -1,10 +1,10 @@
-use crate::database::converter::{ToDomain, TryToDomain};
+use crate::database::converter::{FromDomain, ToDomain, TryToDomain};
 use crate::models::image_tag::ImageTagRow;
-use crate::models::tag::TagRow;
+use crate::models::tag::{TagInsertRow, TagRow};
 use crate::models::{SourceSiteName, TagType};
 use kani_domain_api_model::tag::image_tag::{ImageTag, ImageTagId};
 use kani_domain_api_model::tag::tag_source_site::TagSourceSite;
-use kani_domain_api_model::tag::{Tag, TagId, TagName};
+use kani_domain_api_model::tag::{NewTag, Tag, TagId, TagName};
 
 impl TryToDomain<Tag> for TagRow {
     type Error = anyhow::Error;
@@ -30,6 +30,18 @@ impl ToDomain<kani_domain_api_model::tag::TagType> for &TagType {
     }
 }
 
+impl FromDomain<kani_domain_api_model::tag::TagType> for TagType {
+    fn from_domain(value: kani_domain_api_model::tag::TagType) -> Self {
+        match value {
+            kani_domain_api_model::tag::TagType::Rating => TagType::RATING,
+            kani_domain_api_model::tag::TagType::Artist => TagType::ARTIST,
+            kani_domain_api_model::tag::TagType::Source => TagType::SOURCE,
+            kani_domain_api_model::tag::TagType::Character => TagType::CHARACTER,
+            kani_domain_api_model::tag::TagType::General => TagType::GENERAL,
+        }
+    }
+}
+
 impl TryToDomain<ImageTag> for (ImageTagRow, TagRow) {
     type Error = anyhow::Error;
 
@@ -49,6 +61,15 @@ impl ToDomain<TagSourceSite> for SourceSiteName {
     fn to_domain(self) -> TagSourceSite {
         match self {
             SourceSiteName::GELBOORU => TagSourceSite::Gelbooru,
+        }
+    }
+}
+
+impl FromDomain<NewTag> for TagInsertRow {
+    fn from_domain(value: NewTag) -> Self {
+        Self {
+            tag_type: FromDomain::from_domain(value.tag_type),
+            tag_name: value.tag_name.into(),
         }
     }
 }

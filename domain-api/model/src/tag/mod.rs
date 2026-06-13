@@ -4,6 +4,7 @@ use std::ops::Deref;
 pub mod image_tag;
 pub mod tag_source_site;
 
+#[derive(Debug)]
 pub struct NewTag {
     pub tag_type: TagType,
     pub tag_name: TagName,
@@ -18,6 +19,7 @@ pub struct Tag {
 #[derive(Debug, Clone, PartialEq)]
 pub struct TagId (pub i64);
 
+#[derive(Debug)]
 pub enum TagType {
     Rating,
     Artist,
@@ -26,6 +28,7 @@ pub enum TagType {
     General,
 }
 
+#[derive(Debug)]
 pub struct TagName (String);
 
 impl Deref for TagId {
@@ -44,6 +47,12 @@ impl TryFrom<String> for TagName {
         } else {
             Err(anyhow!("Tag name must not be longer than 40 characters: \"{}\"", value))
         }
+    }
+}
+
+impl From<TagName> for String {
+    fn from(value: TagName) -> Self {
+        value.0
     }
 }
 
