@@ -14,8 +14,6 @@ use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::ImageDatabase;
 use tracing::debug;
 
-mod converter;
-
 impl ImageDatabase for Postgres {
     fn get_image_by_image_id(&self, image_id: ImageId) -> Result<Option<PantsuImage>, anyhow::Error> {
         debug!("Getting image by image id: {:?}", image_id);
