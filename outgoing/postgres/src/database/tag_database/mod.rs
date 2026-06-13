@@ -11,7 +11,7 @@ use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::tag::image_tag::ImageTag;
 use kani_domain_api_model::tag::{NewTag, Tag};
 use kani_domain_api_model::user::User;
-use kani_domain_api_outgoing::database::tag_database::TagDatabase;
+use kani_domain_api_outgoing::database::tag_database::{AddImageTagsByUserError, TagDatabase};
 use tracing::debug;
 
 impl TagDatabase for Postgres {
@@ -29,13 +29,13 @@ impl TagDatabase for Postgres {
             .try_to_domain()
     }
 
-    fn add_image_tags_to_image_by_user(&self, new_tags: Vec<NewTag>, image_id: ImageId, user: User) -> Result<Vec<ImageTag>, anyhow::Error> {
+    fn add_image_tags_to_image_by_user(&self, new_tags: Vec<NewTag>, image_id: ImageId, user: User) -> Result<Vec<ImageTag>, AddImageTagsByUserError> {
         debug!("Adding image tags to image {}: {:?}", image_id, new_tags);
         let tags: Vec<TagInsertRow> = FromDomain::from_domain(new_tags);
         let (image_tag_rows, tag_rows) = self.get_connection()?
             .transaction(|mut conn| -> Result<(Vec<ImageTagRow>, Vec<TagRow>), anyhow::Error> {
                 let image_row = conn.image_dao().get_image_by_id_hash(image_id.as_ref())?
-                    .ok_or_else(|| anyhow::anyhow!("Failed to find image with id hash: {}", image_id))?;
+                    .ok_or_else(|| AddImageTagsByUserError::ImageNotFound(image_id))?;
 
                 let tag_rows = get_or_insert_tag_rows(&mut conn, tags)?;
                 let image_tag_insert_rows = to_user_image_tag_insert_rows(&tag_rows, &image_row, &user);
@@ -53,7 +53,7 @@ impl TagDatabase for Postgres {
                         .try_to_domain()?
                 )
             })
-            .collect::<Result<Vec<ImageTag>, anyhow::Error>>()
+            .collect::<Result<Vec<ImageTag>, AddImageTagsByUserError>>()
     }
 }
 
