@@ -9,6 +9,8 @@ pub trait ImageDatabase {
 
     fn get_image_by_image_id_hash(&self, image_id_hash: &ImageIdHash) -> Result<Option<PantsuImage>, anyhow::Error>;
 
+    fn get_images_by_image_ids(&self, user: &User, id_hash: &[ImageId]) -> Result<Vec<PantsuImage>, anyhow::Error>;
+
     fn store_image(&self, user: &User, import_session_id: ImportSessionId, image: &CreatePantsuImage) -> Result<PantsuImage, anyhow::Error>;
 
     fn start_import_session(&self, user: &User) -> Result<ImportSessionId, anyhow::Error>;
