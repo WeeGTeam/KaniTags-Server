@@ -42,6 +42,7 @@ impl<'c> TagDao<'c> {
             .context("Failed to load tags by their name and type from database")
     }
 
+    // does not fail if image tag already exists
     pub fn insert_image_tags(
         &mut self,
         insert_rows: &[ImageTagInsertRow],
@@ -49,6 +50,7 @@ impl<'c> TagDao<'c> {
         diesel::insert_into(image_tag)
             .values(insert_rows)
             .returning(ImageTagRow::as_returning())
+            .on_conflict_do_nothing()
             .get_results(self.connection)
             .context("Failed to insert image tag into database")
     }
@@ -71,6 +73,7 @@ impl<'c> TagDao<'c> {
 mod test {
     use crate::dao::test::{insert_test_image, insert_test_image_tag, insert_test_tag, insert_test_tag_with, insert_test_user};
     use crate::dao::Dao;
+    use crate::models::image_tag::ImageTagInsertRow;
     use crate::models::tag::TagInsertRow;
     use crate::models::TagType;
     use crate::test::test_db;
@@ -118,6 +121,49 @@ mod test {
         assert_len_eq_x!(result, 1);
     }
 
+    #[test]
+    #[serial_test::serial]
+    fn test_insert_image_tags() {
+        let postgres = test_db();
+        let mut conn = postgres.get_connection().unwrap();
+        let result = conn.test_transaction(|c| {
+            let image = insert_test_image(c)?;
+            let tag = insert_test_tag(c)?;
+
+            c.tag_dao().insert_image_tags(&[ImageTagInsertRow {
+                image_id: image.id,
+                tag_id: tag.id,
+                user_id: None,
+                source_site: None,
+            }])
+        });
+        assert_len_eq_x!(result, 1);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_insert_image_tags_no_fail_when_image_tag_already_exists() {
+        let postgres = test_db();
+        let mut conn = postgres.get_connection().unwrap();
+        let result = conn.test_transaction(|c| {
+            let image = insert_test_image(c)?;
+            let tag = insert_test_tag(c)?;
+            let _existing_image_tag = c.tag_dao().insert_image_tags(&[ImageTagInsertRow {
+                image_id: image.id,
+                tag_id: tag.id,
+                user_id: None,
+                source_site: None,
+            }]);
+
+            c.tag_dao().insert_image_tags(&[ImageTagInsertRow {
+                image_id: image.id,
+                tag_id: tag.id,
+                user_id: None,
+                source_site: None,
+            }])
+        });
+        assert_len_eq_x!(result, 0);
+    }
 
     #[test]
     #[serial_test::serial]
