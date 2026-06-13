@@ -55,6 +55,17 @@ where
     }
 }
 
+impl<'a, A, D> TryToDomain<Vec<D>> for &'a Vec<A>
+where
+    &'a A: TryToDomain<D>,
+{
+    type Error = <&'a A as TryToDomain<D>>::Error;
+
+    fn try_to_domain(self) -> Result<Vec<D>, Self::Error> {
+        self.into_iter().map(<&'a A>::try_to_domain).collect()
+    }
+}
+
 impl<A, D> TryToDomain<Option<D>> for Option<A>
 where
     A: TryToDomain<D>,
