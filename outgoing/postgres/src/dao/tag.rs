@@ -167,7 +167,7 @@ mod test {
 
     #[test]
     #[serial_test::serial]
-    fn test_get_user_by_user_name() {
+    fn test_get_all_image_tags_by_image() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
         let result = conn.test_transaction(|c| {
