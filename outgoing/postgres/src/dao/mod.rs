@@ -139,7 +139,7 @@ pub mod test {
     }
 
     pub fn insert_test_tag(c: &mut PgConnection) -> Result<TagRow, Error> {
-        let mut tags = c.tag_dao().insert_tags(&[TagInsertRow {
+        let mut tags = c.tag_dao().insert_tags_if_missing(&[TagInsertRow {
             tag_type: TagType::CHARACTER,
             tag_name: format!("Megumin-{}", random::<u8>()),
         }])?;
@@ -151,7 +151,7 @@ pub mod test {
         tag_type: TagType,
         tag_name: String,
     ) -> Result<TagRow, Error> {
-        let mut tags = c.tag_dao().insert_tags(&[TagInsertRow {
+        let mut tags = c.tag_dao().insert_tags_if_missing(&[TagInsertRow {
             tag_type,
             tag_name,
         }])?;

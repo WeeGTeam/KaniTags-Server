@@ -18,10 +18,11 @@ impl<'c> TagDao<'c> {
         TagDao { connection }
     }
 
-    pub fn insert_tags(&mut self, insert_rows: &[TagInsertRow]) -> Result<Vec<TagRow>, Error> {
+    pub fn insert_tags_if_missing(&mut self, insert_rows: &[TagInsertRow]) -> Result<Vec<TagRow>, Error> {
         diesel::insert_into(tag)
             .values(insert_rows)
             .returning(TagRow::as_returning())
+            .on_conflict_do_nothing()
             .get_results(self.connection)
             .context("Failed to insert tag into database")
     }
@@ -82,11 +83,11 @@ mod test {
 
     #[test]
     #[serial_test::serial]
-    fn test_insert_tags() {
+    fn test_insert_tags_if_missing() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
         let results = conn.test_transaction(|c| {
-            c.tag_dao().insert_tags(&[TagInsertRow {
+            c.tag_dao().insert_tags_if_missing(&[TagInsertRow {
                 tag_type: TagType::CHARACTER,
                 tag_name: "Megumin".to_string(),
             }])
