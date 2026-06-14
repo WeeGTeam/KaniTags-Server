@@ -12,8 +12,8 @@ use crate::{models, types::*};
 #[must_use]
 #[allow(clippy::large_enum_variant)]
 pub enum AddImageTagsResponse {
-    /// tags added to image
-    Status201_TagsAddedToImage
+    /// all tags of image (including the newly added tags)
+    Status201_AllTagsOfImage
     (Vec<models::ImageTag>)
     ,
     /// Invalid tag or image id

@@ -767,7 +767,7 @@ let result = api_impl.as_ref().add_image_tags(
 
   let resp = match result {
                                             Ok(rsp) => match rsp {
-                                                apis::image_tag::AddImageTagsResponse::Status201_TagsAddedToImage
+                                                apis::image_tag::AddImageTagsResponse::Status201_AllTagsOfImage
                                                     (body)
                                                 => {
                                                   let mut response = response.status(201);

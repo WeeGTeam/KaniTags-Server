@@ -39,7 +39,7 @@ impl ImageTag<HttpApiUnhandledError> for AppState {
         };
 
         match added_tags_result {
-            Ok(added_tags) => Ok(AddImageTagsResponse::Status201_TagsAddedToImage(
+            Ok(added_tags) => Ok(AddImageTagsResponse::Status201_AllTagsOfImage(
                 FromDomain::from_domain(added_tags)
             )),
             Err(e) => Err(HttpApiUnhandledError::Unknown(e.into())),

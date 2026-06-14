@@ -177,7 +177,7 @@ paths:
         required: true
       responses:
         "201":
-          description: tags added to image
+          description: all tags of image (including the newly added tags)
           content:
             application/json:
               schema:
