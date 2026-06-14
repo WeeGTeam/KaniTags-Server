@@ -7,7 +7,7 @@ use crate::Postgres;
 use diesel::Connection;
 use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
 use kani_domain_api_model::image_hash::hash_to_hex;
-use kani_domain_api_model::image_id::ImageId;
+use kani_domain_api_model::image_id::ImageIdHash;
 use kani_domain_api_model::image_search::ImageSearchFilter;
 use kani_domain_api_model::import::ImportSessionId;
 use kani_domain_api_model::user::User;
@@ -17,12 +17,12 @@ use tracing::debug;
 mod converter;
 
 impl ImageDatabase for Postgres {
-    fn get_image_by_image_id(&self, image_id: &ImageId) -> Result<Option<PantsuImage>, anyhow::Error> {
-        debug!("Getting image by image id: {}", image_id);
+    fn get_image_by_image_id_hash(&self, image_id_hash: &ImageIdHash) -> Result<Option<PantsuImage>, anyhow::Error> {
+        debug!("Getting image by image id hash: {}", image_id_hash);
         let mut connection = self.get_connection()?;
         let image_row =
-            connection.transaction(|conn| conn.image_dao().get_image_by_id_hash(&image_id.0))?;
-        debug!("Got image by image id: {}: {}", image_id, image_row.is_some());
+            connection.transaction(|conn| conn.image_dao().get_image_by_id_hash(&image_id_hash.0))?;
+        debug!("Got image by image id hash: {}: {}", image_id_hash, image_row.is_some());
         Ok(image_row.map(TryInto::try_into).transpose()?)
     }
 
@@ -74,7 +74,7 @@ impl ImageDatabase for Postgres {
         Ok(())
     }
 
-    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, anyhow::Error> {
+    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageIdHash>, anyhow::Error> {
         debug!("Starting image search for user '{}' and filter '{:?}'", user.user_name, filter);
         let mut connection = self.get_connection()?;
         let rows = connection.transaction(|conn| {{
@@ -100,7 +100,7 @@ mod test {
         let db = test_db();
         let mut connection = db.get_connection().unwrap();
         let db_image = insert_test_image(&mut connection).unwrap();
-        assert_ok!(db.get_image_by_image_id(&ImageId(IdHash::try_from(db_image.id_hash).unwrap())));
+        assert_ok!(db.get_image_by_image_id_hash(&ImageIdHash(IdHash::try_from(db_image.id_hash).unwrap())));
     }
 
     #[test]
@@ -108,7 +108,7 @@ mod test {
     fn test_get_error() {
         let db = test_db();
         assert_none!(assert_ok!(
-            db.get_image_by_image_id(&ImageId([1, 2, 3, 4, 5, 6, 7, 8]))
+            db.get_image_by_image_id_hash(&ImageIdHash([1, 2, 3, 4, 5, 6, 7, 8]))
         ))
     }
 

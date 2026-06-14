@@ -1,6 +1,6 @@
 use crate::similarity::coloring::color_and_merge_groups;
 use kani_domain_api_incoming::similarity_service::{CalculateSimilarityGroupsError, GetSimilarImagesError, SimilarityService};
-use kani_domain_api_model::image_id::ImageId;
+use kani_domain_api_model::image_id::ImageIdHash;
 use kani_domain_api_model::similarity::{SimilarImage, SimilarImagePair};
 use kani_domain_api_outgoing::database::similarity_database::SimilarityDatabase;
 use std::collections::{HashMap, HashSet};
@@ -19,11 +19,11 @@ impl SimilarityServiceImpl {
 }
 
 impl SimilarityService for SimilarityServiceImpl {
-    fn get_similar_images(&self, image_id: &ImageId) -> Result<Vec<SimilarImage>, GetSimilarImagesError> {
-        Ok(self.database.get_similar_images(image_id)?)
+    fn get_similar_images(&self, image_id_hash: &ImageIdHash) -> Result<Vec<SimilarImage>, GetSimilarImagesError> {
+        Ok(self.database.get_similar_images(image_id_hash)?)
     }
 
-    fn calculate_similarity_groups(&self) -> Result<Vec<Vec<ImageId>>, CalculateSimilarityGroupsError> {
+    fn calculate_similarity_groups(&self) -> Result<Vec<Vec<ImageIdHash>>, CalculateSimilarityGroupsError> {
         let image_pairs = self.database.get_all_similar_images()?;
         let image_groups = create_similar_groups_by_images(&image_pairs);
         let merged_groups = color_and_merge_groups(image_groups);
@@ -31,22 +31,22 @@ impl SimilarityService for SimilarityServiceImpl {
     }
 }
 
-fn create_similar_groups_by_images(image_pairs: &[SimilarImagePair]) -> HashMap<&ImageId, Vec<&ImageId>> {
+fn create_similar_groups_by_images(image_pairs: &[SimilarImagePair]) -> HashMap<&ImageIdHash, Vec<&ImageIdHash>> {
     let mut image_groups = HashMap::new();
     for image_pair in image_pairs {
         {
-            let group1 = image_groups.entry(&image_pair.image_id1).or_insert_with(HashSet::new);
-            group1.insert(&image_pair.image_id1);
-            group1.insert(&image_pair.image_id2);
+            let group1 = image_groups.entry(&image_pair.image_id_hash1).or_insert_with(HashSet::new);
+            group1.insert(&image_pair.image_id_hash1);
+            group1.insert(&image_pair.image_id_hash2);
         }
         {
-            let group2 = image_groups.entry(&image_pair.image_id2).or_insert_with(HashSet::new);
-            group2.insert(&image_pair.image_id1);
-            group2.insert(&image_pair.image_id2);
+            let group2 = image_groups.entry(&image_pair.image_id_hash2).or_insert_with(HashSet::new);
+            group2.insert(&image_pair.image_id_hash1);
+            group2.insert(&image_pair.image_id_hash2);
         }
     }
     image_groups.into_iter()
-        .map(|(image_id, group)| (image_id, group.into_iter().collect()))
+        .map(|(image_id_hash, group)| (image_id_hash, group.into_iter().collect()))
         .collect()
 }
 
@@ -57,7 +57,7 @@ mod test {
     use crate::similarity::SimilarityServiceImpl;
     use anyhow::Error;
     use kani_domain_api_incoming::similarity_service::SimilarityService;
-    use kani_domain_api_model::image_id::ImageId;
+    use kani_domain_api_model::image_id::ImageIdHash;
     use kani_domain_api_model::similarity::{SimilarImage, SimilarImagePair};
     use kani_domain_api_outgoing::database::similarity_database::SimilarityDatabase;
     use std::sync::Arc;
@@ -102,7 +102,7 @@ mod test {
     struct MockDatabase(Vec<(u8, u8)>);
 
     impl SimilarityDatabase for MockDatabase {
-        fn get_similar_images(&self, _image_id: &ImageId) -> Result<Vec<SimilarImage>, Error> {
+        fn get_similar_images(&self, _image_id_hash: &ImageIdHash) -> Result<Vec<SimilarImage>, Error> {
             todo!()
         }
 
@@ -111,8 +111,8 @@ mod test {
                 self.0
                     .iter()
                     .map(|(id1, id2)| SimilarImagePair {
-                        image_id1: ImageId([0,0,0,0,0,0,0,*id1]),
-                        image_id2: ImageId([0,0,0,0,0,0,0,*id2]),
+                        image_id_hash1: ImageIdHash([0,0,0,0,0,0,0,*id1]),
+                        image_id_hash2: ImageIdHash([0,0,0,0,0,0,0,*id2]),
                         distance: 0,
                     })
                     .collect()

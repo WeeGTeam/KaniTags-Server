@@ -6,7 +6,7 @@ use axum_extra::extract::cookie::CookieJar;
 use headers::Host;
 use kani_domain_api_incoming::image_management::GetImageError;
 use kani_domain_api_model::image_format::ImageFormat;
-use kani_domain_api_model::image_id::ImageId;
+use kani_domain_api_model::image_id::ImageIdHash;
 use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_openapi::apis::image_download::GetImageResponse;
 use kani_openapi::apis::image_download::{
@@ -26,20 +26,20 @@ impl ImageDownload<HttpApiUnhandledError> for AppState {
         _cookies: &CookieJar,
         _path_params: &GetImagePathParams,
     ) -> Result<GetImageResponse, HttpApiUnhandledError> {
-        let id = match ImageId::from_str(&_path_params.id) {
+        let image_id_hash = match ImageIdHash::from_str(&_path_params.id) {
             Ok(id) => id,
             Err(e) => {
-                info!("Invalid image id: {}", e);
+                info!("Invalid image id hash: {}", e);
                 return Ok(GetImageResponse::Status404_ImageNotFound);
             }
         };
-        match self.image_management_service.get_image(id).await {
+        match self.image_management_service.get_image(image_id_hash).await {
             Ok((bytes, format)) => Ok(GetImageResponse::Status200_Ok(
                 ByteArray(bytes.to_vec()),
                 to_image_content_type(format),
             )),
-            Err(GetImageError::ImageNotFound(image_id)) => {
-                info!("Image not found: {}", image_id);
+            Err(GetImageError::ImageNotFound(image_id_hash)) => {
+                info!("Image not found: IdHash({})", image_id_hash);
                 Ok(GetImageResponse::Status404_ImageNotFound)
             }
             Err(GetImageError::Unknown(e)) => Err(HttpApiUnhandledError::Unknown(e.into())),
@@ -53,21 +53,21 @@ impl ImageDownload<HttpApiUnhandledError> for AppState {
         _cookies: &CookieJar,
         _path_params: &GetThumbnailImagePathParams,
     ) -> Result<GetThumbnailImageResponse, HttpApiUnhandledError> {
-        let id = match ImageId::from_str(&_path_params.id) {
+        let image_id_hash = match ImageIdHash::from_str(&_path_params.id) {
             Ok(id) => id,
             Err(e) => {
-                info!("Invalid image id: {}", e);
+                info!("Invalid image id hash: {}", e);
                 return Ok(GetThumbnailImageResponse::Status404_ImageNotFound);
             }
         };
 
-        match self.image_management_service.get_thumbnail(id, ThumbnailKind::Gallery).await {
+        match self.image_management_service.get_thumbnail(image_id_hash, ThumbnailKind::Gallery).await {
             Ok((bytes, format)) => Ok(GetThumbnailImageResponse::Status200_Ok(
                 ByteArray(bytes.to_vec()),
                 to_image_content_type(format),
             )),
-            Err(GetImageError::ImageNotFound(image_id)) => {
-                info!("Image not found: {}", image_id);
+            Err(GetImageError::ImageNotFound(image_id_hash)) => {
+                info!("Image not found: IdHash({})", image_id_hash);
                 Ok(GetThumbnailImageResponse::Status404_ImageNotFound)
             }
             Err(GetImageError::Unknown(e)) => Err(HttpApiUnhandledError::Unknown(e.into())),
