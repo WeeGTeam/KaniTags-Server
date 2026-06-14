@@ -121,8 +121,29 @@ let result = api_impl.as_ref().get_image(
   let resp = match result {
                                             Ok(rsp) => match rsp {
                                                 apis::image_download::GetImageResponse::Status200_Ok
-                                                    (body, content_type)
+                                                    {
+                                                        body,
+                                                        content_type,
+                                                        content_disposition
+                                                    }
                                                 => {
+                                                    let content_disposition = match header::IntoHeaderValue(content_disposition).try_into() {
+                                                        Ok(val) => val,
+                                                        Err(e) => {
+                                                            return Response::builder()
+                                                                    .status(StatusCode::INTERNAL_SERVER_ERROR)
+                                                                    .body(Body::from(format!("An internal server error occurred handling content_disposition header - {e}"))).map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR });
+                                                        }
+                                                    };
+
+
+                                                    {
+                                                      let mut response_headers = response.headers_mut().unwrap();
+                                                      response_headers.insert(
+                                                          HeaderName::from_static("content-disposition"),
+                                                          content_disposition
+                                                      );
+                                                    }
                                                   let mut response = response.status(200);
                                                   {
                                                     let mut response_headers = response.headers_mut().unwrap();
@@ -214,8 +235,29 @@ let result = api_impl.as_ref().get_thumbnail_image(
   let resp = match result {
                                             Ok(rsp) => match rsp {
                                                 apis::image_download::GetThumbnailImageResponse::Status200_Ok
-                                                    (body, content_type)
+                                                    {
+                                                        body,
+                                                        content_type,
+                                                        content_disposition
+                                                    }
                                                 => {
+                                                    let content_disposition = match header::IntoHeaderValue(content_disposition).try_into() {
+                                                        Ok(val) => val,
+                                                        Err(e) => {
+                                                            return Response::builder()
+                                                                    .status(StatusCode::INTERNAL_SERVER_ERROR)
+                                                                    .body(Body::from(format!("An internal server error occurred handling content_disposition header - {e}"))).map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR });
+                                                        }
+                                                    };
+
+
+                                                    {
+                                                      let mut response_headers = response.headers_mut().unwrap();
+                                                      response_headers.insert(
+                                                          HeaderName::from_static("content-disposition"),
+                                                          content_disposition
+                                                      );
+                                                    }
                                                   let mut response = response.status(200);
                                                   {
                                                     let mut response_headers = response.headers_mut().unwrap();

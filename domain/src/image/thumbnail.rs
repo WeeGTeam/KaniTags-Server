@@ -6,7 +6,7 @@ use image::codecs::jpeg::JpegEncoder;
 use tokio::task::spawn_blocking;
 
 use kani_domain_api_model::thumbnail::ThumbnailKind;
-use kani_domain_api_model::{image_id::ImageId, thumbnail::ThumbnailOptions};
+use kani_domain_api_model::{image_id::ImageIdHash, thumbnail::ThumbnailOptions};
 
 
 const INITIAL_THUMBNAIL_BUFFER_SIZE: usize = usize::pow(2, 14);
@@ -21,28 +21,28 @@ pub const fn get_thumbnail_options(kind: &ThumbnailKind) -> ThumbnailOptions {
 }
 
 pub async fn create_thumbnail_in_memory(
-    image_id: ImageId,
+    image_id_hash: ImageIdHash,
     image_data: Bytes,
     options: ThumbnailOptions,
 ) -> Result<Bytes, anyhow::Error> {
     let result_buffer = Vec::with_capacity(INITIAL_THUMBNAIL_BUFFER_SIZE);
-    create_thumbnail(result_buffer, image_id, image_data, options).await
+    create_thumbnail(result_buffer, image_id_hash, image_data, options).await
 }
 
 async fn create_thumbnail(
     mut result_writer: impl Write + Into<Bytes> + Send + 'static,
-    image_id: ImageId,
+    image_id_hash: ImageIdHash,
     image_data: Bytes,
     options: ThumbnailOptions,
 ) -> Result<Bytes, anyhow::Error>{
     spawn_blocking(move || {
         let loaded_image = image::load_from_memory(&image_data)
-            .with_context(|| format!("Failed to load image \"{}\" into memory", image_id))?;
+            .with_context(|| format!("Failed to load image with id hash \"{}\" into memory", image_id_hash))?;
         let thumbnail = loaded_image.thumbnail(options.max_size, options.max_size);
 
         let encoder = JpegEncoder::new_with_quality(&mut result_writer, options.jpg_quality);
         thumbnail.write_with_encoder(encoder)
-            .with_context(|| format!("Failed to encode thumbnail \"{}\"", image_id))?;
+            .with_context(|| format!("Failed to encode thumbnail with id hash \"{}\"", image_id_hash))?;
         Ok(result_writer.into())
     })
     .await

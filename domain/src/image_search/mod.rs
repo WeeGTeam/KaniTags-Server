@@ -1,5 +1,5 @@
 use kani_domain_api_incoming::image_search_service::{ImageSearchService, SearchImagesError};
-use kani_domain_api_model::image_id::ImageId;
+use kani_domain_api_model::image_id::ImageIdHash;
 use kani_domain_api_model::image_search::ImageSearchFilter;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::ImageDatabase;
@@ -17,7 +17,7 @@ impl ImageSearchServiceImpl {
 }
 
 impl ImageSearchService for ImageSearchServiceImpl {
-    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, SearchImagesError> {
+    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageIdHash>, SearchImagesError> {
         info!("searching images with filter '{:?}'", filter);
         Ok(self.database.search_images(user, filter)?)
     }

@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use kani_domain_api_model::image::PantsuImage;
 use kani_domain_api_model::image_format::ImageFormat;
-use kani_domain_api_model::image_id::ImageId;
+use kani_domain_api_model::image_id::ImageIdHash;
 use kani_domain_api_model::thumbnail::ThumbnailOptions;
 use kani_domain_api_outgoing::image_repository::{ImageRepository, LoadImageError, StoreImageError};
 use tokio::{fs, fs::{DirBuilder, OpenOptions}, io::{self, AsyncWriteExt}};
@@ -36,26 +36,26 @@ impl FsImageRepository {
 impl ImageRepository for FsImageRepository {
     async fn store_image(
         &self,
-        image_id: &ImageId,
+        image_id_hash: &ImageIdHash,
         format: &ImageFormat,
         file_content: Bytes,
     ) -> Result<(), StoreImageError> {
         let library_dir = self.get_library_directory().await?;
-        let path = library_dir.join(get_image_filename(&image_id, &format));
+        let path = library_dir.join(get_image_filename(&image_id_hash, &format));
 
-        write_image_to_new_file(&file_content, &path, &image_id).await
+        write_image_to_new_file(&file_content, &path, &image_id_hash).await
     }
 
     async fn store_jpg_thumbnail(
         &self,
-        image_id: &ImageId,
+        image_id_hash: &ImageIdHash,
         file_content: Bytes,
         options: ThumbnailOptions
     ) -> Result<(), StoreImageError> {
         let thumbnail_dir = self.get_thumbnail_directory(&options).await?;
-        let path = thumbnail_dir.join(get_image_filename(&image_id, &ImageFormat::JPG));
+        let path = thumbnail_dir.join(get_image_filename(&image_id_hash, &ImageFormat::JPG));
 
-        write_image_to_new_file(&file_content, &path, &image_id).await
+        write_image_to_new_file(&file_content, &path, &image_id_hash).await
     }
 
     async fn load_image(
@@ -63,18 +63,18 @@ impl ImageRepository for FsImageRepository {
         image: &PantsuImage,
     ) -> Result<Bytes, LoadImageError> {
         let library_dir = self.get_library_directory().await?;
-        let path = library_dir.join(get_image_filename(&image.image_id, &image.format));
+        let path = library_dir.join(get_image_filename(&image.image_id_hash, &image.format));
 
         read_image(&path).await
     }
 
     async fn load_jpg_thumbnail(
         &self,
-        image_id: &ImageId,
+        image_id_hash: &ImageIdHash,
         options: &ThumbnailOptions,
     ) -> Result<Bytes, LoadImageError> {
         let thumbnail_dir = self.get_thumbnail_directory(options).await?;
-        let path = thumbnail_dir.join(get_image_filename(image_id, &ImageFormat::JPG));
+        let path = thumbnail_dir.join(get_image_filename(image_id_hash, &ImageFormat::JPG));
 
         read_image(&path).await
     }
@@ -89,7 +89,7 @@ async fn ensure_directory_exists(directory: &Path) -> Result<(), anyhow::Error> 
         .with_context(|| format!("Failed to create required directory: {}", directory.to_string_lossy()))
 }
 
-async fn write_image_to_new_file(file_content: &Bytes, path: &Path, image_id: &ImageId) -> Result<(), StoreImageError> {
+async fn write_image_to_new_file(file_content: &Bytes, path: &Path, image_id_hash: &ImageIdHash) -> Result<(), StoreImageError> {
     let mut file = OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -105,7 +105,7 @@ async fn write_image_to_new_file(file_content: &Bytes, path: &Path, image_id: &I
         file
             .write_all(&file_content)
             .await
-            .with_context(|| format!("Failed to write into image into file: {}", image_id))?
+            .with_context(|| format!("Failed to write into image into file: IdHash({})", image_id_hash))?
     )
 }
 
@@ -124,6 +124,6 @@ fn get_thumbnail_directory_name(options: &ThumbnailOptions) -> String {
     format!("{}x{}", options.max_size, options.max_size)
 }
 
-pub fn get_image_filename(id: &ImageId, format: &ImageFormat) -> String {
+pub fn get_image_filename(id: &ImageIdHash, format: &ImageFormat) -> String {
     format!("{}.{}", id.format_id_hash(), format.extension())
 }

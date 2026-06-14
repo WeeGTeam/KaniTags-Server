@@ -4,7 +4,7 @@ use async_trait::async_trait;
 use bytes::Bytes;
 use kani_domain_api_model::image::PantsuImage;
 use kani_domain_api_model::image_format::ImageFormat;
-use kani_domain_api_model::image_id::ImageId;
+use kani_domain_api_model::image_id::ImageIdHash;
 use kani_domain_api_model::thumbnail::ThumbnailOptions;
 use thiserror::Error;
 
@@ -13,14 +13,14 @@ use thiserror::Error;
 pub trait ImageRepository {
     async fn store_image(
         &self,
-        image_id: &ImageId,
+        image_id_hash: &ImageIdHash,
         format: &ImageFormat,
         file_content: Bytes,
     ) -> Result<(), StoreImageError>;
 
     async fn store_jpg_thumbnail(
         &self,
-        image_id: &ImageId,
+        image_id_hash: &ImageIdHash,
         file_content: Bytes,
         options: ThumbnailOptions,
     ) -> Result<(), StoreImageError>;
@@ -32,7 +32,7 @@ pub trait ImageRepository {
 
     async fn load_jpg_thumbnail(
         &self,
-        image_id: &ImageId,
+        image_id_hash: &ImageIdHash,
         options: &ThumbnailOptions,
     ) -> Result<Bytes, LoadImageError>;
 }

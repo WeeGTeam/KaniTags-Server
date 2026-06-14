@@ -9,8 +9,7 @@ use headers::Host;
 use kani_domain_api_model::image_id::ImageId;
 use kani_openapi::apis::image_tag::{AddImageTagsResponse, GetImageTagsResponse, ImageTag};
 use kani_openapi::models::{AddImageTagsPathParams, GetImageTagsPathParams, NewImageTag};
-use std::str::FromStr;
-use tracing::info;
+use std::num::ParseIntError;
 
 #[async_trait]
 impl ImageTag<HttpApiUnhandledError> for AppState {
@@ -23,18 +22,12 @@ impl ImageTag<HttpApiUnhandledError> for AppState {
         body: &Vec<NewImageTag>,
     ) -> Result<AddImageTagsResponse, HttpApiUnhandledError> {
         let user = current_user();
-        let id = match ImageId::from_str(&path_params.id) {
-            Ok(id) => id,
-            Err(e) => {
-                info!("Invalid image id: {}", e);
-                return Ok(AddImageTagsResponse::Status400_InvalidTagOrImageId);
-            }
-        };
+        let image_id: i64 = path_params.id.parse().map_err(|e: ParseIntError| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
 
         let added_tags_result = match body.iter()
             .map(|new_tag| new_tag.try_to_domain())
             .collect() {
-            Ok(new_tags) => self.tag_service.add_image_tags(id, new_tags, user),
+            Ok(new_tags) => self.tag_service.add_image_tags(ImageId(image_id), new_tags, user),
             Err(_) => return Ok(AddImageTagsResponse::Status400_InvalidTagOrImageId),
         };
 
@@ -53,15 +46,9 @@ impl ImageTag<HttpApiUnhandledError> for AppState {
         _cookies: &CookieJar,
         path_params: &GetImageTagsPathParams,
     ) -> Result<GetImageTagsResponse, HttpApiUnhandledError> {
-        let id = match ImageId::from_str(&path_params.id) {
-            Ok(id) => id,
-            Err(e) => {
-                info!("Invalid image id: {}", e);
-                return Ok(GetImageTagsResponse::Status404_ImageNotFound);
-            }
-        };
+        let image_id: i64 = path_params.id.parse().map_err(|e: ParseIntError| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
 
-        let image_tags = self.tag_service.get_image_tags(id)
+        let image_tags = self.tag_service.get_image_tags(ImageId(image_id))
             .map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
 
         Ok(GetImageTagsResponse::Status200_Ok(

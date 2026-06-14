@@ -17,6 +17,6 @@ pub enum AddImageTagsByUserError {
     #[error("Add image tags by user internal server error: '{0}'")]
     Unknown(#[from] anyhow::Error),
 
-    #[error("Image not found: '{0}'")]
+    #[error("Image not found: '{0:?}'")]
     ImageNotFound(ImageId),
 }

@@ -107,6 +107,12 @@ paths:
               schema:
                 type: string
                 format: binary
+          headers:
+            Content-Disposition:
+              description: download filename
+              required: true
+              schema:
+                type: string
         "404":
           description: image not found
   /image/thumbnail/{id}:
@@ -132,6 +138,12 @@ paths:
               schema:
                 type: string
                 format: binary
+          headers:
+            Content-Disposition:
+              description: download filename
+              required: true
+              schema:
+                type: string
         "404":
           description: image not found
   /image/{id}/tags:
@@ -313,8 +325,8 @@ components:
       pattern: "^[0-9]+$"
     ImageId:
       type: string
-      example: "3b6368639f3e17fa"
-      pattern: "^[0-9a-f]{16}$"
+      example: "123456789"
+      pattern: "^[0-9]+$"
     TagId:
       type: string
       example: "123456789"

@@ -5,6 +5,7 @@ use axum::http::Method;
 use axum_extra::extract::cookie::CookieJar;
 use headers::Host;
 use kani_domain_api_incoming::image_management::GetImageError;
+use kani_domain_api_model::image::ImageDownloadData;
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::thumbnail::ThumbnailKind;
@@ -14,7 +15,7 @@ use kani_openapi::apis::image_download::{
 };
 use kani_openapi::models::{GetImagePathParams, GetThumbnailImagePathParams};
 use kani_openapi::types::ByteArray;
-use std::str::FromStr;
+use std::num::ParseIntError;
 use tracing::info;
 
 #[async_trait]
@@ -24,22 +25,18 @@ impl ImageDownload<HttpApiUnhandledError> for AppState {
         _method: &Method,
         _host: &Host,
         _cookies: &CookieJar,
-        _path_params: &GetImagePathParams,
+        path_params: &GetImagePathParams,
     ) -> Result<GetImageResponse, HttpApiUnhandledError> {
-        let id = match ImageId::from_str(&_path_params.id) {
-            Ok(id) => id,
-            Err(e) => {
-                info!("Invalid image id: {}", e);
-                return Ok(GetImageResponse::Status404_ImageNotFound);
-            }
-        };
-        match self.image_management_service.get_image(id).await {
-            Ok((bytes, format)) => Ok(GetImageResponse::Status200_Ok(
-                ByteArray(bytes.to_vec()),
-                to_image_content_type(format),
-            )),
+        let image_id: i64 = path_params.id.parse().map_err(|e: ParseIntError| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
+
+        match self.image_management_service.get_image(ImageId(image_id)).await {
+            Ok(ImageDownloadData { bytes, filename, format}) => Ok(GetImageResponse::Status200_Ok {
+                body: ByteArray(bytes.to_vec()),
+                content_type: to_image_content_type(format),
+                content_disposition: format!("attachment; filename=\"{}\"", filename)
+            }),
             Err(GetImageError::ImageNotFound(image_id)) => {
-                info!("Image not found: {}", image_id);
+                info!("Image not found: {:?}", image_id);
                 Ok(GetImageResponse::Status404_ImageNotFound)
             }
             Err(GetImageError::Unknown(e)) => Err(HttpApiUnhandledError::Unknown(e.into())),
@@ -51,23 +48,18 @@ impl ImageDownload<HttpApiUnhandledError> for AppState {
         _method: &Method,
         _host: &Host,
         _cookies: &CookieJar,
-        _path_params: &GetThumbnailImagePathParams,
+        path_params: &GetThumbnailImagePathParams,
     ) -> Result<GetThumbnailImageResponse, HttpApiUnhandledError> {
-        let id = match ImageId::from_str(&_path_params.id) {
-            Ok(id) => id,
-            Err(e) => {
-                info!("Invalid image id: {}", e);
-                return Ok(GetThumbnailImageResponse::Status404_ImageNotFound);
-            }
-        };
+        let image_id: i64 = path_params.id.parse().map_err(|e: ParseIntError| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
 
-        match self.image_management_service.get_thumbnail(id, ThumbnailKind::Gallery).await {
-            Ok((bytes, format)) => Ok(GetThumbnailImageResponse::Status200_Ok(
-                ByteArray(bytes.to_vec()),
-                to_image_content_type(format),
-            )),
+        match self.image_management_service.get_thumbnail(ImageId(image_id), ThumbnailKind::Gallery).await {
+            Ok(ImageDownloadData { bytes, filename, format}) => Ok(GetThumbnailImageResponse::Status200_Ok {
+                body: ByteArray(bytes.to_vec()),
+                content_type: to_image_content_type(format),
+                content_disposition: format!("attachment; filename=\"{}\"", filename)
+            }),
             Err(GetImageError::ImageNotFound(image_id)) => {
-                info!("Image not found: {}", image_id);
+                info!("Image not found: {:?}", image_id);
                 Ok(GetThumbnailImageResponse::Status404_ImageNotFound)
             }
             Err(GetImageError::Unknown(e)) => Err(HttpApiUnhandledError::Unknown(e.into())),

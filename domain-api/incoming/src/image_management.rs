@@ -1,12 +1,12 @@
 use async_trait::async_trait;
 use bytes::Bytes;
-use thiserror::Error;
-
-use kani_domain_api_model::image_format::{ImageFormat, ImageFormatError};
-use kani_domain_api_model::image_id::ImageId;
+use kani_domain_api_model::image::ImageDownloadData;
+use kani_domain_api_model::image_format::ImageFormatError;
+use kani_domain_api_model::image_id::{ImageId, ImageIdHash};
 use kani_domain_api_model::import::{ImportSession, ImportSessionId};
 use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_domain_api_model::user::User;
+use thiserror::Error;
 
 #[async_trait]
 pub trait ImageManagementService {
@@ -18,9 +18,9 @@ pub trait ImageManagementService {
 
     async fn get_import_sessions(&self, user: &User) -> Result<Vec<ImportSession>, GetImportSessionsError>;
 
-    async fn get_image(&self, image_id: ImageId) -> Result<(Bytes, ImageFormat), GetImageError>;
+    async fn get_image(&self, image_id: ImageId) -> Result<ImageDownloadData, GetImageError>;
 
-    async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<(Bytes, ImageFormat), GetImageError>;
+    async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<ImageDownloadData, GetImageError>;
 }
 
 #[derive(Error, Debug)]
@@ -40,8 +40,8 @@ pub enum ImportImageError {
     #[error("Unable to load Image: {0}")]
     InvalidImage(image::ImageError),
 
-    #[error("Image already imported: {0}")]
-    ImageAlreadyImported(ImageId),
+    #[error("Image already imported: IdHash({0})")]
+    ImageAlreadyImported(ImageIdHash),
 }
 
 #[derive(Error, Debug)]
@@ -67,7 +67,7 @@ pub enum GetImageError {
     #[error("Get image internal server error: '{0}'")]
     Unknown(#[from] anyhow::Error),
 
-    #[error("Image not found: {0}")]
+    #[error("Image not found: {0:?}")]
     ImageNotFound(ImageId),
 }
 
