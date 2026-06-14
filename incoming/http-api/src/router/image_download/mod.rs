@@ -5,6 +5,7 @@ use axum::http::Method;
 use axum_extra::extract::cookie::CookieJar;
 use headers::Host;
 use kani_domain_api_incoming::image_management::GetImageError;
+use kani_domain_api_model::image::ImageDownloadData;
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::thumbnail::ThumbnailKind;
@@ -29,7 +30,7 @@ impl ImageDownload<HttpApiUnhandledError> for AppState {
         let image_id: i64 = path_params.id.parse().map_err(|e: ParseIntError| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
 
         match self.image_management_service.get_image(ImageId(image_id)).await {
-            Ok((bytes, filename, format)) => Ok(GetImageResponse::Status200_Ok {
+            Ok(ImageDownloadData { bytes, filename, format}) => Ok(GetImageResponse::Status200_Ok {
                 body: ByteArray(bytes.to_vec()),
                 content_type: to_image_content_type(format),
                 content_disposition: format!("attachment; filename=\"{}\"", filename)
@@ -52,7 +53,7 @@ impl ImageDownload<HttpApiUnhandledError> for AppState {
         let image_id: i64 = path_params.id.parse().map_err(|e: ParseIntError| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
 
         match self.image_management_service.get_thumbnail(ImageId(image_id), ThumbnailKind::Gallery).await {
-            Ok((bytes, filename, format)) => Ok(GetThumbnailImageResponse::Status200_Ok {
+            Ok(ImageDownloadData { bytes, filename, format}) => Ok(GetThumbnailImageResponse::Status200_Ok {
                 body: ByteArray(bytes.to_vec()),
                 content_type: to_image_content_type(format),
                 content_disposition: format!("attachment; filename=\"{}\"", filename)

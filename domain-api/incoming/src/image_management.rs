@@ -1,12 +1,12 @@
 use async_trait::async_trait;
 use bytes::Bytes;
-use thiserror::Error;
-
-use kani_domain_api_model::image_format::{ImageFormat, ImageFormatError};
+use kani_domain_api_model::image::ImageDownloadData;
+use kani_domain_api_model::image_format::ImageFormatError;
 use kani_domain_api_model::image_id::{ImageId, ImageIdHash};
 use kani_domain_api_model::import::{ImportSession, ImportSessionId};
 use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_domain_api_model::user::User;
+use thiserror::Error;
 
 #[async_trait]
 pub trait ImageManagementService {
@@ -18,9 +18,9 @@ pub trait ImageManagementService {
 
     async fn get_import_sessions(&self, user: &User) -> Result<Vec<ImportSession>, GetImportSessionsError>;
 
-    async fn get_image(&self, image_id: ImageId) -> Result<(Bytes, String, ImageFormat), GetImageError>;
+    async fn get_image(&self, image_id: ImageId) -> Result<ImageDownloadData, GetImageError>;
 
-    async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<(Bytes, String, ImageFormat), GetImageError>;
+    async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<ImageDownloadData, GetImageError>;
 }
 
 #[derive(Error, Debug)]

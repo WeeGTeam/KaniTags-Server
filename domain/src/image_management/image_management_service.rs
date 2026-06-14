@@ -7,7 +7,7 @@ use tracing::{info, warn};
 use crate::image::thumbnail::{create_thumbnail_in_memory, get_thumbnail_options};
 use crate::image::try_create_pantsu_image;
 use kani_domain_api_incoming::image_management::{CloseImportSessionError, GetImageError, GetImportSessionsError, ImageManagementService, ImportImageError, StartImportSessionError};
-use kani_domain_api_model::image::PantsuImage;
+use kani_domain_api_model::image::{ImageDownloadData, PantsuImage};
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_id::{ImageId, ImageIdHash};
 use kani_domain_api_model::import::{ImportSession, ImportSessionId};
@@ -117,28 +117,40 @@ impl ImageManagementService for ImageManagementServiceImpl {
     }
 
 
-    async fn get_image(&self, image_id: ImageId) -> Result<(Bytes, String, ImageFormat), GetImageError> {
+    async fn get_image(&self, image_id: ImageId) -> Result<ImageDownloadData, GetImageError> {
         let db_image = self.database
             .get_image_by_image_id(image_id.clone())?
             .ok_or_else(|| GetImageError::ImageNotFound(image_id.clone()))?;
 
         let loaded_image = self.load_image_bytes(&db_image).await?;
 
-        Ok((loaded_image, db_image.image_id_hash.format_id_hash(), db_image.format))
+        Ok(ImageDownloadData {
+            bytes: loaded_image,
+            filename: db_image.image_id_hash.format_id_hash(),
+            format: db_image.format
+        })
     }
 
-    async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<(Bytes, String, ImageFormat), GetImageError> {
+    async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<ImageDownloadData, GetImageError> {
         let db_image = self.database
             .get_image_by_image_id(image_id.clone())?
             .ok_or_else(|| GetImageError::ImageNotFound(image_id.clone()))?;
         let thumbnail_options = get_thumbnail_options(&kind);
         match self.image_repository.load_jpg_thumbnail(&db_image.image_id_hash, &thumbnail_options).await {
-            Ok(loaded_thumbnail) => Ok((loaded_thumbnail, db_image.image_id_hash.format_id_hash(), ImageFormat::JPG)),
+            Ok(loaded_thumbnail) => Ok(ImageDownloadData {
+                bytes: loaded_thumbnail,
+                filename: db_image.image_id_hash.format_id_hash(),
+                format: ImageFormat::JPG
+            }),
             Err(LoadImageError::ImageNotFound(_)) => {
                 info!("Thumbnail for image '{:?}' not found, creating it", image_id);
                 let loaded_image = self.load_image_bytes(&db_image).await?;
                 let thumbnail = self.create_thumbnail(&db_image.image_id_hash, loaded_image, &kind).await.map_err(|e| GetImageError::Unknown(e))?;
-                Ok((thumbnail, db_image.image_id_hash.format_id_hash(), ImageFormat::JPG))
+                Ok(ImageDownloadData {
+                    bytes: thumbnail,
+                    filename: db_image.image_id_hash.format_id_hash(),
+                    format: ImageFormat::JPG
+                })
             }
             Err(unknown @ LoadImageError::Unknown(_)) => Err(GetImageError::Unknown(unknown.into())),
         }
