@@ -8,6 +8,7 @@ use kani_domain_api_incoming::image_management::ImageManagementService;
 use kani_domain_api_incoming::image_search_service::ImageSearchService;
 use kani_domain_api_incoming::login_service::LoginService;
 use kani_domain_api_incoming::similarity_service::SimilarityService;
+use kani_domain_api_incoming::tag_service::TagService;
 use kani_openapi::server;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -21,11 +22,12 @@ mod error;
 mod request_tracing;
 pub mod router;
 
-pub async fn launch_server<IS, ISS, LS, SS>(
+pub async fn launch_server<IS, ISS, LS, SS, TS>(
     image_management_service: Arc<IS>,
     image_search_service: Arc<ISS>,
     login_service: Arc<LS>,
     similarity_service: Arc<SS>,
+    tag_service: Arc<TS>,
     request_body_limit: usize,
     server_port: u16,
     auth_user_header: String,
@@ -35,6 +37,7 @@ where
     ISS: ImageSearchService + Send + Sync + 'static,
     LS: LoginService + Send + Sync + 'static,
     SS: SimilarityService + Send + Sync + 'static,
+    TS: TagService + Send + Sync + 'static,
 {
     let listener = tokio::net::TcpListener::bind(("0.0.0.0", server_port))
         .await
@@ -54,6 +57,7 @@ where
         image_search_service,
         login_service,
         similarity_service,
+        tag_service,
     );
 
     let body_limit = DefaultBodyLimit::max(request_body_limit);

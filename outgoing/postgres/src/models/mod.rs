@@ -50,7 +50,7 @@ pub enum SourceStatus {
     MISSING,
 }
 
-#[derive(Clone, Debug, diesel_derive_enum::DbEnum)]
+#[derive(Clone, Debug, diesel_derive_enum::DbEnum, PartialEq, Eq)]
 #[ExistingTypePath = "crate::schema::sql_types::TagType"]
 #[DbValueStyle = "UPPERCASE"]
 pub enum TagType {

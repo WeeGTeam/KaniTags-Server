@@ -2,6 +2,7 @@ use anyhow::Context;
 use kani_domain::image_management::image_management_service::ImageManagementServiceImpl;
 use kani_domain::image_search::ImageSearchServiceImpl;
 use kani_domain::similarity::SimilarityServiceImpl;
+use kani_domain::tag::tag_service::TagServiceImpl;
 use kani_domain::user::login_service::LoginServiceImpl;
 use kani_domain_api_outgoing::reverse_image_search::ReverseImageSearchService;
 use kani_fs::fs_image_repository::FsImageRepository;
@@ -24,23 +25,29 @@ async fn main() -> Result<(), anyhow::Error> {
     info!("the sauce of {} is {}", "Megumin", sauce);
 
     let fs_image_repository = FsImageRepository::new(config.library_path.clone());
+    let fs_image_repository = Arc::new(fs_image_repository);
     let database = Postgres::new(&config.db_url, &config.db_username, &config.db_password).context("Failed to initialize database")?;
     database.setup().context("Failed to setup database")?;
+    let database = Arc::new(database);
 
     let image_management_service = ImageManagementServiceImpl::new(
-        Arc::new(fs_image_repository),
-        Arc::new(database.clone()),
+        fs_image_repository.clone(),
+        database.clone(),
     );
     let image_search_service = ImageSearchServiceImpl::new(
-        Arc::new(database.clone())
+        database.clone(),
     );
 
     let login_service = LoginServiceImpl::new(
-        Arc::new(database.clone())
+        database.clone(),
     );
 
     let similarity_service = SimilarityServiceImpl::new(
-        Arc::new(database)
+        database.clone(),
+    );
+
+    let tag_service = TagServiceImpl::new(
+        database.clone(),
     );
 
     /*let stream_service = worker_init::init_iqdb();
@@ -76,6 +83,7 @@ async fn main() -> Result<(), anyhow::Error> {
         Arc::new(image_search_service),
         Arc::new(login_service),
         Arc::new(similarity_service),
+        Arc::new(tag_service),
         config.request_body_limit.as_u64() as usize,
         config.server_port,
         config.auth_user_header

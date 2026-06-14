@@ -1,15 +1,9 @@
-pub mod image;
-pub mod image_list;
-pub mod image_tag_converter;
-pub mod import;
-pub mod tag_converter;
-
 pub trait ToDomain<D> {
     fn to_domain(self) -> D;
 }
 
 pub trait TryToDomain<D> {
-    type Error: std::error::Error;
+    type Error;
 
     fn try_to_domain(self) -> Result<D, Self::Error>;
 }
@@ -19,7 +13,7 @@ pub trait FromDomain<D> {
 }
 
 pub trait TryFromDomain<D>: Sized {
-    type Error: std::error::Error;
+    type Error;
 
     fn try_from_domain(value: D) -> Result<Self, Self::Error>;
 }

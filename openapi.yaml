@@ -12,6 +12,7 @@ tags:
   - name: imageDownload
   - name: imageList
   - name: imageTag
+  - name: tag
 paths:
   /image/importSession:
     get:
@@ -155,6 +156,36 @@ paths:
                   $ref: '#/components/schemas/ImageTag'
         "404":
           description: image not found
+    post:
+      tags:
+        - imageTag
+      operationId: addImageTags
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImageId'
+      requestBody:
+        description: adds tags to the image. If a tag does not exist, it is created.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/NewImageTag'
+        required: true
+      responses:
+        "201":
+          description: all tags of image (including the newly added tags)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageTag'
+        "400":
+          description: Invalid tag or image id
   /images:
     get:
       tags:
@@ -239,6 +270,20 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/ImageId'
+  /tags:
+    get:
+      tags:
+        - tag
+      operationId: getTags
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
 components:
   schemas:
     ImportSession:
@@ -282,6 +327,16 @@ components:
       type: string
       example: "123456789"
       pattern: "^[0-9]+$"
+    NewImageTag:
+      type: object
+      properties:
+        tagType:
+          $ref: '#/components/schemas/TagType'
+        tagName:
+          $ref: '#/components/schemas/TagName'
+      required:
+        - tagType
+        - tagName
     ImageTag:
       type: object
       properties:
@@ -295,7 +350,6 @@ components:
           example: "2023-09-20T12:34:56Z"
       required:
         - tagId
-        - createdBy
         - createdAt
     ImageImport:
       type: object
@@ -305,3 +359,23 @@ components:
           format: binary
       required:
         - file
+    Tag:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/TagId'
+        tagType:
+          $ref: '#/components/schemas/TagType'
+        tagName:
+          $ref: '#/components/schemas/TagName'
+      required:
+        - id
+        - tagType
+        - tagName
+    TagName:
+      type: string
+      description: "max length: 40 characters"
+    TagType:
+      type: string
+      enum: [ rating, artist, source, character, general ]
+      example: general

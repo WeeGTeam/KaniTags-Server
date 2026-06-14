@@ -2,7 +2,7 @@ use crate::models::TagType;
 use chrono::{DateTime, Utc};
 use diesel::{Insertable, Queryable, Selectable};
 
-#[derive(Queryable, Selectable, Debug)]
+#[derive(Queryable, Selectable, Clone, Debug)]
 #[diesel(table_name = crate::schema::tag)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct TagRow {

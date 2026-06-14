@@ -1,10 +1,12 @@
 use crate::models::image_tag::{ImageTagInsertRow, ImageTagRow};
 use crate::models::tag::{TagInsertRow, TagRow};
-use crate::schema::image_tag::dsl as image_tag_dsl;
+use crate::schema::image::dsl as image_dsl;
+use crate::schema::image::dsl::image;
 use crate::schema::image_tag::dsl::image_tag;
+use crate::schema::tag::dsl as tag_dsl;
 use crate::schema::tag::dsl::tag;
 use anyhow::{Context, Error};
-use diesel::ExpressionMethods;
+use diesel::{BoolExpressionMethods, ExpressionMethods};
 use diesel::{QueryDsl, RunQueryDsl, SelectableHelper};
 
 pub struct TagDao<'c> {
@@ -16,11 +18,12 @@ impl<'c> TagDao<'c> {
         TagDao { connection }
     }
 
-    pub fn insert_tag(&mut self, insert_row: &TagInsertRow) -> Result<TagRow, Error> {
+    pub fn insert_tags_if_missing(&mut self, insert_rows: &[TagInsertRow]) -> Result<Vec<TagRow>, Error> {
         diesel::insert_into(tag)
-            .values(insert_row)
+            .values(insert_rows)
             .returning(TagRow::as_returning())
-            .get_result(self.connection)
+            .on_conflict_do_nothing()
+            .get_results(self.connection)
             .context("Failed to insert tag into database")
     }
 
@@ -29,24 +32,39 @@ impl<'c> TagDao<'c> {
             .context("Failed to load tags from database")
     }
 
-    pub fn insert_image_tag(
+    pub fn get_tags_by_name_and_type(&mut self, tags: &[TagInsertRow]) -> Result<Vec<TagRow>, Error> {
+        let mut query = tag
+            .select(TagRow::as_select())
+            .into_boxed();
+        query = tags.iter().fold(query, |query, current_tag| {
+            query.or_filter(tag_dsl::tag_type.eq(&current_tag.tag_type).and(tag_dsl::tag_name.eq(&current_tag.tag_name)))
+        });
+        query.load(self.connection)
+            .context("Failed to load tags by their name and type from database")
+    }
+
+    // does not fail if image tag already exists
+    pub fn insert_image_tags(
         &mut self,
-        insert_row: &ImageTagInsertRow,
-    ) -> Result<ImageTagRow, Error> {
+        insert_rows: &[ImageTagInsertRow],
+    ) -> Result<Vec<ImageTagRow>, Error> {
         diesel::insert_into(image_tag)
-            .values(insert_row)
+            .values(insert_rows)
             .returning(ImageTagRow::as_returning())
-            .get_result(self.connection)
+            .on_conflict_do_nothing()
+            .get_results(self.connection)
             .context("Failed to insert image tag into database")
     }
 
     pub fn get_all_image_tags_by_image(
         &mut self,
-        image_id: i64,
-    ) -> Result<Vec<ImageTagRow>, Error> {
+        image_id_hash: &[u8],
+    ) -> Result<Vec<(ImageTagRow, TagRow)>, Error> {
         image_tag
-            .filter(image_tag_dsl::image_id.eq(image_id))
-            .select(ImageTagRow::as_select())
+            .inner_join(image)
+            .filter(image_dsl::id_hash.eq(image_id_hash))
+            .inner_join(tag)
+            .select((ImageTagRow::as_select(), TagRow::as_select()))
             .load(self.connection)
             .context("Failed to load image tags from database")
     }
@@ -54,10 +72,9 @@ impl<'c> TagDao<'c> {
 
 #[cfg(test)]
 mod test {
-    use crate::dao::test::{
-        insert_test_image, insert_test_image_tag, insert_test_tag, insert_test_user,
-    };
+    use crate::dao::test::{insert_test_image, insert_test_image_tag, insert_test_tag, insert_test_tag_with, insert_test_user};
     use crate::dao::Dao;
+    use crate::models::image_tag::ImageTagInsertRow;
     use crate::models::tag::TagInsertRow;
     use crate::models::TagType;
     use crate::test::test_db;
@@ -66,15 +83,16 @@ mod test {
 
     #[test]
     #[serial_test::serial]
-    fn test_insert_tag() {
+    fn test_insert_tags_if_missing() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let _result = conn.test_transaction(|c| {
-            c.tag_dao().insert_tag(&TagInsertRow {
+        let results = conn.test_transaction(|c| {
+            c.tag_dao().insert_tags_if_missing(&[TagInsertRow {
                 tag_type: TagType::CHARACTER,
                 tag_name: "Megumin".to_string(),
-            })
+            }])
         });
+        assert_len_eq_x!(results, 1);
     }
 
     #[test]
@@ -91,7 +109,66 @@ mod test {
 
     #[test]
     #[serial_test::serial]
-    fn test_get_user_by_user_name() {
+    fn test_get_tag_by_name_and_type() {
+        let postgres = test_db();
+        let mut conn = postgres.get_connection().unwrap();
+        let result = conn.test_transaction(|c| {
+            let test_tag_type = TagType::CHARACTER;
+            let test_tag_name = "Megumin";
+            let _tag = insert_test_tag_with(c, test_tag_type.clone(), test_tag_name.to_owned())?;
+
+            c.tag_dao().get_tags_by_name_and_type(&[TagInsertRow{ tag_type: test_tag_type, tag_name: test_tag_name.to_owned() }])
+        });
+        assert_len_eq_x!(result, 1);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_insert_image_tags() {
+        let postgres = test_db();
+        let mut conn = postgres.get_connection().unwrap();
+        let result = conn.test_transaction(|c| {
+            let image = insert_test_image(c)?;
+            let tag = insert_test_tag(c)?;
+
+            c.tag_dao().insert_image_tags(&[ImageTagInsertRow {
+                image_id: image.id,
+                tag_id: tag.id,
+                user_id: None,
+                source_site: None,
+            }])
+        });
+        assert_len_eq_x!(result, 1);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_insert_image_tags_no_fail_when_image_tag_already_exists() {
+        let postgres = test_db();
+        let mut conn = postgres.get_connection().unwrap();
+        let result = conn.test_transaction(|c| {
+            let image = insert_test_image(c)?;
+            let tag = insert_test_tag(c)?;
+            let _existing_image_tag = c.tag_dao().insert_image_tags(&[ImageTagInsertRow {
+                image_id: image.id,
+                tag_id: tag.id,
+                user_id: None,
+                source_site: None,
+            }]);
+
+            c.tag_dao().insert_image_tags(&[ImageTagInsertRow {
+                image_id: image.id,
+                tag_id: tag.id,
+                user_id: None,
+                source_site: None,
+            }])
+        });
+        assert_len_eq_x!(result, 0);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_get_all_image_tags_by_image() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
         let result = conn.test_transaction(|c| {
@@ -99,7 +176,7 @@ mod test {
             let tag = insert_test_tag(c)?;
             let user = insert_test_user(c)?;
             let _image_tag = insert_test_image_tag(c, image.id, tag.id, Some(user.id))?;
-            c.tag_dao().get_all_image_tags_by_image(image.id)
+            c.tag_dao().get_all_image_tags_by_image(image.id_hash.as_ref())
         });
         assert_len_eq_x!(result, 1);
     }

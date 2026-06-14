@@ -25,7 +25,7 @@ use crate::{
 pub fn new<I, A, E>(api_impl: I) -> Router
 where
     I: AsRef<A> + Clone + Send + Sync + 'static,
-    A: apis::image_download::ImageDownload<E> + apis::image_import::ImageImport<E> + apis::image_list::ImageList<E> + apis::image_tag::ImageTag<E> + Send + Sync + 'static,
+    A: apis::image_download::ImageDownload<E> + apis::image_import::ImageImport<E> + apis::image_list::ImageList<E> + apis::image_tag::ImageTag<E> + apis::tag::Tag<E> + Send + Sync + 'static,
     E: std::fmt::Debug + Send + Sync + 'static,
     
 {
@@ -47,10 +47,13 @@ where
             get(get_image::<I, A, E>)
         )
         .route("/image/{id}/tags",
-            get(get_image_tags::<I, A, E>)
+            get(get_image_tags::<I, A, E>).post(add_image_tags::<I, A, E>)
         )
         .route("/images",
             get(get_images::<I, A, E>)
+        )
+        .route("/tags",
+            get(get_tags::<I, A, E>)
         )
         .with_state(api_impl)
 }
@@ -686,6 +689,119 @@ let result = api_impl.as_ref().get_images(
                                         resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
 }
 
+    #[derive(validator::Validate)]
+    #[allow(dead_code)]
+    struct AddImageTagsBodyValidator<'a> {
+                #[validate(nested)]
+          body: &'a Vec<models::NewImageTag>,
+    }
+
+
+#[tracing::instrument(skip_all)]
+fn add_image_tags_validation(
+  path_params: models::AddImageTagsPathParams,
+        body: Vec<models::NewImageTag>,
+) -> std::result::Result<(
+  models::AddImageTagsPathParams,
+        Vec<models::NewImageTag>,
+), ValidationErrors>
+{
+  path_params.validate()?;
+              let b = AddImageTagsBodyValidator { body: &body };
+              b.validate()?;
+
+Ok((
+  path_params,
+    body,
+))
+}
+/// AddImageTags - POST /image/{id}/tags
+#[tracing::instrument(skip_all)]
+async fn add_image_tags<I, A, E>(
+  method: Method,
+  TypedHeader(host): TypedHeader<Host>,
+  cookies: CookieJar,
+  Path(path_params): Path<models::AddImageTagsPathParams>,
+ State(api_impl): State<I>,
+          Json(body): Json<Vec<models::NewImageTag>>,
+) -> Result<Response, StatusCode>
+where
+    I: AsRef<A> + Send + Sync,
+    A: apis::image_tag::ImageTag<E> + Send + Sync,
+    E: std::fmt::Debug + Send + Sync + 'static,
+        {
+
+
+
+
+      #[allow(clippy::redundant_closure)]
+      let validation = tokio::task::spawn_blocking(move ||
+    add_image_tags_validation(
+        path_params,
+          body,
+    )
+  ).await.unwrap();
+
+  let Ok((
+    path_params,
+      body,
+  )) = validation else {
+    return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(validation.unwrap_err().to_string()))
+            .map_err(|_| StatusCode::BAD_REQUEST);
+  };
+
+
+
+let result = api_impl.as_ref().add_image_tags(
+      
+      &method,
+      &host,
+      &cookies,
+        &path_params,
+              &body,
+  ).await;
+
+  let mut response = Response::builder();
+
+  let resp = match result {
+                                            Ok(rsp) => match rsp {
+                                                apis::image_tag::AddImageTagsResponse::Status201_AllTagsOfImage
+                                                    (body)
+                                                => {
+                                                  let mut response = response.status(201);
+                                                  {
+                                                    let mut response_headers = response.headers_mut().unwrap();
+                                                    response_headers.insert(
+                                                        CONTENT_TYPE,
+                                                        HeaderValue::from_static("application/json"));
+                                                  }
+
+                                                  let body_content =  tokio::task::spawn_blocking(move ||
+                                                      serde_json::to_vec(&body).map_err(|e| {
+                                                        error!(error = ?e);
+                                                        StatusCode::INTERNAL_SERVER_ERROR
+                                                      })).await.unwrap()?;
+                                                  response.body(Body::from(body_content))
+                                                },
+                                                apis::image_tag::AddImageTagsResponse::Status400_InvalidTagOrImageId
+                                                => {
+                                                  let mut response = response.status(400);
+                                                  response.body(Body::empty())
+                                                },
+                                            },
+                                            Err(why) => {
+                                                    // Application code returned an error. This should not happen, as the implementation should
+                                                    // return a valid response.
+                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
+                                            },
+                                        };
+
+
+                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
+}
+
 
 #[tracing::instrument(skip_all)]
 fn get_image_tags_validation(
@@ -770,6 +886,90 @@ let result = api_impl.as_ref().get_image_tags(
                                                 => {
                                                   let mut response = response.status(404);
                                                   response.body(Body::empty())
+                                                },
+                                            },
+                                            Err(why) => {
+                                                    // Application code returned an error. This should not happen, as the implementation should
+                                                    // return a valid response.
+                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
+                                            },
+                                        };
+
+
+                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
+}
+
+
+#[tracing::instrument(skip_all)]
+fn get_tags_validation(
+) -> std::result::Result<(
+), ValidationErrors>
+{
+
+Ok((
+))
+}
+/// GetTags - GET /tags
+#[tracing::instrument(skip_all)]
+async fn get_tags<I, A, E>(
+  method: Method,
+  TypedHeader(host): TypedHeader<Host>,
+  cookies: CookieJar,
+ State(api_impl): State<I>,
+) -> Result<Response, StatusCode>
+where
+    I: AsRef<A> + Send + Sync,
+    A: apis::tag::Tag<E> + Send + Sync,
+    E: std::fmt::Debug + Send + Sync + 'static,
+        {
+
+
+
+
+      #[allow(clippy::redundant_closure)]
+      let validation = tokio::task::spawn_blocking(move ||
+    get_tags_validation(
+    )
+  ).await.unwrap();
+
+  let Ok((
+  )) = validation else {
+    return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(validation.unwrap_err().to_string()))
+            .map_err(|_| StatusCode::BAD_REQUEST);
+  };
+
+
+
+let result = api_impl.as_ref().get_tags(
+      
+      &method,
+      &host,
+      &cookies,
+  ).await;
+
+  let mut response = Response::builder();
+
+  let resp = match result {
+                                            Ok(rsp) => match rsp {
+                                                apis::tag::GetTagsResponse::Status200_Ok
+                                                    (body)
+                                                => {
+                                                  let mut response = response.status(200);
+                                                  {
+                                                    let mut response_headers = response.headers_mut().unwrap();
+                                                    response_headers.insert(
+                                                        CONTENT_TYPE,
+                                                        HeaderValue::from_static("application/json"));
+                                                  }
+
+                                                  let body_content =  tokio::task::spawn_blocking(move ||
+                                                      serde_json::to_vec(&body).map_err(|e| {
+                                                        error!(error = ?e);
+                                                        StatusCode::INTERNAL_SERVER_ERROR
+                                                      })).await.unwrap()?;
+                                                  response.body(Body::from(body_content))
                                                 },
                                             },
                                             Err(why) => {

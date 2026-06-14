@@ -1,5 +1,6 @@
 use std::fmt::{Display, Formatter};
 use std::num::ParseIntError;
+use std::ops::Deref;
 use std::str::FromStr;
 
 use crate::image_hash::{hash_to_hex, IdHash};
@@ -41,6 +42,13 @@ fn hex_to_hash<const SIZE: usize>(str: &str) -> Result<[u8; SIZE], anyhow::Error
 impl Display for ImageId {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.format_id_hash())
+    }
+}
+
+impl Deref for ImageId {
+    type Target = IdHash;
+    fn deref(&self) -> &Self::Target {
+        &self.0
     }
 }
 

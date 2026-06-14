@@ -6,6 +6,7 @@ src/apis/image_import.rs
 src/apis/image_list.rs
 src/apis/image_tag.rs
 src/apis/mod.rs
+src/apis/tag.rs
 src/header.rs
 src/lib.rs
 src/models.rs
