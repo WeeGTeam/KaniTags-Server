@@ -37,7 +37,7 @@ impl<'c> TagDao<'c> {
             .select(TagRow::as_select())
             .into_boxed();
         query = tags.iter().fold(query, |query, current_tag| {
-            query.filter(tag_dsl::tag_type.eq(&current_tag.tag_type).and(tag_dsl::tag_name.eq(&current_tag.tag_name)))
+            query.or_filter(tag_dsl::tag_type.eq(&current_tag.tag_type).and(tag_dsl::tag_name.eq(&current_tag.tag_name)))
         });
         query.load(self.connection)
             .context("Failed to load tags by their name and type from database")
