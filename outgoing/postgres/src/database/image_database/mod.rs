@@ -7,7 +7,7 @@ use crate::Postgres;
 use diesel::Connection;
 use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
 use kani_domain_api_model::image_hash::hash_to_hex;
-use kani_domain_api_model::image_id::ImageIdHash;
+use kani_domain_api_model::image_id::{ImageId, ImageIdHash};
 use kani_domain_api_model::image_search::ImageSearchFilter;
 use kani_domain_api_model::import::ImportSessionId;
 use kani_domain_api_model::user::User;
@@ -17,6 +17,15 @@ use tracing::debug;
 mod converter;
 
 impl ImageDatabase for Postgres {
+    fn get_image_by_image_id(&self, image_id: ImageId) -> Result<Option<PantsuImage>, anyhow::Error> {
+        debug!("Getting image by image id: {:?}", image_id);
+        let mut connection = self.get_connection()?;
+        let image_row =
+            connection.transaction(|conn| conn.image_dao().get_image_by_id(*image_id))?;
+        debug!("Got image by image id: {:?}: {}", image_id, image_row.is_some());
+        Ok(image_row.map(TryInto::try_into).transpose()?)
+    }
+
     fn get_image_by_image_id_hash(&self, image_id_hash: &ImageIdHash) -> Result<Option<PantsuImage>, anyhow::Error> {
         debug!("Getting image by image id hash: {}", image_id_hash);
         let mut connection = self.get_connection()?;
@@ -90,13 +99,22 @@ mod test {
     use super::*;
     use crate::dao::test::{insert_test_image, insert_test_import_session, insert_test_user};
     use crate::test::test_db;
-    use assertables::{assert_none, assert_ok};
+    use assertables::{assert_none, assert_ok, assert_some};
     use kani_domain_api_model::image_format::ImageFormat;
     use kani_domain_api_model::image_hash::IdHash;
 
     #[test]
     #[serial_test::serial]
-    fn test_get_ok() {
+    fn test_get_image_by_image_id() {
+        let db = test_db();
+        let mut connection = db.get_connection().unwrap();
+        let db_image = insert_test_image(&mut connection).unwrap();
+        assert_some!(assert_ok!(db.get_image_by_image_id(ImageId(db_image.id))));
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_get_image_by_image_id_hash() {
         let db = test_db();
         let mut connection = db.get_connection().unwrap();
         let db_image = insert_test_image(&mut connection).unwrap();

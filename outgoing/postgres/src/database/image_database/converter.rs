@@ -2,7 +2,7 @@ use crate::models::image::{ImageInsertRow, ImageRow};
 use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
 use kani_domain_api_model::image_format::ImageFormat;
 use kani_domain_api_model::image_hash::IdHash;
-use kani_domain_api_model::image_id::ImageIdHash;
+use kani_domain_api_model::image_id::{ImageId, ImageIdHash};
 use pgvector::Bit;
 
 impl TryFrom<ImageRow> for PantsuImage {
@@ -11,6 +11,7 @@ impl TryFrom<ImageRow> for PantsuImage {
     fn try_from(value: ImageRow) -> Result<Self, Self::Error> {
         let id_hash: IdHash = value.id_hash.try_into().map_err(|v: Vec<u8>| anyhow::anyhow!("invalid id hash of size {}", v.len()))?;
         Ok(PantsuImage {
+            id: ImageId(value.id),
             image_id_hash: ImageIdHash(id_hash),
             upload_filename: value.file_name,
             format: value.image_format.into(),

@@ -77,7 +77,7 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
     }
 
     lazy_static::lazy_static! {
-        static ref RE_GETIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9a-f]{16}$").unwrap();
+        static ref RE_GETIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
     }
 
 
@@ -91,7 +91,7 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
     }
 
     lazy_static::lazy_static! {
-        static ref RE_GETTHUMBNAILIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9a-f]{16}$").unwrap();
+        static ref RE_GETTHUMBNAILIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
     }
 
 
@@ -194,7 +194,7 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
     }
 
     lazy_static::lazy_static! {
-        static ref RE_ADDIMAGETAGSPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9a-f]{16}$").unwrap();
+        static ref RE_ADDIMAGETAGSPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
     }
 
 
@@ -208,7 +208,7 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
     }
 
     lazy_static::lazy_static! {
-        static ref RE_GETIMAGETAGSPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9a-f]{16}$").unwrap();
+        static ref RE_GETIMAGETAGSPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
     }
 
 

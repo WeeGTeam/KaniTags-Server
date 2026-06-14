@@ -76,10 +76,12 @@ impl<'c> ImageDao<'c> {
             .context("Failed to search images by user and filter from database")
     }
 
-    pub fn get_image_by_id(&mut self, id: i64) -> Result<ImageRow, Error> {
+    pub fn get_image_by_id(&mut self, id: i64) -> Result<Option<ImageRow>, Error> {
         image
+            .select(ImageRow::as_select())
             .filter(image_dsl::id.eq(id))
             .get_result(self.connection)
+            .optional()
             .context("Failed to get image by id from database")
     }
 
@@ -271,10 +273,11 @@ mod test {
     fn test_get_image_by_id() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let _result = conn.test_transaction(|c| {
+        let result = conn.test_transaction(|c| {
             let image = insert_test_image(c)?;
             c.image_dao().get_image_by_id(image.id)
         });
+        assert_some!(result);
     }
 
     #[test]

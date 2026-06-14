@@ -1,6 +1,6 @@
 use crate::image_format::ImageFormat;
 use crate::image_hash::{IdHash, PerceptualHash};
-use crate::image_id::ImageIdHash;
+use crate::image_id::{ImageId, ImageIdHash};
 use chrono::{DateTime, Utc};
 
 #[derive (Clone)]
@@ -14,6 +14,7 @@ pub struct CreatePantsuImage {
 
 #[derive(Debug, Clone)]
 pub struct PantsuImage {
+    pub id: ImageId,
     pub date_added: DateTime<Utc>,
     pub image_id_hash: ImageIdHash,
     pub format: ImageFormat,

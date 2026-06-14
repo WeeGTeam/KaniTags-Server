@@ -8,6 +8,17 @@ use anyhow::{anyhow, Context};
 use regex::Regex;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ImageId(pub i64);
+
+impl Deref for ImageId {
+    type Target = i64;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ImageIdHash(pub IdHash);
 
 impl ImageIdHash {

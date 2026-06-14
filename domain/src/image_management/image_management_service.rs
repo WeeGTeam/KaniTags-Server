@@ -7,8 +7,9 @@ use tracing::{info, warn};
 use crate::image::thumbnail::{create_thumbnail_in_memory, get_thumbnail_options};
 use crate::image::try_create_pantsu_image;
 use kani_domain_api_incoming::image_management::{CloseImportSessionError, GetImageError, GetImportSessionsError, ImageManagementService, ImportImageError, StartImportSessionError};
+use kani_domain_api_model::image::PantsuImage;
 use kani_domain_api_model::image_format::ImageFormat;
-use kani_domain_api_model::image_id::ImageIdHash;
+use kani_domain_api_model::image_id::{ImageId, ImageIdHash};
 use kani_domain_api_model::import::{ImportSession, ImportSessionId};
 use kani_domain_api_model::thumbnail::ThumbnailKind;
 use kani_domain_api_model::user::User;
@@ -42,6 +43,15 @@ impl ImageManagementServiceImpl {
         let thumbnail = create_thumbnail_in_memory(image_hash_id.clone(), image_data, options.clone()).await?;
         self.image_repository.store_jpg_thumbnail(&image_hash_id, thumbnail.clone(), options).await?;
         Ok(thumbnail)
+    }
+
+    async fn load_image_bytes(&self, image: &PantsuImage) -> Result<Bytes, GetImageError> {
+        self.image_repository
+            .load_image(&image).await
+            .map_err(|e| match e {
+                LoadImageError::ImageNotFound(_) => GetImageError::ImageNotFound(image.id.clone()),
+                unknown @ LoadImageError::Unknown(_) => GetImageError::Unknown(unknown.into()),
+            })
     }
 }
 
@@ -107,30 +117,28 @@ impl ImageManagementService for ImageManagementServiceImpl {
     }
 
 
-    async fn get_image(&self, image_id_hash: ImageIdHash) -> Result<(Bytes, ImageFormat), GetImageError> {
+    async fn get_image(&self, image_id: ImageId) -> Result<(Bytes, String, ImageFormat), GetImageError> {
         let db_image = self.database
-            .get_image_by_image_id_hash(&image_id_hash)?
-            .ok_or_else(|| GetImageError::ImageNotFound(image_id_hash.clone()))?;
+            .get_image_by_image_id(image_id.clone())?
+            .ok_or_else(|| GetImageError::ImageNotFound(image_id.clone()))?;
 
-        let loaded_image = self.image_repository
-            .load_image(&db_image).await
-            .map_err(|e| match e {
-                LoadImageError::ImageNotFound(_) => GetImageError::ImageNotFound(image_id_hash.clone()),
-                unknown @ LoadImageError::Unknown(_) => GetImageError::Unknown(unknown.into()),
-            })?;
+        let loaded_image = self.load_image_bytes(&db_image).await?;
 
-        Ok((loaded_image, db_image.format))
+        Ok((loaded_image, db_image.image_id_hash.format_id_hash(), db_image.format))
     }
 
-    async fn get_thumbnail(&self, image_id_hash: ImageIdHash, kind: ThumbnailKind) -> Result<(Bytes, ImageFormat), GetImageError> {
+    async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<(Bytes, String, ImageFormat), GetImageError> {
+        let db_image = self.database
+            .get_image_by_image_id(image_id.clone())?
+            .ok_or_else(|| GetImageError::ImageNotFound(image_id.clone()))?;
         let thumbnail_options = get_thumbnail_options(&kind);
-        match self.image_repository.load_jpg_thumbnail(&image_id_hash, &thumbnail_options).await {
-            Ok(loaded_thumbnail) => Ok((loaded_thumbnail, ImageFormat::JPG)),
+        match self.image_repository.load_jpg_thumbnail(&db_image.image_id_hash, &thumbnail_options).await {
+            Ok(loaded_thumbnail) => Ok((loaded_thumbnail, db_image.image_id_hash.format_id_hash(), ImageFormat::JPG)),
             Err(LoadImageError::ImageNotFound(_)) => {
-                info!("Thumbnail for image '{}' not found, creating it", image_id_hash);
-                let (loaded_image, _) = self.get_image(image_id_hash.clone()).await?;
-                let thumbnail = self.create_thumbnail(&image_id_hash, loaded_image, &kind).await.map_err(|e| GetImageError::Unknown(e))?;
-                Ok((thumbnail, ImageFormat::JPG))
+                info!("Thumbnail for image '{:?}' not found, creating it", image_id);
+                let loaded_image = self.load_image_bytes(&db_image).await?;
+                let thumbnail = self.create_thumbnail(&db_image.image_id_hash, loaded_image, &kind).await.map_err(|e| GetImageError::Unknown(e))?;
+                Ok((thumbnail, db_image.image_id_hash.format_id_hash(), ImageFormat::JPG))
             }
             Err(unknown @ LoadImageError::Unknown(_)) => Err(GetImageError::Unknown(unknown.into())),
         }
