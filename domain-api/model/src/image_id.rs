@@ -56,7 +56,7 @@ impl Display for ImageIdHash {
     }
 }
 
-impl Deref for ImageId {
+impl Deref for ImageIdHash {
     type Target = IdHash;
     fn deref(&self) -> &Self::Target {
         &self.0
