@@ -14,7 +14,12 @@ use crate::{models, types::*};
 pub enum GetImageResponse {
     /// Ok
     Status200_Ok
-    (ByteArray, String)
+    {
+        body: ByteArray,
+        content_type: String,
+        content_disposition:
+        String
+    }
     ,
     /// image not found
     Status404_ImageNotFound
@@ -26,7 +31,12 @@ pub enum GetImageResponse {
 pub enum GetThumbnailImageResponse {
     /// Ok
     Status200_Ok
-    (ByteArray, String)
+    {
+        body: ByteArray,
+        content_type: String,
+        content_disposition:
+        String
+    }
     ,
     /// image not found
     Status404_ImageNotFound

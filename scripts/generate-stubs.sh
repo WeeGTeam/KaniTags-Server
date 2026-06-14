@@ -21,8 +21,8 @@ bash "$SCRIPT_DIR/openapi-generator-cli.sh" generate \
   -p packageName=kani-openapi
 
 # Add content_type String to the 200 image response variants
-sed -i 's/^    (ByteArray)$/    (ByteArray, String)/' "$IMAGE_DOWNLOAD"
+sed -i 's/^        body: ByteArray,$/        body: ByteArray,\n        content_type: String,/' "$IMAGE_DOWNLOAD"
 # Destructure content_type in server handlers
-sed -i '/apis::image_download::[A-Za-z]*Response::[A-Za-z]*/{n; s/(body)/(body, content_type)/}' "$SERVER"
+sed -i '/apis::image_download::[A-Za-z]*Response::[A-Za-z]*/{n;n; s/\([[:space:]]\+\)body/\1body,\n\1content_type/}' "$SERVER"
 # Use runtime content_type instead of hardcoded "image/jpeg"
 sed -i 's/HeaderValue::from_static("image\/jpeg")/HeaderValue::from_str(\&content_type).unwrap_or_else(|_| HeaderValue::from_static("application\/octet-stream"))/' "$SERVER"

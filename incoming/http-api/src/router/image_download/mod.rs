@@ -33,11 +33,13 @@ impl ImageDownload<HttpApiUnhandledError> for AppState {
                 return Ok(GetImageResponse::Status404_ImageNotFound);
             }
         };
+        let filename = image_id_hash.format_id_hash();
         match self.image_management_service.get_image(image_id_hash).await {
-            Ok((bytes, format)) => Ok(GetImageResponse::Status200_Ok(
-                ByteArray(bytes.to_vec()),
-                to_image_content_type(format),
-            )),
+            Ok((bytes, format)) => Ok(GetImageResponse::Status200_Ok {
+                body: ByteArray(bytes.to_vec()),
+                content_type: to_image_content_type(format),
+                content_disposition: format!("attachment; filename=\"{}\"", filename)
+            }),
             Err(GetImageError::ImageNotFound(image_id_hash)) => {
                 info!("Image not found: IdHash({})", image_id_hash);
                 Ok(GetImageResponse::Status404_ImageNotFound)
@@ -61,11 +63,13 @@ impl ImageDownload<HttpApiUnhandledError> for AppState {
             }
         };
 
+        let filename = image_id_hash.format_id_hash();
         match self.image_management_service.get_thumbnail(image_id_hash, ThumbnailKind::Gallery).await {
-            Ok((bytes, format)) => Ok(GetThumbnailImageResponse::Status200_Ok(
-                ByteArray(bytes.to_vec()),
-                to_image_content_type(format),
-            )),
+            Ok((bytes, format)) => Ok(GetThumbnailImageResponse::Status200_Ok {
+                body: ByteArray(bytes.to_vec()),
+                content_type: to_image_content_type(format),
+                content_disposition: format!("attachment; filename=\"{}\"", filename)
+            }),
             Err(GetImageError::ImageNotFound(image_id_hash)) => {
                 info!("Image not found: IdHash({})", image_id_hash);
                 Ok(GetThumbnailImageResponse::Status404_ImageNotFound)
