@@ -42,7 +42,9 @@ impl TagService for TagServiceImpl {
             info!("Image does not exist: {}", *image_id);
             return Err(AddImageTagsError::ImageNotFound(image_id));
         }
-        let added_image_tags_number = self.database.add_image_tags_to_image_by_user(new_tags, image_id.clone(), user)?;
+
+        let tags = self.database.get_tags_create_if_missing(new_tags)?;
+        let added_image_tags_number = self.database.add_image_tags_to_image_by_user(tags, image_id.clone(), user)?;
         info!("Added {} image tags to image {}", added_image_tags_number, *image_id);
 
         Ok(self.database.get_image_tags_of_image(&image_id)?)

@@ -10,6 +10,7 @@ pub struct NewTag {
     pub tag_name: TagName,
 }
 
+#[derive(Debug)]
 pub struct Tag {
     pub id: TagId,
     pub tag_type: TagType,

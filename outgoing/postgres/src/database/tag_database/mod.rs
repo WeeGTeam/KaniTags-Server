@@ -3,9 +3,9 @@ mod converter;
 use crate::dao::Dao;
 use crate::database::converter::{FromDomain, TryToDomain};
 use crate::models::image_tag::ImageTagInsertRow;
-use crate::models::tag::{TagInsertRow, TagRow};
+use crate::models::tag::TagInsertRow;
 use crate::Postgres;
-use diesel::{Connection, PgConnection};
+use diesel::Connection;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::tag::image_tag::ImageTag;
 use kani_domain_api_model::tag::{NewTag, Tag};
@@ -21,6 +21,20 @@ impl TagDatabase for Postgres {
             .try_to_domain()
     }
 
+    fn get_tags_create_if_missing(&self, new_tags: Vec<NewTag>) -> Result<Vec<Tag>, anyhow::Error> {
+        debug!("Getting requested tags, creating those that do not yet exist");
+        let tags: Vec<TagInsertRow> = FromDomain::from_domain(new_tags);
+        self.get_connection()?
+            .transaction(|conn| {
+                let created_tags = conn.tag_dao().insert_tags_if_missing(&tags)?;
+                debug!("Created missing tags: {:?}", created_tags);
+
+                conn.tag_dao()
+                    .get_tags_by_name_and_type(&tags)?
+                    .try_to_domain()
+            })
+    }
+
     fn get_image_tags_of_image(&self, image_id: &ImageId) -> Result<Vec<ImageTag>, anyhow::Error> {
         debug!("Getting image tags for image: {:?}", image_id);
         self.get_connection()?
@@ -28,13 +42,11 @@ impl TagDatabase for Postgres {
             .try_to_domain()
     }
 
-    fn add_image_tags_to_image_by_user(&self, new_tags: Vec<NewTag>, image_id: ImageId, user: User) -> Result<usize, anyhow::Error> {
+    fn add_image_tags_to_image_by_user(&self, new_tags: Vec<Tag>, image_id: ImageId, user: User) -> Result<usize, anyhow::Error> {
         debug!("Adding image tags to image {:?}: {:?}", image_id, new_tags);
-        let tags: Vec<TagInsertRow> = FromDomain::from_domain(new_tags);
         Ok(self.get_connection()?
-            .transaction(|mut conn| -> Result<usize, anyhow::Error> {
-                let tag_rows = get_tag_rows_insert_missing(&mut conn, tags)?;
-                let image_tag_insert_rows = to_user_image_tag_insert_rows(&tag_rows, image_id, &user);
+            .transaction(|conn| -> Result<usize, anyhow::Error> {
+                let image_tag_insert_rows = to_user_image_tag_insert_rows(&new_tags, image_id, &user);
                 let created_image_tag_rows = conn
                     .tag_dao()
                     .insert_image_tags(&image_tag_insert_rows)?;
@@ -44,19 +56,13 @@ impl TagDatabase for Postgres {
     }
 }
 
-fn get_tag_rows_insert_missing(conn: &mut PgConnection, tags: Vec<TagInsertRow>) -> Result<Vec<TagRow>, anyhow::Error> {
-    let created_tags = conn.tag_dao().insert_tags_if_missing(&tags)?;
-    debug!("Created missing tags: {:?}", created_tags);
-    conn.tag_dao().get_tags_by_name_and_type(&tags)
-}
-
-fn to_user_image_tag_insert_rows(tag_rows: &[TagRow], image_id: ImageId, user: &User) -> Vec<ImageTagInsertRow> {
-    tag_rows
+fn to_user_image_tag_insert_rows(tags: &[Tag], image_id: ImageId, user: &User) -> Vec<ImageTagInsertRow> {
+    tags
         .iter()
         .map(|tag|
                  ImageTagInsertRow {
                      image_id: *image_id,
-                     tag_id: tag.id,
+                     tag_id: *tag.id,
                      user_id: Some(user.id),
                      source_site: None,
                  },
