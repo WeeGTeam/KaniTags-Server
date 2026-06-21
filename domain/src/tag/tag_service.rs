@@ -3,7 +3,6 @@ use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::tag::image_tag::ImageTag;
 use kani_domain_api_model::tag::{NewTag, Tag};
 use kani_domain_api_model::user::User;
-use kani_domain_api_outgoing::database::tag_database::AddImageTagsByUserError;
 use kani_domain_api_outgoing::database::Database;
 use std::sync::Arc;
 use tracing::info;
@@ -39,10 +38,11 @@ impl TagService for TagServiceImpl {
 
     fn add_image_tags(&self, image_id: ImageId, new_tags: Vec<NewTag>, user: User) -> Result<Vec<ImageTag>, AddImageTagsError> {
         info!("Adding image tags to image {}", *image_id);
-        let added_image_tags_number = self.database.add_image_tags_to_image_by_user(new_tags, image_id.clone(), user).map_err(|e| match e {
-            AddImageTagsByUserError::ImageNotFound(image_id) => AddImageTagsError::ImageNotFound(image_id),
-            AddImageTagsByUserError::Unknown(e) => AddImageTagsError::Unknown(e),
-        })?;
+        if let None = self.database.get_image_by_image_id(image_id.clone())? {
+            info!("Image does not exist: {}", *image_id);
+            return Err(AddImageTagsError::ImageNotFound(image_id));
+        }
+        let added_image_tags_number = self.database.add_image_tags_to_image_by_user(new_tags, image_id.clone(), user)?;
         info!("Added {} image tags to image {}", added_image_tags_number, *image_id);
 
         Ok(self.database.get_image_tags_of_image(&image_id)?)
