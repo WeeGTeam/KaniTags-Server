@@ -1,8 +1,9 @@
 use kani_domain_api_incoming::collection_service::{AddImagesToCollectionError, CollectionService, CreateCollectionError, DeleteCollectionError, LoadCollectionsError, RemoveImagesFromCollectionError};
-use kani_domain_api_model::collection::{Collection, CollectionId};
+use kani_domain_api_model::collection::{Collection, CollectionId, CollectionName};
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::Database;
+use std::ops::Deref;
 use std::sync::Arc;
 use tracing::{error, info, warn};
 
@@ -24,14 +25,14 @@ impl CollectionService for CollectionServiceImpl {
         Ok(collections)
     }
 
-    fn create_collection(&self, user: &User, collection_name: &str) -> Result<Collection, CreateCollectionError> {
-        info!("Creating collection '{}' for user", collection_name);
-        if let Some(existing_collection) = self.database.load_collection_by_user_and_name(user, collection_name)? {
-            error!("Collection '{}' already exists for user", collection_name);
-            return Err(CreateCollectionError::CollectionAlreadyExists(CollectionId(existing_collection.id)));
+    fn create_collection(&self, user: &User, collection_name: &CollectionName) -> Result<Collection, CreateCollectionError> {
+        info!("Creating collection '{}' for user", collection_name.deref());
+        if let Some(existing_collection) = self.database.load_collection_by_user_and_name(user, &collection_name)? {
+            error!("Collection '{}' already exists for user", collection_name.deref());
+            return Err(CreateCollectionError::CollectionAlreadyExists(existing_collection.id));
         }
         let collection = self.database.create_collection(user, collection_name)?;
-        info!("Created collection '{}' for user", collection_name);
+        info!("Created collection '{}' for user", collection_name.deref());
         Ok(collection)
     }
 
@@ -45,7 +46,7 @@ impl CollectionService for CollectionServiceImpl {
             }
         };
         self.database.delete_collection(user, collection_id.clone())?;
-        info!("Deleted collection '{}' for user", &collection.name);
+        info!("Deleted collection '{}' for user", &collection.name.deref());
         Ok(())
     }
 
@@ -59,19 +60,19 @@ impl CollectionService for CollectionServiceImpl {
             },
         };
         if image_ids.is_empty() {
-            info!("No images to add to collection '{}'", &collection.name);
+            info!("No images to add to collection '{}'", &collection.name.deref());
             return Ok(());
         }
         let accessible_images = self.database.get_images_by_image_ids(user, image_ids)?;
         if accessible_images.len() != image_ids.len() {
-            error!("User does not have access to all images being added to collection '{}' or some images do not exist", &collection.name);
+            error!("User does not have access to all images being added to collection '{}' or some images do not exist", &collection.name.deref());
             return Err(AddImagesToCollectionError::InsufficientImageAccess(image_ids.to_vec()));
         }
         let added_count = self.database.add_images_to_collection(user, collection_id.clone(), &accessible_images.iter().map(|image| image.id.clone()).collect::<Vec<ImageId>>())?;
         if added_count != image_ids.len() {
-            warn!("Not all images were added to collection '{}'", &collection.name);
+            warn!("Not all images were added to collection '{}'", &collection.name.deref());
         }
-        info!("Added {} images to collection '{}' for user", added_count, &collection.name);
+        info!("Added {} images to collection '{}' for user", added_count, &collection.name.deref());
         Ok(())
     }
 
@@ -86,9 +87,9 @@ impl CollectionService for CollectionServiceImpl {
         };
         let removed_count = self.database.remove_images_from_collection(user, collection_id.clone(), image_ids)?;
         if removed_count != image_ids.len() {
-            warn!("Not all images were removed from collection '{}'", &collection.name);
+            warn!("Not all images were removed from collection '{}'", &collection.name.deref());
         }
-        info!("Removed {} images from collection '{}' for user", removed_count, &collection.name);
+        info!("Removed {} images from collection '{}' for user", removed_count, &collection.name.deref());
         Ok(())
     }
 }

@@ -7,7 +7,7 @@ use axum::http::Method;
 use axum_extra::extract::CookieJar;
 use headers::Host;
 use kani_domain_api_incoming::collection_service::{AddImagesToCollectionError, CreateCollectionError, DeleteCollectionError, LoadCollectionsError, RemoveImagesFromCollectionError};
-use kani_domain_api_model::collection::CollectionId;
+use kani_domain_api_model::collection::{CollectionId, CollectionName};
 use kani_openapi::apis::collection::{
     AddImagesToCollectionResponse, Collection, CreateCollectionResponse, DeleteCollectionResponse,
     GetCollectionsResponse, RemoveImagesFromCollectionResponse,
@@ -47,7 +47,9 @@ impl Collection<HttpApiUnhandledError> for AppState {
         body: &String,
     ) -> Result<CreateCollectionResponse, HttpApiUnhandledError> {
         let user = current_user();
-        match self.collection_service.create_collection(&user, body) {
+        let collection_name = CollectionName::try_from(body.to_owned())
+            .map_err(|e| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
+        match self.collection_service.create_collection(&user, &collection_name) {
             Ok(collection) => Ok(CreateCollectionResponse::Status201_CollectionCreated(models::Collection::from_domain(collection))),
             Err(CreateCollectionError::CollectionAlreadyExists(_)) => Ok(CreateCollectionResponse::Status409_CollectionAlreadyExists),
             Err(CreateCollectionError::Unknown(error)) => Err(HttpApiUnhandledError::GenericBadRequest(error)),

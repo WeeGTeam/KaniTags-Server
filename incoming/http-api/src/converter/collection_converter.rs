@@ -8,7 +8,7 @@ impl FromDomain<kani_domain_api_model::collection::Collection> for Collection {
             created_at: collection.created_at,
             created_by: collection.created_by.to_string(),
             updated_at: collection.updated_at,
-            name: collection.name
+            name: collection.name.to_string()
         }
     }
 }

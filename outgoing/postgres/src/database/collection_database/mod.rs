@@ -4,10 +4,11 @@ use crate::models::collection_image::CollectionImageInsertRow;
 use crate::Postgres;
 use anyhow::Error;
 use diesel::Connection;
-use kani_domain_api_model::collection::{Collection, CollectionId};
+use kani_domain_api_model::collection::{Collection, CollectionId, CollectionName};
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::collection_database::CollectionDatabase;
+use std::ops::Deref;
 use tracing::debug;
 
 impl CollectionDatabase for Postgres {
@@ -16,15 +17,15 @@ impl CollectionDatabase for Postgres {
         let mut connection = self.get_connection()?;
         let collection = connection.transaction(|conn| conn.collection_dao().get_collection_by_user_and_id(user.id, *collection_id))?;
         debug!("Loaded collection: {:?}", collection.as_ref().map(|c| c.id));
-        Ok(collection.map(Into::into))
+        Ok(collection.map(TryInto::try_into).transpose()?)
     }
 
-    fn load_collection_by_user_and_name(&self, user: &User, collection_name: &str) -> Result<Option<Collection>, Error> {
-        debug!("Loading collection by user and name: {}, {}", user.id, collection_name);
+    fn load_collection_by_user_and_name(&self, user: &User, collection_name: &CollectionName) -> Result<Option<Collection>, Error> {
+        debug!("Loading collection by user and name: {}, {}", user.id, collection_name.deref());
         let mut connection = self.get_connection()?;
-        let collection = connection.transaction(|conn| conn.collection_dao().get_collection_by_user_and_name(user.id, collection_name))?;
+        let collection = connection.transaction(|conn| conn.collection_dao().get_collection_by_user_and_name(user.id, &collection_name))?;
         debug!("Loaded collection: {:?}", collection.as_ref().map(|c| c.id));
-        Ok(collection.map(Into::into))
+        Ok(collection.map(TryInto::try_into).transpose()?)
     }
 
     fn load_collections_by_user(&self, user: &User) -> Result<Vec<Collection>, Error> {
@@ -32,11 +33,11 @@ impl CollectionDatabase for Postgres {
         let mut connection = self.get_connection()?;
         let collections = connection.transaction(|conn| conn.collection_dao().get_collections_by_user(user.id))?;
         debug!("Loaded {:?} collections", collections.len());
-        Ok(collections.into_iter().map(Into::into).collect())
+        Ok(collections.into_iter().map(TryInto::try_into).collect::<Result<Vec<_>, _>>()?)
     }
 
-    fn create_collection(&self, user: &User, name: &str) -> Result<Collection, Error> {
-        debug!("Creating collection for user: {}, name: {}", user.id, name);
+    fn create_collection(&self, user: &User, name: &CollectionName) -> Result<Collection, Error> {
+        debug!("Creating collection for user: {}, name: {}", user.id, &**name);
         let mut connection = self.get_connection()?;
         let collection = connection.transaction(|conn| conn.collection_dao().insert_collection(
             &CollectionInsertRow {
@@ -45,7 +46,7 @@ impl CollectionDatabase for Postgres {
             }
         ))?;
         debug!("Created collection: {:?}", collection.id);
-        Ok(collection.into())
+        Ok(collection.try_into()?)
     }
 
     fn delete_collection(&self, user: &User, collection_id: CollectionId) -> Result<(), Error> {

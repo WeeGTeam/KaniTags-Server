@@ -473,6 +473,7 @@ components:
           $ref: '#/components/schemas/CollectionId'
         name:
           type: string
+          description: "max length: 60 characters"
           example: "My Collection"
         createdBy:
           $ref: '#/components/schemas/UserId'

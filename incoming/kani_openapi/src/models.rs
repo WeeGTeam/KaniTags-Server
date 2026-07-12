@@ -268,6 +268,7 @@ pub struct Collection {
     )]
     pub id: String,
 
+    /// max length: 60 characters
     #[serde(rename = "name")]
           #[validate(custom(function = "check_xss_string"))]
     pub name: String,

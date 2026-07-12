@@ -1,4 +1,4 @@
-use kani_domain_api_model::collection::{Collection, CollectionId};
+use kani_domain_api_model::collection::{Collection, CollectionId, CollectionName};
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::user::User;
 use thiserror::Error;
@@ -6,7 +6,7 @@ use thiserror::Error;
 pub trait CollectionService {
     fn load_collections_by_user(&self, user: &User) -> Result<Vec<Collection>, LoadCollectionsError>;
 
-    fn create_collection(&self, user: &User, collection_name: &str) -> Result<Collection, CreateCollectionError>;
+    fn create_collection(&self, user: &User, collection_name: &CollectionName) -> Result<Collection, CreateCollectionError>;
 
     fn delete_collection(&self, user: &User, collection_id: CollectionId) -> Result<(), DeleteCollectionError>;
 
