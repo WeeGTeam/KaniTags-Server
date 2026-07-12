@@ -12,6 +12,12 @@ pub mod similarity_database;
 pub mod tag_database;
 pub mod user_database;
 
-pub trait Database : ImageDatabase + UserDatabase + SimilarityDatabase + TagDatabase + ImportSessionDatabase + CollectionDatabase {
+pub trait Database {
+    fn image(&self) -> &dyn ImageDatabase;
+    fn user(&self) -> &dyn UserDatabase;
+    fn similarity(&self) -> &dyn SimilarityDatabase;
+    fn tag(&self) -> &dyn TagDatabase;
+    fn import_session(&self) -> &dyn ImportSessionDatabase;
+    fn collection(&self) -> &dyn CollectionDatabase;
 }
 

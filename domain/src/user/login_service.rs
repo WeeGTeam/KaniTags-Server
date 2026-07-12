@@ -15,7 +15,7 @@ impl LoginServiceImpl {
 
 impl LoginService for LoginServiceImpl {
     fn load_user_by_user_name(&self, user_name: &str) -> Result<User, UserLoadError> {
-        match self.database.get_user_by_user_name(user_name)? {
+        match self.database.user().get_user_by_user_name(user_name)? {
             Some(user) => Ok(user),
             None => Err(UserLoadError::UserMissingError(user_name.to_owned())),
         }
