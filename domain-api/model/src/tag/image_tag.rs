@@ -12,6 +12,7 @@ pub struct NewImageTag {
     pub source_site: Option<TagSourceSite>,
 }
 
+#[derive(Debug)]
 pub struct ImageTag {
     pub id: ImageTagId,
     pub created_at: DateTime<Utc>,
@@ -20,6 +21,7 @@ pub struct ImageTag {
     pub source_site: Option<TagSourceSite>,
 }
 
+#[derive(Debug)]
 pub struct ImageTagId(pub i64);
 
 impl Deref for ImageTagId {

@@ -4,13 +4,13 @@ use std::ops::Deref;
 pub mod image_tag;
 pub mod tag_source_site;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NewTag {
     pub tag_type: TagType,
     pub tag_name: TagName,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Tag {
     pub id: TagId,
     pub tag_type: TagType,
@@ -20,7 +20,7 @@ pub struct Tag {
 #[derive(Debug, Clone, PartialEq)]
 pub struct TagId (pub i64);
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TagType {
     Rating,
     Artist,
@@ -29,7 +29,7 @@ pub enum TagType {
     General,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone,  PartialEq, Eq, PartialOrd, Ord)]
 pub struct TagName (String);
 
 impl Deref for TagId {
@@ -61,5 +61,19 @@ impl Deref for TagName {
     type Target = str;
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+#[cfg(feature = "test-util")]
+pub mod stub {
+    use super::*;
+
+    impl NewTag {
+        pub fn stub() -> Self {
+            NewTag {
+                tag_type: TagType::Character,
+                tag_name: TagName::try_from("Megumin".to_owned()).unwrap(),
+            }
+        }
     }
 }
