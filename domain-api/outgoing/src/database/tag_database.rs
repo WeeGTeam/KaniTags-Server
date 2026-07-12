@@ -10,5 +10,5 @@ pub trait TagDatabase {
 
     fn get_image_tags_of_image(&self, image_id: &ImageId) -> Result<Vec<ImageTag>, anyhow::Error>;
 
-    fn add_image_tags_to_image_by_user(&self, new_tags: Vec<Tag>, image_id: ImageId, user: User) -> Result<usize, anyhow::Error>;
+    fn add_image_tags_to_image_by_user(&self, tags: Vec<Tag>, image_id: ImageId, user: User) -> Result<usize, anyhow::Error>;
 }

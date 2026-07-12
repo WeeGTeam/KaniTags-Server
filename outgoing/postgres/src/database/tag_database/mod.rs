@@ -42,11 +42,11 @@ impl TagDatabase for Postgres {
             .try_to_domain()
     }
 
-    fn add_image_tags_to_image_by_user(&self, new_tags: Vec<Tag>, image_id: ImageId, user: User) -> Result<usize, anyhow::Error> {
-        debug!("Adding image tags to image {:?}: {:?}", image_id, new_tags);
+    fn add_image_tags_to_image_by_user(&self, tags: Vec<Tag>, image_id: ImageId, user: User) -> Result<usize, anyhow::Error> {
+        debug!("Adding image tags to image {:?}: {:?}", image_id, tags);
         Ok(self.get_connection()?
             .transaction(|conn| -> Result<usize, anyhow::Error> {
-                let image_tag_insert_rows = to_user_image_tag_insert_rows(&new_tags, image_id, &user);
+                let image_tag_insert_rows = to_user_image_tag_insert_rows(&tags, image_id, &user);
                 let created_image_tag_rows = conn
                     .tag_dao()
                     .insert_image_tags(&image_tag_insert_rows)?;
