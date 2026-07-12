@@ -45,6 +45,20 @@ impl ErrorHandler<HttpApiUnhandledError> for AppState {
                     .status(StatusCode::BAD_REQUEST)
                     .body(axum::body::Body::empty())
                     .map_err(|_| StatusCode::BAD_REQUEST)
+            },
+            HttpApiUnhandledError::GenericForbidden(_) => {
+                tracing::error!("Unhandled error: {:?}", error);
+                Response::builder()
+                    .status(StatusCode::FORBIDDEN)
+                    .body(axum::body::Body::empty())
+                    .map_err(|_| StatusCode::FORBIDDEN)
+            },
+            HttpApiUnhandledError::GenericNotFound(_) => {
+                tracing::error!("Unhandled error: {:?}", error);
+                Response::builder()
+                    .status(StatusCode::NOT_FOUND)
+                    .body(axum::body::Body::empty())
+                    .map_err(|_| StatusCode::NOT_FOUND)
             }
         }
     }
