@@ -4,6 +4,7 @@ use anyhow::Context;
 use axum::extract::DefaultBodyLimit;
 use axum::http::HeaderName;
 use axum::middleware;
+use kani_domain_api_incoming::collection_service::CollectionService;
 use kani_domain_api_incoming::image_management::ImageManagementService;
 use kani_domain_api_incoming::image_search_service::ImageSearchService;
 use kani_domain_api_incoming::login_service::LoginService;
@@ -22,7 +23,8 @@ mod error;
 mod request_tracing;
 pub mod router;
 
-pub async fn launch_server<IS, ISS, LS, SS, TS>(
+pub async fn launch_server<CS, IS, ISS, LS, SS, TS>(
+    collection_service: Arc<CS>,
     image_management_service: Arc<IS>,
     image_search_service: Arc<ISS>,
     login_service: Arc<LS>,
@@ -33,6 +35,7 @@ pub async fn launch_server<IS, ISS, LS, SS, TS>(
     auth_user_header: String,
 ) -> Result<(), anyhow::Error>
 where
+    CS: CollectionService + Send + Sync + 'static,
     IS: ImageManagementService + Send + Sync + 'static,
     ISS: ImageSearchService + Send + Sync + 'static,
     LS: LoginService + Send + Sync + 'static,
@@ -53,6 +56,7 @@ where
         auth_middleware::auth_middleware
     );
     let shared_state = AppState::new(
+        collection_service,
         image_management_service,
         image_search_service,
         login_service,

@@ -11,7 +11,7 @@ use crate::schema::user_image::dsl::user_image;
 use anyhow::Context;
 use anyhow::Error;
 use diesel::sql_types::{BigInt, Bytea, Integer};
-use diesel::{ExpressionMethods, OptionalExtension};
+use diesel::{BoolExpressionMethods, ExpressionMethods, OptionalExtension};
 use diesel::{QueryDsl, RunQueryDsl, SelectableHelper};
 use kani_domain_api_model::image_search::ImageSearchFilter;
 
@@ -94,6 +94,19 @@ impl<'c> ImageDao<'c> {
             .get_result(self.connection)
             .optional()
             .context("Failed to get image by id hash from database")
+    }
+
+    pub fn get_images_by_user_and_ids(
+        &mut self,
+        user_id: i64,
+        image_ids: &[i64],
+    ) -> Result<Vec<ImageRow>, Error> {
+        image
+            .select(ImageRow::as_select())
+            .inner_join(user_image)
+            .filter(image_dsl::id.eq_any(image_ids).and(user_image_dsl::user_id.eq(user_id)))
+            .get_results(self.connection)
+            .context("Failed to get images by user and id hashes from database")
     }
 
     pub fn insert_image_source(
@@ -290,6 +303,23 @@ mod test {
             c.image_dao().get_image_by_id_hash(&image.id_hash)
         });
         assert_some!(result);
+    }
+
+    #[test]
+    #[serial_test::serial]
+    fn test_get_images_by_user_and_ids() {
+        let postgres = test_db();
+        let mut conn = postgres.get_connection().unwrap();
+        let result = conn.test_transaction(|c| {
+            let user = insert_test_user(c)?;
+            let image = insert_test_image(c)?;
+            let image2 = insert_test_image(c)?;
+            let image3 = insert_test_image(c)?;
+            let _user_image = insert_test_user_image(c, user.id, image.id)?;
+            let _user_image2 = insert_test_user_image(c, user.id, image2.id)?;
+            c.image_dao().get_images_by_user_and_ids(user.id, &[image.id, image2.id, image3.id])
+        });
+        assert_len_eq_x!(result, 2);
     }
 
     #[test]

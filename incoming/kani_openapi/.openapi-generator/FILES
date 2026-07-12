@@ -1,6 +1,7 @@
 .gitignore
 Cargo.toml
 README.md
+src/apis/collection.rs
 src/apis/image_download.rs
 src/apis/image_import.rs
 src/apis/image_list.rs

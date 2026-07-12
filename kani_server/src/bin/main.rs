@@ -1,4 +1,5 @@
 use anyhow::Context;
+use kani_domain::collection::CollectionServiceImpl;
 use kani_domain::image_management::image_management_service::ImageManagementServiceImpl;
 use kani_domain::image_search::ImageSearchServiceImpl;
 use kani_domain::similarity::SimilarityServiceImpl;
@@ -29,6 +30,10 @@ async fn main() -> Result<(), anyhow::Error> {
     let database = Postgres::new(&config.db_url, &config.db_username, &config.db_password).context("Failed to initialize database")?;
     database.setup().context("Failed to setup database")?;
     let database = Arc::new(database);
+
+    let collection_service = CollectionServiceImpl::new(
+        database.clone()
+    );
 
     let image_management_service = ImageManagementServiceImpl::new(
         fs_image_repository.clone(),
@@ -79,6 +84,7 @@ async fn main() -> Result<(), anyhow::Error> {
     */
 
     launch_server(
+        Arc::new(collection_service),
         Arc::new(image_management_service),
         Arc::new(image_search_service),
         Arc::new(login_service),

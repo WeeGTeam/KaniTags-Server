@@ -8,6 +8,7 @@ servers:
   - description: localhost
     url: http://localhost:8000
 tags:
+  - name: collection
   - name: imageImport
   - name: imageDownload
   - name: imageList
@@ -296,6 +297,100 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Tag'
+  /collections:
+    get:
+      tags:
+        - collection
+      operationId: getCollections
+      responses:
+        "200":
+          description: Collections
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Collection'
+    post:
+      tags:
+        - collection
+      operationId: createCollection
+      requestBody:
+        description: collection creation arguments
+        content:
+          application/json:
+            schema:
+              type: string
+              description: collection name
+        required: true
+      responses:
+        "201":
+          description: collection created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+        "409":
+          description: collection already exists
+  /collections/{id}:
+    delete:
+      tags:
+        - collection
+      operationId: deleteCollection
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/CollectionId'
+      responses:
+        "200":
+          description: collection deleted
+  /collections/{id}/images:
+    post:
+      tags:
+        - collection
+      operationId: addImagesToCollection
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/CollectionId'
+      requestBody:
+        description: List of image ids to add to the collection
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ImageId'
+        required: true
+      responses:
+        "200":
+          description: images added to collection
+    delete:
+      tags:
+        - collection
+      operationId: removeImagesFromCollection
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/CollectionId'
+      requestBody:
+        description: List of image ids to remove from the collection
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ImageId'
+        required: true
+      responses:
+        "200":
+          description: images removed from collection
 components:
   schemas:
     ImportSession:
@@ -371,6 +466,31 @@ components:
           format: binary
       required:
         - file
+    Collection:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/CollectionId'
+        name:
+          type: string
+          description: "max length: 60 characters"
+          example: "My Collection"
+        createdBy:
+          $ref: '#/components/schemas/UserId'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-07-01T12:00:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2023-07-01T12:00:00Z"
+      required:
+        - id
+        - name
+        - createdBy
+        - createdAt
+        - updatedAt
     Tag:
       type: object
       properties:

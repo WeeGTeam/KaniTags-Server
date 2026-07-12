@@ -10,6 +10,7 @@ pub mod dao;
 pub mod database;
 pub mod models;
 pub mod schema;
+pub mod converter;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("../../resources/migrations");
 

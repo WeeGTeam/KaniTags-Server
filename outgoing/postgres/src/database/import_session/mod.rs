@@ -1,5 +1,3 @@
-pub mod converter;
-
 use crate::dao::Dao;
 use crate::Postgres;
 use diesel::Connection;

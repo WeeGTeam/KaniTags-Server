@@ -82,7 +82,7 @@ diesel::table! {
         created_at -> Timestamptz,
         updated_at -> Timestamptz,
         user_id -> Int8,
-        #[max_length = 40]
+        #[max_length = 60]
         name -> Varchar,
     }
 }

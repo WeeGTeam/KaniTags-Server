@@ -25,12 +25,21 @@ use crate::{
 pub fn new<I, A, E>(api_impl: I) -> Router
 where
     I: AsRef<A> + Clone + Send + Sync + 'static,
-    A: apis::image_download::ImageDownload<E> + apis::image_import::ImageImport<E> + apis::image_list::ImageList<E> + apis::image_tag::ImageTag<E> + apis::tag::Tag<E> + Send + Sync + 'static,
+    A: apis::collection::Collection<E> + apis::image_download::ImageDownload<E> + apis::image_import::ImageImport<E> + apis::image_list::ImageList<E> + apis::image_tag::ImageTag<E> + apis::tag::Tag<E> + Send + Sync + 'static,
     E: std::fmt::Debug + Send + Sync + 'static,
     
 {
     // build our application with a route
     Router::new()
+        .route("/collections",
+            get(get_collections::<I, A, E>).post(create_collection::<I, A, E>)
+        )
+        .route("/collections/{id}",
+            delete(delete_collection::<I, A, E>)
+        )
+        .route("/collections/{id}/images",
+            delete(remove_images_from_collection::<I, A, E>).post(add_images_to_collection::<I, A, E>)
+        )
         .route("/image/import/{id}",
             post(import_image::<I, A, E>)
         )
@@ -56,6 +65,464 @@ where
             get(get_tags::<I, A, E>)
         )
         .with_state(api_impl)
+}
+
+    #[derive(validator::Validate)]
+    #[allow(dead_code)]
+    struct AddImagesToCollectionBodyValidator<'a> {
+                #[validate(nested)]
+          body: &'a Vec<models::ImageId>,
+    }
+
+
+#[tracing::instrument(skip_all)]
+fn add_images_to_collection_validation(
+  path_params: models::AddImagesToCollectionPathParams,
+        body: Vec<models::ImageId>,
+) -> std::result::Result<(
+  models::AddImagesToCollectionPathParams,
+        Vec<models::ImageId>,
+), ValidationErrors>
+{
+  path_params.validate()?;
+              let b = AddImagesToCollectionBodyValidator { body: &body };
+              b.validate()?;
+
+Ok((
+  path_params,
+    body,
+))
+}
+/// AddImagesToCollection - POST /collections/{id}/images
+#[tracing::instrument(skip_all)]
+async fn add_images_to_collection<I, A, E>(
+  method: Method,
+  TypedHeader(host): TypedHeader<Host>,
+  cookies: CookieJar,
+  Path(path_params): Path<models::AddImagesToCollectionPathParams>,
+ State(api_impl): State<I>,
+          Json(body): Json<Vec<models::ImageId>>,
+) -> Result<Response, StatusCode>
+where
+    I: AsRef<A> + Send + Sync,
+    A: apis::collection::Collection<E> + Send + Sync,
+    E: std::fmt::Debug + Send + Sync + 'static,
+        {
+
+
+
+
+      #[allow(clippy::redundant_closure)]
+      let validation = tokio::task::spawn_blocking(move ||
+    add_images_to_collection_validation(
+        path_params,
+          body,
+    )
+  ).await.unwrap();
+
+  let Ok((
+    path_params,
+      body,
+  )) = validation else {
+    return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(validation.unwrap_err().to_string()))
+            .map_err(|_| StatusCode::BAD_REQUEST);
+  };
+
+
+
+let result = api_impl.as_ref().add_images_to_collection(
+      
+      &method,
+      &host,
+      &cookies,
+        &path_params,
+              &body,
+  ).await;
+
+  let mut response = Response::builder();
+
+  let resp = match result {
+                                            Ok(rsp) => match rsp {
+                                                apis::collection::AddImagesToCollectionResponse::Status200_ImagesAddedToCollection
+                                                => {
+                                                  let mut response = response.status(200);
+                                                  response.body(Body::empty())
+                                                },
+                                            },
+                                            Err(why) => {
+                                                    // Application code returned an error. This should not happen, as the implementation should
+                                                    // return a valid response.
+                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
+                                            },
+                                        };
+
+
+                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
+}
+
+    #[derive(validator::Validate)]
+    #[allow(dead_code)]
+    struct CreateCollectionBodyValidator<'a> {
+                #[validate(custom(function = "check_xss_string"))]
+          body: &'a String,
+    }
+
+
+#[tracing::instrument(skip_all)]
+fn create_collection_validation(
+        body: String,
+) -> std::result::Result<(
+        String,
+), ValidationErrors>
+{
+              let b = CreateCollectionBodyValidator { body: &body };
+              b.validate()?;
+
+Ok((
+    body,
+))
+}
+/// CreateCollection - POST /collections
+#[tracing::instrument(skip_all)]
+async fn create_collection<I, A, E>(
+  method: Method,
+  TypedHeader(host): TypedHeader<Host>,
+  cookies: CookieJar,
+ State(api_impl): State<I>,
+          Json(body): Json<String>,
+) -> Result<Response, StatusCode>
+where
+    I: AsRef<A> + Send + Sync,
+    A: apis::collection::Collection<E> + Send + Sync,
+    E: std::fmt::Debug + Send + Sync + 'static,
+        {
+
+
+
+
+      #[allow(clippy::redundant_closure)]
+      let validation = tokio::task::spawn_blocking(move ||
+    create_collection_validation(
+          body,
+    )
+  ).await.unwrap();
+
+  let Ok((
+      body,
+  )) = validation else {
+    return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(validation.unwrap_err().to_string()))
+            .map_err(|_| StatusCode::BAD_REQUEST);
+  };
+
+
+
+let result = api_impl.as_ref().create_collection(
+      
+      &method,
+      &host,
+      &cookies,
+              &body,
+  ).await;
+
+  let mut response = Response::builder();
+
+  let resp = match result {
+                                            Ok(rsp) => match rsp {
+                                                apis::collection::CreateCollectionResponse::Status201_CollectionCreated
+                                                    (body)
+                                                => {
+                                                  let mut response = response.status(201);
+                                                  {
+                                                    let mut response_headers = response.headers_mut().unwrap();
+                                                    response_headers.insert(
+                                                        CONTENT_TYPE,
+                                                        HeaderValue::from_static("application/json"));
+                                                  }
+
+                                                  let body_content =  tokio::task::spawn_blocking(move ||
+                                                      serde_json::to_vec(&body).map_err(|e| {
+                                                        error!(error = ?e);
+                                                        StatusCode::INTERNAL_SERVER_ERROR
+                                                      })).await.unwrap()?;
+                                                  response.body(Body::from(body_content))
+                                                },
+                                                apis::collection::CreateCollectionResponse::Status409_CollectionAlreadyExists
+                                                => {
+                                                  let mut response = response.status(409);
+                                                  response.body(Body::empty())
+                                                },
+                                            },
+                                            Err(why) => {
+                                                    // Application code returned an error. This should not happen, as the implementation should
+                                                    // return a valid response.
+                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
+                                            },
+                                        };
+
+
+                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
+}
+
+
+#[tracing::instrument(skip_all)]
+fn delete_collection_validation(
+  path_params: models::DeleteCollectionPathParams,
+) -> std::result::Result<(
+  models::DeleteCollectionPathParams,
+), ValidationErrors>
+{
+  path_params.validate()?;
+
+Ok((
+  path_params,
+))
+}
+/// DeleteCollection - DELETE /collections/{id}
+#[tracing::instrument(skip_all)]
+async fn delete_collection<I, A, E>(
+  method: Method,
+  TypedHeader(host): TypedHeader<Host>,
+  cookies: CookieJar,
+  Path(path_params): Path<models::DeleteCollectionPathParams>,
+ State(api_impl): State<I>,
+) -> Result<Response, StatusCode>
+where
+    I: AsRef<A> + Send + Sync,
+    A: apis::collection::Collection<E> + Send + Sync,
+    E: std::fmt::Debug + Send + Sync + 'static,
+        {
+
+
+
+
+      #[allow(clippy::redundant_closure)]
+      let validation = tokio::task::spawn_blocking(move ||
+    delete_collection_validation(
+        path_params,
+    )
+  ).await.unwrap();
+
+  let Ok((
+    path_params,
+  )) = validation else {
+    return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(validation.unwrap_err().to_string()))
+            .map_err(|_| StatusCode::BAD_REQUEST);
+  };
+
+
+
+let result = api_impl.as_ref().delete_collection(
+      
+      &method,
+      &host,
+      &cookies,
+        &path_params,
+  ).await;
+
+  let mut response = Response::builder();
+
+  let resp = match result {
+                                            Ok(rsp) => match rsp {
+                                                apis::collection::DeleteCollectionResponse::Status200_CollectionDeleted
+                                                => {
+                                                  let mut response = response.status(200);
+                                                  response.body(Body::empty())
+                                                },
+                                            },
+                                            Err(why) => {
+                                                    // Application code returned an error. This should not happen, as the implementation should
+                                                    // return a valid response.
+                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
+                                            },
+                                        };
+
+
+                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
+}
+
+
+#[tracing::instrument(skip_all)]
+fn get_collections_validation(
+) -> std::result::Result<(
+), ValidationErrors>
+{
+
+Ok((
+))
+}
+/// GetCollections - GET /collections
+#[tracing::instrument(skip_all)]
+async fn get_collections<I, A, E>(
+  method: Method,
+  TypedHeader(host): TypedHeader<Host>,
+  cookies: CookieJar,
+ State(api_impl): State<I>,
+) -> Result<Response, StatusCode>
+where
+    I: AsRef<A> + Send + Sync,
+    A: apis::collection::Collection<E> + Send + Sync,
+    E: std::fmt::Debug + Send + Sync + 'static,
+        {
+
+
+
+
+      #[allow(clippy::redundant_closure)]
+      let validation = tokio::task::spawn_blocking(move ||
+    get_collections_validation(
+    )
+  ).await.unwrap();
+
+  let Ok((
+  )) = validation else {
+    return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(validation.unwrap_err().to_string()))
+            .map_err(|_| StatusCode::BAD_REQUEST);
+  };
+
+
+
+let result = api_impl.as_ref().get_collections(
+      
+      &method,
+      &host,
+      &cookies,
+  ).await;
+
+  let mut response = Response::builder();
+
+  let resp = match result {
+                                            Ok(rsp) => match rsp {
+                                                apis::collection::GetCollectionsResponse::Status200_Collections
+                                                    (body)
+                                                => {
+                                                  let mut response = response.status(200);
+                                                  {
+                                                    let mut response_headers = response.headers_mut().unwrap();
+                                                    response_headers.insert(
+                                                        CONTENT_TYPE,
+                                                        HeaderValue::from_static("application/json"));
+                                                  }
+
+                                                  let body_content =  tokio::task::spawn_blocking(move ||
+                                                      serde_json::to_vec(&body).map_err(|e| {
+                                                        error!(error = ?e);
+                                                        StatusCode::INTERNAL_SERVER_ERROR
+                                                      })).await.unwrap()?;
+                                                  response.body(Body::from(body_content))
+                                                },
+                                            },
+                                            Err(why) => {
+                                                    // Application code returned an error. This should not happen, as the implementation should
+                                                    // return a valid response.
+                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
+                                            },
+                                        };
+
+
+                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
+}
+
+    #[derive(validator::Validate)]
+    #[allow(dead_code)]
+    struct RemoveImagesFromCollectionBodyValidator<'a> {
+                #[validate(nested)]
+          body: &'a Vec<models::ImageId>,
+    }
+
+
+#[tracing::instrument(skip_all)]
+fn remove_images_from_collection_validation(
+  path_params: models::RemoveImagesFromCollectionPathParams,
+        body: Vec<models::ImageId>,
+) -> std::result::Result<(
+  models::RemoveImagesFromCollectionPathParams,
+        Vec<models::ImageId>,
+), ValidationErrors>
+{
+  path_params.validate()?;
+              let b = RemoveImagesFromCollectionBodyValidator { body: &body };
+              b.validate()?;
+
+Ok((
+  path_params,
+    body,
+))
+}
+/// RemoveImagesFromCollection - DELETE /collections/{id}/images
+#[tracing::instrument(skip_all)]
+async fn remove_images_from_collection<I, A, E>(
+  method: Method,
+  TypedHeader(host): TypedHeader<Host>,
+  cookies: CookieJar,
+  Path(path_params): Path<models::RemoveImagesFromCollectionPathParams>,
+ State(api_impl): State<I>,
+          Json(body): Json<Vec<models::ImageId>>,
+) -> Result<Response, StatusCode>
+where
+    I: AsRef<A> + Send + Sync,
+    A: apis::collection::Collection<E> + Send + Sync,
+    E: std::fmt::Debug + Send + Sync + 'static,
+        {
+
+
+
+
+      #[allow(clippy::redundant_closure)]
+      let validation = tokio::task::spawn_blocking(move ||
+    remove_images_from_collection_validation(
+        path_params,
+          body,
+    )
+  ).await.unwrap();
+
+  let Ok((
+    path_params,
+      body,
+  )) = validation else {
+    return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(validation.unwrap_err().to_string()))
+            .map_err(|_| StatusCode::BAD_REQUEST);
+  };
+
+
+
+let result = api_impl.as_ref().remove_images_from_collection(
+      
+      &method,
+      &host,
+      &cookies,
+        &path_params,
+              &body,
+  ).await;
+
+  let mut response = Response::builder();
+
+  let resp = match result {
+                                            Ok(rsp) => match rsp {
+                                                apis::collection::RemoveImagesFromCollectionResponse::Status200_ImagesRemovedFromCollection
+                                                => {
+                                                  let mut response = response.status(200);
+                                                  response.body(Body::empty())
+                                                },
+                                            },
+                                            Err(why) => {
+                                                    // Application code returned an error. This should not happen, as the implementation should
+                                                    // return a valid response.
+                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
+                                            },
+                                        };
+
+
+                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
 }
 
 

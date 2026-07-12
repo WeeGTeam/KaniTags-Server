@@ -3,6 +3,8 @@ pub mod image_list;
 pub mod image_tag_converter;
 pub mod import;
 pub mod tag_converter;
+pub mod collection_converter;
+pub mod parse;
 
 pub trait ToDomain<D> {
     fn to_domain(self) -> D;
@@ -52,6 +54,17 @@ where
 
     fn try_to_domain(self) -> Result<Vec<D>, Self::Error> {
         self.into_iter().map(A::try_to_domain).collect()
+    }
+}
+
+impl<'a, A, D> TryToDomain<Vec<D>> for &'a Vec<A>
+where
+    &'a A: TryToDomain<D>,
+{
+    type Error = <&'a A as TryToDomain<D>>::Error;
+
+    fn try_to_domain(self) -> Result<Vec<D>, Self::Error> {
+        self.into_iter().map(<&'a A>::try_to_domain).collect()
     }
 }
 

@@ -88,7 +88,7 @@ CREATE TABLE collection
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     user_id    BIGINT                                             NOT NULL REFERENCES user_account (id) ON DELETE CASCADE,
-    name       VARCHAR(40)                                        NOT NULL,
+    name       VARCHAR(60)                                        NOT NULL,
     UNIQUE (user_id, name)
 );
 SELECT manage_audit_fields('collection');

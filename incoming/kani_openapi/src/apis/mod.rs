@@ -1,3 +1,4 @@
+pub mod collection;
 pub mod image_download;
 pub mod image_import;
 pub mod image_list;

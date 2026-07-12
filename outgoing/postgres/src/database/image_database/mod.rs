@@ -14,8 +14,6 @@ use kani_domain_api_model::user::User;
 use kani_domain_api_outgoing::database::ImageDatabase;
 use tracing::debug;
 
-mod converter;
-
 impl ImageDatabase for Postgres {
     fn get_image_by_image_id(&self, image_id: ImageId) -> Result<Option<PantsuImage>, anyhow::Error> {
         debug!("Getting image by image id: {:?}", image_id);
@@ -34,6 +32,21 @@ impl ImageDatabase for Postgres {
         debug!("Got image by image id hash: {}: {}", image_id_hash, image_row.is_some());
         Ok(image_row.map(TryInto::try_into).transpose()?)
     }
+
+    fn get_images_by_image_ids(
+        &self,
+        user: &User,
+        image_ids: &[ImageId]
+    ) -> Result<Vec<PantsuImage>, anyhow::Error> {
+        debug!("Getting {} images by image ids", image_ids.len());
+        let mut connection = self.get_connection()?;
+        let image_rows = connection.transaction(|conn|
+            conn.image_dao().get_images_by_user_and_ids(user.id, &image_ids.iter().map(|id| id.0).collect::<Vec<_>>())
+        )?;
+        debug!("Got {} images by image ids", image_rows.len());
+        Ok(image_rows.into_iter().map(TryInto::try_into).collect::<Result<Vec<PantsuImage>, anyhow::Error>>()?)
+    }
+
 
     fn store_image(
         &self,
@@ -83,7 +96,7 @@ impl ImageDatabase for Postgres {
         Ok(())
     }
 
-    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageIdHash>, anyhow::Error> {
+    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, anyhow::Error> {
         debug!("Starting image search for user '{}' and filter '{:?}'", user.user_name, filter);
         let mut connection = self.get_connection()?;
         let rows = connection.transaction(|conn| {{
