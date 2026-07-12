@@ -1579,6 +1579,7 @@ name = "kani-domain"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "assertables",
  "async-trait",
  "blockhash",
  "bytes",
