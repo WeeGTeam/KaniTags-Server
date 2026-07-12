@@ -21,12 +21,11 @@ impl TryFrom<ImageRow> for PantsuImage {
     }
 }
 
-impl TryFrom<ImageRow> for ImageIdHash {
+impl TryFrom<ImageRow> for ImageId {
     type Error = anyhow::Error;
 
-    fn try_from(value: ImageRow) -> Result<Self, Self::Error> {
-        let id_hash: IdHash = value.id_hash.try_into().map_err(|v: Vec<u8>| anyhow::anyhow!("invalid id hash of size {}", v.len()))?;
-        Ok(ImageIdHash(id_hash))
+    fn try_from(image_row: ImageRow) -> Result<Self, Self::Error> {
+        Ok(ImageId(image_row.id))
     }
 }
 

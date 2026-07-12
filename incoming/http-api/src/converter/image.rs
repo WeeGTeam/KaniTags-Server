@@ -2,9 +2,9 @@ use crate::converter::{FromDomain, TryToDomain};
 use kani_openapi::models::ImageId;
 use std::num::ParseIntError;
 
-impl FromDomain<kani_domain_api_model::image_id::ImageIdHash> for ImageId {
-    fn from_domain(value: kani_domain_api_model::image_id::ImageIdHash) -> Self {
-        ImageId(value.format_id_hash())
+impl FromDomain<kani_domain_api_model::image_id::ImageId> for ImageId {
+    fn from_domain(image_id: kani_domain_api_model::image_id::ImageId) -> Self {
+        ImageId(image_id.0.to_string())
     }
 }
 

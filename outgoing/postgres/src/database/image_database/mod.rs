@@ -96,7 +96,7 @@ impl ImageDatabase for Postgres {
         Ok(())
     }
 
-    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageIdHash>, anyhow::Error> {
+    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, anyhow::Error> {
         debug!("Starting image search for user '{}' and filter '{:?}'", user.user_name, filter);
         let mut connection = self.get_connection()?;
         let rows = connection.transaction(|conn| {{
