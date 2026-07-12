@@ -10,3 +10,6 @@ anyhow = { workspace = true }
 async-trait = { workspace = true }
 bytes = { workspace = true }
 thiserror = { workspace = true }
+
+[features]
+test-util = []
