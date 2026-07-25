@@ -452,7 +452,7 @@ components:
         createdByUser:
           $ref: '#/components/schemas/UserId'
         createdBySourceSite:
-          $ref: '#/components/schemas/TagSourceSite'
+          $ref: '#/components/schemas/ImageTagSourceSite'
         createdAt:
           type: string
           format: date-time
@@ -460,7 +460,7 @@ components:
       required:
         - tag
         - createdAt
-    TagSourceSite:
+    ImageTagSourceSite:
       type: string
       enum: [ gelbooru ]
       example: gelbooru

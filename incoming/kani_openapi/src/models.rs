@@ -553,7 +553,7 @@ pub struct ImageTag {
     #[serde(rename = "createdBySourceSite")]
           #[validate(nested)]
     #[serde(skip_serializing_if="Option::is_none")]
-    pub created_by_source_site: Option<models::TagSourceSite>,
+    pub created_by_source_site: Option<models::ImageTagSourceSite>,
 
     #[serde(rename = "createdAt")]
     pub created_at: chrono::DateTime::<chrono::Utc>,
@@ -616,7 +616,7 @@ impl std::str::FromStr for ImageTag {
         struct IntermediateRep {
             pub tag: Vec<models::Tag>,
             pub created_by_user: Vec<String>,
-            pub created_by_source_site: Vec<models::TagSourceSite>,
+            pub created_by_source_site: Vec<models::ImageTagSourceSite>,
             pub created_at: Vec<chrono::DateTime::<chrono::Utc>>,
         }
 
@@ -640,7 +640,7 @@ impl std::str::FromStr for ImageTag {
                     #[allow(clippy::redundant_clone)]
                     "createdByUser" => intermediate_rep.created_by_user.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
-                    "createdBySourceSite" => intermediate_rep.created_by_source_site.push(<models::TagSourceSite as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "createdBySourceSite" => intermediate_rep.created_by_source_site.push(<models::ImageTagSourceSite as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
                     "createdAt" => intermediate_rep.created_at.push(<chrono::DateTime::<chrono::Utc> as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     _ => return std::result::Result::Err("Unexpected key while parsing ImageTag".to_string())
@@ -693,6 +693,45 @@ impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<ImageTag> {
     }
 }
 
+
+
+/// Enumeration of values.
+/// Since this enum's variants do not hold data, we can easily define them as `#[repr(C)]`
+/// which helps with FFI.
+#[allow(non_camel_case_types, clippy::large_enum_variant)]
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "conversion", derive(frunk_enum_derive::LabelledGenericEnum))]
+pub enum ImageTagSourceSite {
+    #[serde(rename = "gelbooru")]
+    Gelbooru,
+}
+
+impl validator::Validate for ImageTagSourceSite
+{
+    fn validate(&self) -> std::result::Result<(), validator::ValidationErrors> {
+        std::result::Result::Ok(())
+    }
+}
+
+impl std::fmt::Display for ImageTagSourceSite {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            ImageTagSourceSite::Gelbooru => write!(f, "gelbooru"),
+        }
+    }
+}
+
+impl std::str::FromStr for ImageTagSourceSite {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s {
+            "gelbooru" => std::result::Result::Ok(ImageTagSourceSite::Gelbooru),
+            _ => std::result::Result::Err(format!(r#"Value not valid: {s}"#)),
+        }
+    }
+}
 
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
@@ -1275,45 +1314,6 @@ impl std::ops::DerefMut for TagName {
     }
 }
 
-
-
-/// Enumeration of values.
-/// Since this enum's variants do not hold data, we can easily define them as `#[repr(C)]`
-/// which helps with FFI.
-#[allow(non_camel_case_types, clippy::large_enum_variant)]
-#[repr(C)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "conversion", derive(frunk_enum_derive::LabelledGenericEnum))]
-pub enum TagSourceSite {
-    #[serde(rename = "gelbooru")]
-    Gelbooru,
-}
-
-impl validator::Validate for TagSourceSite
-{
-    fn validate(&self) -> std::result::Result<(), validator::ValidationErrors> {
-        std::result::Result::Ok(())
-    }
-}
-
-impl std::fmt::Display for TagSourceSite {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match *self {
-            TagSourceSite::Gelbooru => write!(f, "gelbooru"),
-        }
-    }
-}
-
-impl std::str::FromStr for TagSourceSite {
-    type Err = String;
-
-    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        match s {
-            "gelbooru" => std::result::Result::Ok(TagSourceSite::Gelbooru),
-            _ => std::result::Result::Err(format!(r#"Value not valid: {s}"#)),
-        }
-    }
-}
 
 
 /// Enumeration of values.

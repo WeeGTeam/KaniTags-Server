@@ -3,7 +3,7 @@ use crate::models::image_tag::ImageTagRow;
 use crate::models::tag::{TagInsertRow, TagRow};
 use crate::models::{SourceSiteName, TagType};
 use kani_domain_api_model::tag::image_tag::{ImageTag, ImageTagId};
-use kani_domain_api_model::tag::tag_source_site::TagSourceSite;
+use kani_domain_api_model::tag::image_tag_source_site::ImageTagSourceSite;
 use kani_domain_api_model::tag::{NewTag, Tag, TagId, TagName};
 
 impl TryToDomain<Tag> for TagRow {
@@ -57,10 +57,10 @@ impl TryToDomain<ImageTag> for (ImageTagRow, TagRow) {
     }
 }
 
-impl ToDomain<TagSourceSite> for SourceSiteName {
-    fn to_domain(self) -> TagSourceSite {
+impl ToDomain<ImageTagSourceSite> for SourceSiteName {
+    fn to_domain(self) -> ImageTagSourceSite {
         match self {
-            SourceSiteName::GELBOORU => TagSourceSite::Gelbooru,
+            SourceSiteName::GELBOORU => ImageTagSourceSite::Gelbooru,
         }
     }
 }

@@ -1,6 +1,6 @@
 use crate::converter::{FromDomain, ToDomain, TryToDomain};
 use kani_domain_api_model::tag::image_tag::ImageTag;
-use kani_domain_api_model::tag::tag_source_site::TagSourceSite;
+use kani_domain_api_model::tag::image_tag_source_site::ImageTagSourceSite;
 use kani_domain_api_model::tag::{NewTag, TagName};
 use kani_openapi::models::Tag;
 use thiserror::Error;
@@ -35,10 +35,10 @@ impl FromDomain<ImageTag> for kani_openapi::models::ImageTag {
     }
 }
 
-impl FromDomain<TagSourceSite> for kani_openapi::models::TagSourceSite {
-    fn from_domain(tag_source_site: TagSourceSite) -> Self {
-        match tag_source_site {
-            TagSourceSite::Gelbooru => kani_openapi::models::TagSourceSite::Gelbooru,
+impl FromDomain<ImageTagSourceSite> for kani_openapi::models::ImageTagSourceSite {
+    fn from_domain(image_tag_source_site: ImageTagSourceSite) -> Self {
+        match image_tag_source_site {
+            ImageTagSourceSite::Gelbooru => kani_openapi::models::ImageTagSourceSite::Gelbooru,
         }
     }
 }

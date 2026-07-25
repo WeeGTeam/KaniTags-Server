@@ -2,7 +2,7 @@ use anyhow::anyhow;
 use std::ops::Deref;
 
 pub mod image_tag;
-pub mod tag_source_site;
+pub mod image_tag_source_site;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct NewTag {
