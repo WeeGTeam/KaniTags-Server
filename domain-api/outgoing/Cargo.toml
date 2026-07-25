@@ -9,7 +9,8 @@ kani-domain-api-model = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 bytes = { workspace = true }
+mockall = { workspace = true, optional = true }
 thiserror = { workspace = true }
 
 [features]
-test-util = []
+test-util = ["dep:mockall"]

@@ -61,5 +61,6 @@ headers = "0.4.1"
 axum-extra = "0.12.6"
 #dev-dependencies
 assertables = "9.9.0"
+mockall = "0.15.0"
 rand = "0.10.1"
 serial_test = "3.4.0"

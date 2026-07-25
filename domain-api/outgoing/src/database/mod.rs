@@ -25,12 +25,12 @@ pub trait Database {
 #[cfg(feature = "test-util")]
 pub mod mock {
     use super::*;
-    use crate::database::collection_database::mock::MockCollectionDatabase;
-    use crate::database::image_database::mock::MockImageDatabase;
-    use crate::database::import_session::mock::MockImportSessionDatabase;
-    use crate::database::similarity_database::mock::MockSimilarityDatabase;
-    use crate::database::tag_database::mock::MockTagDatabase;
-    use crate::database::user_database::mock::MockUserDatabase;
+    use crate::database::collection_database::MockCollectionDatabase;
+    use crate::database::image_database::MockImageDatabase;
+    use crate::database::import_session::MockImportSessionDatabase;
+    use crate::database::similarity_database::MockSimilarityDatabase;
+    use crate::database::tag_database::MockTagDatabase;
+    use crate::database::user_database::MockUserDatabase;
 
     pub struct MockDatabase {
         mock_image_database: MockImageDatabase,
@@ -44,12 +44,12 @@ pub mod mock {
     impl Default for MockDatabase {
         fn default() -> Self {
             Self {
-                mock_image_database: MockImageDatabase::default(),
-                mock_user_database: MockUserDatabase::default(),
-                mock_similarity_database: MockSimilarityDatabase::default(),
-                mock_tag_database: MockTagDatabase::default(),
-                mock_import_session_database: MockImportSessionDatabase::default(),
-                mock_collection_database: MockCollectionDatabase::default(),
+                mock_image_database: MockImageDatabase::new(),
+                mock_user_database: MockUserDatabase::new(),
+                mock_similarity_database: MockSimilarityDatabase::new(),
+                mock_tag_database: MockTagDatabase::new(),
+                mock_import_session_database: MockImportSessionDatabase::new(),
+                mock_collection_database: MockCollectionDatabase::new()
             }
         }
     }

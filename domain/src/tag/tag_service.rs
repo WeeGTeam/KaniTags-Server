@@ -54,26 +54,31 @@ impl TagService for TagServiceImpl {
 #[cfg(test)]
 mod test {
     use crate::tag::tag_service::TagServiceImpl;
+    use assertables::assert_err;
     use kani_domain_api_incoming::tag_service::TagService;
     use kani_domain_api_model::image_id::ImageId;
     use kani_domain_api_model::tag::NewTag;
     use kani_domain_api_model::user::User;
-    use kani_domain_api_outgoing::database::image_database::mock::MockImageDatabase;
+    use kani_domain_api_outgoing::database::image_database::MockImageDatabase;
     use kani_domain_api_outgoing::database::mock::MockDatabase;
+    use mockall::predicate::eq;
     use std::sync::Arc;
 
     mod test_add_image_tags {
         use super::*;
-        use assertables::assert_err;
 
         #[test]
         fn should_fail_on_non_existing_image() {
+            let non_existing_image_id = ImageId(1);
+            let mut mock_image_database = MockImageDatabase::new();
+            mock_image_database.expect_get_image_by_image_id()
+                .with(eq(non_existing_image_id.clone()))
+                .returning(|_| Ok(None));
             let database = MockDatabase::default()
-                .with_image_database(MockImageDatabase::default()
-                    .with_get_image_by_image_id(|_| Ok(None)));
+                .with_image_database(mock_image_database);
             let tag_service = TagServiceImpl::new(Arc::new(database));
 
-            let result = tag_service.add_image_tags(ImageId(1), vec![NewTag::stub()], User::stub());
+            let result = tag_service.add_image_tags(non_existing_image_id, vec![NewTag::stub()], User::stub());
 
             assert_err!(result);
         }
