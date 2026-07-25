@@ -53,32 +53,32 @@ pub mod mock {
             }
         }
 
-        pub fn with_image_database(mut self, mock_image_database: MockImageDatabase) -> Self {
+        pub fn with_image(mut self, mock_image_database: MockImageDatabase) -> Self {
             self.mock_image_database = mock_image_database;
             self
         }
 
-        pub fn with_user_database(mut self, mock_user_database: MockUserDatabase) -> Self {
+        pub fn with_user(mut self, mock_user_database: MockUserDatabase) -> Self {
             self.mock_user_database = mock_user_database;
             self
         }
 
-        pub fn with_similarity_database(mut self, mock_similarity_database: MockSimilarityDatabase) -> Self {
+        pub fn with_similarity(mut self, mock_similarity_database: MockSimilarityDatabase) -> Self {
             self.mock_similarity_database = mock_similarity_database;
             self
         }
 
-        pub fn with_tag_database(mut self, mock_tag_database: MockTagDatabase) -> Self {
+        pub fn with_tag(mut self, mock_tag_database: MockTagDatabase) -> Self {
             self.mock_tag_database = mock_tag_database;
             self
         }
 
-        pub fn with_import_session_database(mut self, mock_import_session_database: MockImportSessionDatabase) -> Self {
+        pub fn with_import_session(mut self, mock_import_session_database: MockImportSessionDatabase) -> Self {
             self.mock_import_session_database = mock_import_session_database;
             self
         }
 
-        pub fn with_collection_database(mut self, mock_collection_database: MockCollectionDatabase) -> Self {
+        pub fn with_collection(mut self, mock_collection_database: MockCollectionDatabase) -> Self {
             self.mock_collection_database = mock_collection_database;
             self
         }

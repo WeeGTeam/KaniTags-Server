@@ -75,7 +75,7 @@ mod test {
                 .with(eq(non_existing_image_id.clone()))
                 .returning(|_| Ok(None));
             let database = MockDatabase::new()
-                .with_image_database(mock_image_database);
+                .with_image(mock_image_database);
             let tag_service = TagServiceImpl::new(Arc::new(database));
 
             let result = tag_service.add_image_tags(non_existing_image_id, vec![NewTag::stub()], User::stub());
