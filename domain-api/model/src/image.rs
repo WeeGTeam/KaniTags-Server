@@ -28,3 +28,21 @@ pub struct ImageDownloadData {
     pub filename: String,
     pub format: ImageFormat
 }
+
+#[cfg(feature = "test-util")]
+pub mod stub {
+    use super::*;
+
+    impl PantsuImage {
+        pub fn stub() -> Self {
+            PantsuImage {
+                id: ImageId(i64::MAX),
+                date_added: DateTime::<Utc>::MIN_UTC,
+                image_id_hash: ImageIdHash::stub(),
+                format: ImageFormat::PNG,
+                upload_filename: "stub_upload_filename".to_string(),
+                dimensions: (u32::MAX, u32::MAX),
+            }
+        }
+    }
+}

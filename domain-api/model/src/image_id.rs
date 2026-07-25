@@ -63,6 +63,17 @@ impl Deref for ImageIdHash {
     }
 }
 
+#[cfg(feature = "test-util")]
+pub mod stub {
+    use super::*;
+
+    impl ImageIdHash {
+        pub fn stub() -> Self {
+            ImageIdHash([9; 8])
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::str::FromStr;

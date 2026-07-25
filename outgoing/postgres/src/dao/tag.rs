@@ -79,18 +79,39 @@ mod test {
     use assertables::assert_len_eq_x;
     use diesel::Connection;
 
-    #[test]
-    #[serial_test::serial]
-    fn test_insert_tags_if_missing() {
-        let postgres = test_db();
-        let mut conn = postgres.get_connection().unwrap();
-        let results = conn.test_transaction(|c| {
-            c.tag_dao().insert_tags_if_missing(&[TagInsertRow {
+    mod test_insert_tags_if_missing {
+        use super::*;
+
+        #[test]
+        #[serial_test::serial]
+        fn should_insert_missing_tags() {
+            let postgres = test_db();
+            let mut conn = postgres.get_connection().unwrap();
+            let results = conn.test_transaction(|c| {
+                c.tag_dao().insert_tags_if_missing(&[TagInsertRow {
+                    tag_type: TagType::CHARACTER,
+                    tag_name: "Megumin".to_string(),
+                }])
+            });
+            assert_len_eq_x!(results, 1);
+        }
+
+        #[test]
+        #[serial_test::serial]
+        fn should_not_insert_same_tag_twice() {
+            let postgres = test_db();
+            let mut conn = postgres.get_connection().unwrap();
+            let tag = TagInsertRow {
                 tag_type: TagType::CHARACTER,
                 tag_name: "Megumin".to_string(),
-            }])
-        });
-        assert_len_eq_x!(results, 1);
+            };
+
+            let results = conn.test_transaction(|c| {
+                c.tag_dao().insert_tags_if_missing(&[tag.clone()]).unwrap();
+                c.tag_dao().insert_tags_if_missing(&[tag])
+            });
+            assert_len_eq_x!(results, 0);
+        }
     }
 
     #[test]

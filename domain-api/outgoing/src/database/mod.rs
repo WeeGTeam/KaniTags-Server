@@ -12,6 +12,101 @@ pub mod similarity_database;
 pub mod tag_database;
 pub mod user_database;
 
-pub trait Database : ImageDatabase + UserDatabase + SimilarityDatabase + TagDatabase + ImportSessionDatabase + CollectionDatabase {
+pub trait Database {
+    fn image(&self) -> &dyn ImageDatabase;
+    fn user(&self) -> &dyn UserDatabase;
+    fn similarity(&self) -> &dyn SimilarityDatabase;
+    fn tag(&self) -> &dyn TagDatabase;
+    fn import_session(&self) -> &dyn ImportSessionDatabase;
+    fn collection(&self) -> &dyn CollectionDatabase;
 }
 
+
+#[cfg(feature = "test-util")]
+pub mod mock {
+    use super::*;
+    use crate::database::collection_database::MockCollectionDatabase;
+    use crate::database::image_database::MockImageDatabase;
+    use crate::database::import_session::MockImportSessionDatabase;
+    use crate::database::similarity_database::MockSimilarityDatabase;
+    use crate::database::tag_database::MockTagDatabase;
+    use crate::database::user_database::MockUserDatabase;
+
+    pub struct MockDatabase {
+        mock_image_database: MockImageDatabase,
+        mock_user_database: MockUserDatabase,
+        mock_similarity_database: MockSimilarityDatabase,
+        mock_tag_database: MockTagDatabase,
+        mock_import_session_database: MockImportSessionDatabase,
+        mock_collection_database: MockCollectionDatabase,
+    }
+
+    impl MockDatabase {
+        pub fn new() -> Self {
+            Self {
+                mock_image_database: MockImageDatabase::new(),
+                mock_user_database: MockUserDatabase::new(),
+                mock_similarity_database: MockSimilarityDatabase::new(),
+                mock_tag_database: MockTagDatabase::new(),
+                mock_import_session_database: MockImportSessionDatabase::new(),
+                mock_collection_database: MockCollectionDatabase::new()
+            }
+        }
+
+        pub fn with_image(mut self, mock_image_database: MockImageDatabase) -> Self {
+            self.mock_image_database = mock_image_database;
+            self
+        }
+
+        pub fn with_user(mut self, mock_user_database: MockUserDatabase) -> Self {
+            self.mock_user_database = mock_user_database;
+            self
+        }
+
+        pub fn with_similarity(mut self, mock_similarity_database: MockSimilarityDatabase) -> Self {
+            self.mock_similarity_database = mock_similarity_database;
+            self
+        }
+
+        pub fn with_tag(mut self, mock_tag_database: MockTagDatabase) -> Self {
+            self.mock_tag_database = mock_tag_database;
+            self
+        }
+
+        pub fn with_import_session(mut self, mock_import_session_database: MockImportSessionDatabase) -> Self {
+            self.mock_import_session_database = mock_import_session_database;
+            self
+        }
+
+        pub fn with_collection(mut self, mock_collection_database: MockCollectionDatabase) -> Self {
+            self.mock_collection_database = mock_collection_database;
+            self
+        }
+    }
+
+    impl Database for MockDatabase {
+        fn image(&self) -> &dyn ImageDatabase {
+            &self.mock_image_database
+        }
+
+        fn user(&self) -> &dyn UserDatabase {
+            &self.mock_user_database
+        }
+
+        fn similarity(&self) -> &dyn SimilarityDatabase {
+            &self.mock_similarity_database
+        }
+
+        fn tag(&self) -> &dyn TagDatabase {
+            &self.mock_tag_database
+        }
+
+        fn import_session(&self) -> &dyn ImportSessionDatabase {
+            &self.mock_import_session_database
+        }
+
+        fn collection(&self) -> &dyn CollectionDatabase {
+            &self.mock_collection_database
+        }
+    }
+}

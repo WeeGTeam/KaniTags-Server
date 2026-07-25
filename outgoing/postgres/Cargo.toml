@@ -17,6 +17,8 @@ r2d2 = { workspace = true }
 tracing = { workspace = true }
 
 [dev-dependencies]
+kani-domain-api-model = { workspace = true, features = ["test-util"] }
+
 assertables = { workspace = true }
 rand = { workspace = true }
 serial_test = { workspace = true }

@@ -4,6 +4,7 @@ use kani_domain_api_model::image_search::ImageSearchFilter;
 use kani_domain_api_model::import::ImportSessionId;
 use kani_domain_api_model::user::User;
 
+#[cfg_attr(feature = "test-util", mockall::automock)]
 pub trait ImageDatabase {
     fn get_image_by_image_id(&self, image_id: ImageId) -> Result<Option<PantsuImage>, anyhow::Error>;
 

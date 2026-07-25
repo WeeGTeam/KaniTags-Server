@@ -20,3 +20,10 @@ regex = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true, features = ["sync"] }
 tracing = { workspace = true }
+
+[dev-dependencies]
+kani-domain-api-model = { workspace = true, features = ["test-util"] }
+kani-domain-api-outgoing = { workspace = true, features = ["test-util"] }
+
+assertables = { workspace = true }
+mockall = { workspace = true }

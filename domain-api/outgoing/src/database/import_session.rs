@@ -1,6 +1,7 @@
 use kani_domain_api_model::import::{ImportSession, ImportSessionId};
 use kani_domain_api_model::user::User;
 
+#[cfg_attr(feature = "test-util", mockall::automock)]
 pub trait ImportSessionDatabase {
     fn get_import_sessions(&self, user: &User) -> Result<Vec<ImportSession>, anyhow::Error>;
 

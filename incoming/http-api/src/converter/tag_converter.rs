@@ -6,7 +6,7 @@ impl FromDomain<Tag> for kani_openapi::models::Tag {
         Self {
             id: tag.id.to_string(),
             tag_type: FromDomain::from_domain(tag.tag_type),
-            tag_name: tag.tag_name.to_owned(),
+            tag_name: (*tag.tag_name).to_owned(),
         }
     }
 }

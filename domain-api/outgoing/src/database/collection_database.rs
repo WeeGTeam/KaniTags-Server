@@ -2,6 +2,7 @@ use kani_domain_api_model::collection::{Collection, CollectionId, CollectionName
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::user::User;
 
+#[cfg_attr(feature = "test-util", mockall::automock)]
 pub trait CollectionDatabase {
     fn load_collection_by_user_and_id(&self, user: &User, collection_id: CollectionId) -> Result<Option<Collection>, anyhow::Error>;
     fn load_collection_by_user_and_name(&self, user: &User, collection_name: &CollectionName) -> Result<Option<Collection>, anyhow::Error>;
