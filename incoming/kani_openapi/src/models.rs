@@ -538,20 +538,22 @@ impl std::ops::DerefMut for ImageId {
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
 pub struct ImageTag {
-    #[serde(rename = "tagId")]
-    #[validate(
-            regex(path = *RE_IMAGETAG_TAG_ID),
-          custom(function = "check_xss_string"),
-    )]
-    pub tag_id: String,
+    #[serde(rename = "tag")]
+          #[validate(nested)]
+    pub tag: models::Tag,
 
-    #[serde(rename = "createdBy")]
+    #[serde(rename = "createdByUser")]
     #[validate(
-            regex(path = *RE_IMAGETAG_CREATED_BY),
+            regex(path = *RE_IMAGETAG_CREATED_BY_USER),
           custom(function = "check_xss_string"),
     )]
     #[serde(skip_serializing_if="Option::is_none")]
-    pub created_by: Option<String>,
+    pub created_by_user: Option<String>,
+
+    #[serde(rename = "createdBySourceSite")]
+          #[validate(nested)]
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub created_by_source_site: Option<models::TagSourceSite>,
 
     #[serde(rename = "createdAt")]
     pub created_at: chrono::DateTime::<chrono::Utc>,
@@ -560,18 +562,16 @@ pub struct ImageTag {
 
 
 lazy_static::lazy_static! {
-    static ref RE_IMAGETAG_TAG_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
-}
-lazy_static::lazy_static! {
-    static ref RE_IMAGETAG_CREATED_BY: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    static ref RE_IMAGETAG_CREATED_BY_USER: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
 }
 
 impl ImageTag {
     #[allow(clippy::new_without_default, clippy::too_many_arguments)]
-    pub fn new(tag_id: String, created_at: chrono::DateTime::<chrono::Utc>, ) -> ImageTag {
+    pub fn new(tag: models::Tag, created_at: chrono::DateTime::<chrono::Utc>, ) -> ImageTag {
         ImageTag {
- tag_id,
- created_by: None,
+ tag,
+ created_by_user: None,
+ created_by_source_site: None,
  created_at,
         }
     }
@@ -583,17 +583,17 @@ impl ImageTag {
 impl std::fmt::Display for ImageTag {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let params: Vec<Option<String>> = vec![
-
-            Some("tagId".to_string()),
-            Some(self.tag_id.to_string()),
+            // Skipping tag in query parameter serialization
 
 
-            self.created_by.as_ref().map(|created_by| {
+            self.created_by_user.as_ref().map(|created_by_user| {
                 [
-                    "createdBy".to_string(),
-                    created_by.to_string(),
+                    "createdByUser".to_string(),
+                    created_by_user.to_string(),
                 ].join(",")
             }),
+
+            // Skipping createdBySourceSite in query parameter serialization
 
             // Skipping createdAt in query parameter serialization
 
@@ -614,8 +614,9 @@ impl std::str::FromStr for ImageTag {
         #[derive(Default)]
         #[allow(dead_code)]
         struct IntermediateRep {
-            pub tag_id: Vec<String>,
-            pub created_by: Vec<String>,
+            pub tag: Vec<models::Tag>,
+            pub created_by_user: Vec<String>,
+            pub created_by_source_site: Vec<models::TagSourceSite>,
             pub created_at: Vec<chrono::DateTime::<chrono::Utc>>,
         }
 
@@ -635,9 +636,11 @@ impl std::str::FromStr for ImageTag {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "tagId" => intermediate_rep.tag_id.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "tag" => intermediate_rep.tag.push(<models::Tag as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
-                    "createdBy" => intermediate_rep.created_by.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "createdByUser" => intermediate_rep.created_by_user.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "createdBySourceSite" => intermediate_rep.created_by_source_site.push(<models::TagSourceSite as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
                     "createdAt" => intermediate_rep.created_at.push(<chrono::DateTime::<chrono::Utc> as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     _ => return std::result::Result::Err("Unexpected key while parsing ImageTag".to_string())
@@ -650,8 +653,9 @@ impl std::str::FromStr for ImageTag {
 
         // Use the intermediate representation to return the struct
         std::result::Result::Ok(ImageTag {
-            tag_id: intermediate_rep.tag_id.into_iter().next().ok_or_else(|| "tagId missing in ImageTag".to_string())?,
-            created_by: intermediate_rep.created_by.into_iter().next(),
+            tag: intermediate_rep.tag.into_iter().next().ok_or_else(|| "tag missing in ImageTag".to_string())?,
+            created_by_user: intermediate_rep.created_by_user.into_iter().next(),
+            created_by_source_site: intermediate_rep.created_by_source_site.into_iter().next(),
             created_at: intermediate_rep.created_at.into_iter().next().ok_or_else(|| "createdAt missing in ImageTag".to_string())?,
         })
     }
@@ -1271,6 +1275,45 @@ impl std::ops::DerefMut for TagName {
     }
 }
 
+
+
+/// Enumeration of values.
+/// Since this enum's variants do not hold data, we can easily define them as `#[repr(C)]`
+/// which helps with FFI.
+#[allow(non_camel_case_types, clippy::large_enum_variant)]
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "conversion", derive(frunk_enum_derive::LabelledGenericEnum))]
+pub enum TagSourceSite {
+    #[serde(rename = "gelbooru")]
+    Gelbooru,
+}
+
+impl validator::Validate for TagSourceSite
+{
+    fn validate(&self) -> std::result::Result<(), validator::ValidationErrors> {
+        std::result::Result::Ok(())
+    }
+}
+
+impl std::fmt::Display for TagSourceSite {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match *self {
+            TagSourceSite::Gelbooru => write!(f, "gelbooru"),
+        }
+    }
+}
+
+impl std::str::FromStr for TagSourceSite {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s {
+            "gelbooru" => std::result::Result::Ok(TagSourceSite::Gelbooru),
+            _ => std::result::Result::Err(format!(r#"Value not valid: {s}"#)),
+        }
+    }
+}
 
 
 /// Enumeration of values.

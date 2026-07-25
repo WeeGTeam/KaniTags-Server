@@ -447,17 +447,23 @@ components:
     ImageTag:
       type: object
       properties:
-        tagId:
-          $ref: '#/components/schemas/TagId'
-        createdBy:
+        tag:
+          $ref: '#/components/schemas/Tag'
+        createdByUser:
           $ref: '#/components/schemas/UserId'
+        createdBySourceSite:
+          $ref: '#/components/schemas/TagSourceSite'
         createdAt:
           type: string
           format: date-time
           example: "2023-09-20T12:34:56Z"
       required:
-        - tagId
+        - tag
         - createdAt
+    TagSourceSite:
+      type: string
+      enum: [ gelbooru ]
+      example: gelbooru
     ImageImport:
       type: object
       properties:
