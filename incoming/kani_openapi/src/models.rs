@@ -260,10 +260,10 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
-pub struct Collection {
+pub struct CollectionDto {
     #[serde(rename = "id")]
     #[validate(
-            regex(path = *RE_COLLECTION_ID),
+            regex(path = *RE_COLLECTIONDTO_ID),
           custom(function = "check_xss_string"),
     )]
     pub id: String,
@@ -275,7 +275,7 @@ pub struct Collection {
 
     #[serde(rename = "createdBy")]
     #[validate(
-            regex(path = *RE_COLLECTION_CREATED_BY),
+            regex(path = *RE_COLLECTIONDTO_CREATED_BY),
           custom(function = "check_xss_string"),
     )]
     pub created_by: String,
@@ -290,16 +290,16 @@ pub struct Collection {
 
 
 lazy_static::lazy_static! {
-    static ref RE_COLLECTION_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    static ref RE_COLLECTIONDTO_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
 }
 lazy_static::lazy_static! {
-    static ref RE_COLLECTION_CREATED_BY: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    static ref RE_COLLECTIONDTO_CREATED_BY: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
 }
 
-impl Collection {
+impl CollectionDto {
     #[allow(clippy::new_without_default, clippy::too_many_arguments)]
-    pub fn new(id: String, name: String, created_by: String, created_at: chrono::DateTime::<chrono::Utc>, updated_at: chrono::DateTime::<chrono::Utc>, ) -> Collection {
-        Collection {
+    pub fn new(id: String, name: String, created_by: String, created_at: chrono::DateTime::<chrono::Utc>, updated_at: chrono::DateTime::<chrono::Utc>, ) -> CollectionDto {
+        CollectionDto {
  id,
  name,
  created_by,
@@ -309,10 +309,10 @@ impl Collection {
     }
 }
 
-/// Converts the Collection value to the Query Parameters representation (style=form, explode=false)
+/// Converts the CollectionDto value to the Query Parameters representation (style=form, explode=false)
 /// specified in https://swagger.io/docs/specification/serialization/
 /// Should be implemented in a serde serializer
-impl std::fmt::Display for Collection {
+impl std::fmt::Display for CollectionDto {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let params: Vec<Option<String>> = vec![
 
@@ -337,10 +337,10 @@ impl std::fmt::Display for Collection {
     }
 }
 
-/// Converts Query Parameters representation (style=form, explode=false) to a Collection value
+/// Converts Query Parameters representation (style=form, explode=false) to a CollectionDto value
 /// as specified in https://swagger.io/docs/specification/serialization/
 /// Should be implemented in a serde deserializer
-impl std::str::FromStr for Collection {
+impl std::str::FromStr for CollectionDto {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
@@ -364,7 +364,7 @@ impl std::str::FromStr for Collection {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing Collection".to_string())
+                None => return std::result::Result::Err("Missing value while parsing CollectionDto".to_string())
             };
 
             if let Some(key) = key_result {
@@ -380,7 +380,7 @@ impl std::str::FromStr for Collection {
                     "createdAt" => intermediate_rep.created_at.push(<chrono::DateTime::<chrono::Utc> as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
                     "updatedAt" => intermediate_rep.updated_at.push(<chrono::DateTime::<chrono::Utc> as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing Collection".to_string())
+                    _ => return std::result::Result::Err("Unexpected key while parsing CollectionDto".to_string())
                 }
             }
 
@@ -389,41 +389,41 @@ impl std::str::FromStr for Collection {
         }
 
         // Use the intermediate representation to return the struct
-        std::result::Result::Ok(Collection {
-            id: intermediate_rep.id.into_iter().next().ok_or_else(|| "id missing in Collection".to_string())?,
-            name: intermediate_rep.name.into_iter().next().ok_or_else(|| "name missing in Collection".to_string())?,
-            created_by: intermediate_rep.created_by.into_iter().next().ok_or_else(|| "createdBy missing in Collection".to_string())?,
-            created_at: intermediate_rep.created_at.into_iter().next().ok_or_else(|| "createdAt missing in Collection".to_string())?,
-            updated_at: intermediate_rep.updated_at.into_iter().next().ok_or_else(|| "updatedAt missing in Collection".to_string())?,
+        std::result::Result::Ok(CollectionDto {
+            id: intermediate_rep.id.into_iter().next().ok_or_else(|| "id missing in CollectionDto".to_string())?,
+            name: intermediate_rep.name.into_iter().next().ok_or_else(|| "name missing in CollectionDto".to_string())?,
+            created_by: intermediate_rep.created_by.into_iter().next().ok_or_else(|| "createdBy missing in CollectionDto".to_string())?,
+            created_at: intermediate_rep.created_at.into_iter().next().ok_or_else(|| "createdAt missing in CollectionDto".to_string())?,
+            updated_at: intermediate_rep.updated_at.into_iter().next().ok_or_else(|| "updatedAt missing in CollectionDto".to_string())?,
         })
     }
 }
 
-// Methods for converting between header::IntoHeaderValue<Collection> and HeaderValue
+// Methods for converting between header::IntoHeaderValue<CollectionDto> and HeaderValue
 
 #[cfg(feature = "server")]
-impl std::convert::TryFrom<header::IntoHeaderValue<Collection>> for HeaderValue {
+impl std::convert::TryFrom<header::IntoHeaderValue<CollectionDto>> for HeaderValue {
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<Collection>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(hdr_value: header::IntoHeaderValue<CollectionDto>) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match HeaderValue::from_str(&hdr_value) {
              std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for Collection - value: {hdr_value} is invalid {e}"#))
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for CollectionDto - value: {hdr_value} is invalid {e}"#))
         }
     }
 }
 
 #[cfg(feature = "server")]
-impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<Collection> {
+impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<CollectionDto> {
     type Error = String;
 
     fn try_from(hdr_value: HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
              std::result::Result::Ok(value) => {
-                    match <Collection as std::str::FromStr>::from_str(value) {
+                    match <CollectionDto as std::str::FromStr>::from_str(value) {
                         std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into Collection - {err}"#))
+                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into CollectionDto - {err}"#))
                     }
              },
              std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Unable to convert header: {hdr_value:?} to string: {e}"#))
@@ -537,14 +537,14 @@ impl std::ops::DerefMut for ImageId {
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
-pub struct ImageTag {
+pub struct ImageTagDto {
     #[serde(rename = "tag")]
           #[validate(nested)]
-    pub tag: models::Tag,
+    pub tag: models::TagDto,
 
     #[serde(rename = "createdByUser")]
     #[validate(
-            regex(path = *RE_IMAGETAG_CREATED_BY_USER),
+            regex(path = *RE_IMAGETAGDTO_CREATED_BY_USER),
           custom(function = "check_xss_string"),
     )]
     #[serde(skip_serializing_if="Option::is_none")]
@@ -553,7 +553,7 @@ pub struct ImageTag {
     #[serde(rename = "createdBySourceSite")]
           #[validate(nested)]
     #[serde(skip_serializing_if="Option::is_none")]
-    pub created_by_source_site: Option<models::ImageTagSourceSite>,
+    pub created_by_source_site: Option<models::ImageTagSourceSiteDto>,
 
     #[serde(rename = "createdAt")]
     pub created_at: chrono::DateTime::<chrono::Utc>,
@@ -562,13 +562,13 @@ pub struct ImageTag {
 
 
 lazy_static::lazy_static! {
-    static ref RE_IMAGETAG_CREATED_BY_USER: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    static ref RE_IMAGETAGDTO_CREATED_BY_USER: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
 }
 
-impl ImageTag {
+impl ImageTagDto {
     #[allow(clippy::new_without_default, clippy::too_many_arguments)]
-    pub fn new(tag: models::Tag, created_at: chrono::DateTime::<chrono::Utc>, ) -> ImageTag {
-        ImageTag {
+    pub fn new(tag: models::TagDto, created_at: chrono::DateTime::<chrono::Utc>, ) -> ImageTagDto {
+        ImageTagDto {
  tag,
  created_by_user: None,
  created_by_source_site: None,
@@ -577,10 +577,10 @@ impl ImageTag {
     }
 }
 
-/// Converts the ImageTag value to the Query Parameters representation (style=form, explode=false)
+/// Converts the ImageTagDto value to the Query Parameters representation (style=form, explode=false)
 /// specified in https://swagger.io/docs/specification/serialization/
 /// Should be implemented in a serde serializer
-impl std::fmt::Display for ImageTag {
+impl std::fmt::Display for ImageTagDto {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let params: Vec<Option<String>> = vec![
             // Skipping tag in query parameter serialization
@@ -603,10 +603,10 @@ impl std::fmt::Display for ImageTag {
     }
 }
 
-/// Converts Query Parameters representation (style=form, explode=false) to a ImageTag value
+/// Converts Query Parameters representation (style=form, explode=false) to a ImageTagDto value
 /// as specified in https://swagger.io/docs/specification/serialization/
 /// Should be implemented in a serde deserializer
-impl std::str::FromStr for ImageTag {
+impl std::str::FromStr for ImageTagDto {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
@@ -614,9 +614,9 @@ impl std::str::FromStr for ImageTag {
         #[derive(Default)]
         #[allow(dead_code)]
         struct IntermediateRep {
-            pub tag: Vec<models::Tag>,
+            pub tag: Vec<models::TagDto>,
             pub created_by_user: Vec<String>,
-            pub created_by_source_site: Vec<models::ImageTagSourceSite>,
+            pub created_by_source_site: Vec<models::ImageTagSourceSiteDto>,
             pub created_at: Vec<chrono::DateTime::<chrono::Utc>>,
         }
 
@@ -629,21 +629,21 @@ impl std::str::FromStr for ImageTag {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing ImageTag".to_string())
+                None => return std::result::Result::Err("Missing value while parsing ImageTagDto".to_string())
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "tag" => intermediate_rep.tag.push(<models::Tag as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "tag" => intermediate_rep.tag.push(<models::TagDto as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
                     "createdByUser" => intermediate_rep.created_by_user.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
-                    "createdBySourceSite" => intermediate_rep.created_by_source_site.push(<models::ImageTagSourceSite as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "createdBySourceSite" => intermediate_rep.created_by_source_site.push(<models::ImageTagSourceSiteDto as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
                     "createdAt" => intermediate_rep.created_at.push(<chrono::DateTime::<chrono::Utc> as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing ImageTag".to_string())
+                    _ => return std::result::Result::Err("Unexpected key while parsing ImageTagDto".to_string())
                 }
             }
 
@@ -652,40 +652,40 @@ impl std::str::FromStr for ImageTag {
         }
 
         // Use the intermediate representation to return the struct
-        std::result::Result::Ok(ImageTag {
-            tag: intermediate_rep.tag.into_iter().next().ok_or_else(|| "tag missing in ImageTag".to_string())?,
+        std::result::Result::Ok(ImageTagDto {
+            tag: intermediate_rep.tag.into_iter().next().ok_or_else(|| "tag missing in ImageTagDto".to_string())?,
             created_by_user: intermediate_rep.created_by_user.into_iter().next(),
             created_by_source_site: intermediate_rep.created_by_source_site.into_iter().next(),
-            created_at: intermediate_rep.created_at.into_iter().next().ok_or_else(|| "createdAt missing in ImageTag".to_string())?,
+            created_at: intermediate_rep.created_at.into_iter().next().ok_or_else(|| "createdAt missing in ImageTagDto".to_string())?,
         })
     }
 }
 
-// Methods for converting between header::IntoHeaderValue<ImageTag> and HeaderValue
+// Methods for converting between header::IntoHeaderValue<ImageTagDto> and HeaderValue
 
 #[cfg(feature = "server")]
-impl std::convert::TryFrom<header::IntoHeaderValue<ImageTag>> for HeaderValue {
+impl std::convert::TryFrom<header::IntoHeaderValue<ImageTagDto>> for HeaderValue {
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<ImageTag>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(hdr_value: header::IntoHeaderValue<ImageTagDto>) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match HeaderValue::from_str(&hdr_value) {
              std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for ImageTag - value: {hdr_value} is invalid {e}"#))
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for ImageTagDto - value: {hdr_value} is invalid {e}"#))
         }
     }
 }
 
 #[cfg(feature = "server")]
-impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<ImageTag> {
+impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<ImageTagDto> {
     type Error = String;
 
     fn try_from(hdr_value: HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
              std::result::Result::Ok(value) => {
-                    match <ImageTag as std::str::FromStr>::from_str(value) {
+                    match <ImageTagDto as std::str::FromStr>::from_str(value) {
                         std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into ImageTag - {err}"#))
+                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into ImageTagDto - {err}"#))
                     }
              },
              std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Unable to convert header: {hdr_value:?} to string: {e}"#))
@@ -702,32 +702,32 @@ impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<ImageTag> {
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "conversion", derive(frunk_enum_derive::LabelledGenericEnum))]
-pub enum ImageTagSourceSite {
+pub enum ImageTagSourceSiteDto {
     #[serde(rename = "gelbooru")]
     Gelbooru,
 }
 
-impl validator::Validate for ImageTagSourceSite
+impl validator::Validate for ImageTagSourceSiteDto
 {
     fn validate(&self) -> std::result::Result<(), validator::ValidationErrors> {
         std::result::Result::Ok(())
     }
 }
 
-impl std::fmt::Display for ImageTagSourceSite {
+impl std::fmt::Display for ImageTagSourceSiteDto {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
-            ImageTagSourceSite::Gelbooru => write!(f, "gelbooru"),
+            ImageTagSourceSiteDto::Gelbooru => write!(f, "gelbooru"),
         }
     }
 }
 
-impl std::str::FromStr for ImageTagSourceSite {
+impl std::str::FromStr for ImageTagSourceSiteDto {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s {
-            "gelbooru" => std::result::Result::Ok(ImageTagSourceSite::Gelbooru),
+            "gelbooru" => std::result::Result::Ok(ImageTagSourceSiteDto::Gelbooru),
             _ => std::result::Result::Err(format!(r#"Value not valid: {s}"#)),
         }
     }
@@ -736,10 +736,10 @@ impl std::str::FromStr for ImageTagSourceSite {
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
-pub struct ImportSession {
+pub struct ImportSessionDto {
     #[serde(rename = "id")]
     #[validate(
-            regex(path = *RE_IMPORTSESSION_ID),
+            regex(path = *RE_IMPORTSESSIONDTO_ID),
           custom(function = "check_xss_string"),
     )]
     pub id: String,
@@ -758,13 +758,13 @@ pub struct ImportSession {
 
 
 lazy_static::lazy_static! {
-    static ref RE_IMPORTSESSION_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    static ref RE_IMPORTSESSIONDTO_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
 }
 
-impl ImportSession {
+impl ImportSessionDto {
     #[allow(clippy::new_without_default, clippy::too_many_arguments)]
-    pub fn new(id: String, created_at: chrono::DateTime::<chrono::Utc>, updated_at: chrono::DateTime::<chrono::Utc>, ) -> ImportSession {
-        ImportSession {
+    pub fn new(id: String, created_at: chrono::DateTime::<chrono::Utc>, updated_at: chrono::DateTime::<chrono::Utc>, ) -> ImportSessionDto {
+        ImportSessionDto {
  id,
  created_at,
  updated_at,
@@ -773,10 +773,10 @@ impl ImportSession {
     }
 }
 
-/// Converts the ImportSession value to the Query Parameters representation (style=form, explode=false)
+/// Converts the ImportSessionDto value to the Query Parameters representation (style=form, explode=false)
 /// specified in https://swagger.io/docs/specification/serialization/
 /// Should be implemented in a serde serializer
-impl std::fmt::Display for ImportSession {
+impl std::fmt::Display for ImportSessionDto {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let params: Vec<Option<String>> = vec![
 
@@ -795,10 +795,10 @@ impl std::fmt::Display for ImportSession {
     }
 }
 
-/// Converts Query Parameters representation (style=form, explode=false) to a ImportSession value
+/// Converts Query Parameters representation (style=form, explode=false) to a ImportSessionDto value
 /// as specified in https://swagger.io/docs/specification/serialization/
 /// Should be implemented in a serde deserializer
-impl std::str::FromStr for ImportSession {
+impl std::str::FromStr for ImportSessionDto {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
@@ -821,7 +821,7 @@ impl std::str::FromStr for ImportSession {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing ImportSession".to_string())
+                None => return std::result::Result::Err("Missing value while parsing ImportSessionDto".to_string())
             };
 
             if let Some(key) = key_result {
@@ -835,7 +835,7 @@ impl std::str::FromStr for ImportSession {
                     "updatedAt" => intermediate_rep.updated_at.push(<chrono::DateTime::<chrono::Utc> as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
                     "closedAt" => intermediate_rep.closed_at.push(<chrono::DateTime::<chrono::Utc> as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing ImportSession".to_string())
+                    _ => return std::result::Result::Err("Unexpected key while parsing ImportSessionDto".to_string())
                 }
             }
 
@@ -844,40 +844,40 @@ impl std::str::FromStr for ImportSession {
         }
 
         // Use the intermediate representation to return the struct
-        std::result::Result::Ok(ImportSession {
-            id: intermediate_rep.id.into_iter().next().ok_or_else(|| "id missing in ImportSession".to_string())?,
-            created_at: intermediate_rep.created_at.into_iter().next().ok_or_else(|| "createdAt missing in ImportSession".to_string())?,
-            updated_at: intermediate_rep.updated_at.into_iter().next().ok_or_else(|| "updatedAt missing in ImportSession".to_string())?,
+        std::result::Result::Ok(ImportSessionDto {
+            id: intermediate_rep.id.into_iter().next().ok_or_else(|| "id missing in ImportSessionDto".to_string())?,
+            created_at: intermediate_rep.created_at.into_iter().next().ok_or_else(|| "createdAt missing in ImportSessionDto".to_string())?,
+            updated_at: intermediate_rep.updated_at.into_iter().next().ok_or_else(|| "updatedAt missing in ImportSessionDto".to_string())?,
             closed_at: intermediate_rep.closed_at.into_iter().next(),
         })
     }
 }
 
-// Methods for converting between header::IntoHeaderValue<ImportSession> and HeaderValue
+// Methods for converting between header::IntoHeaderValue<ImportSessionDto> and HeaderValue
 
 #[cfg(feature = "server")]
-impl std::convert::TryFrom<header::IntoHeaderValue<ImportSession>> for HeaderValue {
+impl std::convert::TryFrom<header::IntoHeaderValue<ImportSessionDto>> for HeaderValue {
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<ImportSession>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(hdr_value: header::IntoHeaderValue<ImportSessionDto>) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match HeaderValue::from_str(&hdr_value) {
              std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for ImportSession - value: {hdr_value} is invalid {e}"#))
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for ImportSessionDto - value: {hdr_value} is invalid {e}"#))
         }
     }
 }
 
 #[cfg(feature = "server")]
-impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<ImportSession> {
+impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<ImportSessionDto> {
     type Error = String;
 
     fn try_from(hdr_value: HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
              std::result::Result::Ok(value) => {
-                    match <ImportSession as std::str::FromStr>::from_str(value) {
+                    match <ImportSessionDto as std::str::FromStr>::from_str(value) {
                         std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into ImportSession - {err}"#))
+                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into ImportSessionDto - {err}"#))
                     }
              },
              std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Unable to convert header: {hdr_value:?} to string: {e}"#))
@@ -940,10 +940,10 @@ impl std::ops::DerefMut for ImportSessionId {
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
-pub struct NewImageTag {
+pub struct NewImageTagDto {
     #[serde(rename = "tagType")]
           #[validate(nested)]
-    pub tag_type: models::TagType,
+    pub tag_type: models::TagTypeDto,
 
     /// max length: 40 characters
     #[serde(rename = "tagName")]
@@ -954,20 +954,20 @@ pub struct NewImageTag {
 
 
 
-impl NewImageTag {
+impl NewImageTagDto {
     #[allow(clippy::new_without_default, clippy::too_many_arguments)]
-    pub fn new(tag_type: models::TagType, tag_name: String, ) -> NewImageTag {
-        NewImageTag {
+    pub fn new(tag_type: models::TagTypeDto, tag_name: String, ) -> NewImageTagDto {
+        NewImageTagDto {
  tag_type,
  tag_name,
         }
     }
 }
 
-/// Converts the NewImageTag value to the Query Parameters representation (style=form, explode=false)
+/// Converts the NewImageTagDto value to the Query Parameters representation (style=form, explode=false)
 /// specified in https://swagger.io/docs/specification/serialization/
 /// Should be implemented in a serde serializer
-impl std::fmt::Display for NewImageTag {
+impl std::fmt::Display for NewImageTagDto {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let params: Vec<Option<String>> = vec![
             // Skipping tagType in query parameter serialization
@@ -982,10 +982,10 @@ impl std::fmt::Display for NewImageTag {
     }
 }
 
-/// Converts Query Parameters representation (style=form, explode=false) to a NewImageTag value
+/// Converts Query Parameters representation (style=form, explode=false) to a NewImageTagDto value
 /// as specified in https://swagger.io/docs/specification/serialization/
 /// Should be implemented in a serde deserializer
-impl std::str::FromStr for NewImageTag {
+impl std::str::FromStr for NewImageTagDto {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
@@ -993,7 +993,7 @@ impl std::str::FromStr for NewImageTag {
         #[derive(Default)]
         #[allow(dead_code)]
         struct IntermediateRep {
-            pub tag_type: Vec<models::TagType>,
+            pub tag_type: Vec<models::TagTypeDto>,
             pub tag_name: Vec<String>,
         }
 
@@ -1006,17 +1006,17 @@ impl std::str::FromStr for NewImageTag {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing NewImageTag".to_string())
+                None => return std::result::Result::Err("Missing value while parsing NewImageTagDto".to_string())
             };
 
             if let Some(key) = key_result {
                 #[allow(clippy::match_single_binding)]
                 match key {
                     #[allow(clippy::redundant_clone)]
-                    "tagType" => intermediate_rep.tag_type.push(<models::TagType as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "tagType" => intermediate_rep.tag_type.push(<models::TagTypeDto as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
                     "tagName" => intermediate_rep.tag_name.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing NewImageTag".to_string())
+                    _ => return std::result::Result::Err("Unexpected key while parsing NewImageTagDto".to_string())
                 }
             }
 
@@ -1025,38 +1025,38 @@ impl std::str::FromStr for NewImageTag {
         }
 
         // Use the intermediate representation to return the struct
-        std::result::Result::Ok(NewImageTag {
-            tag_type: intermediate_rep.tag_type.into_iter().next().ok_or_else(|| "tagType missing in NewImageTag".to_string())?,
-            tag_name: intermediate_rep.tag_name.into_iter().next().ok_or_else(|| "tagName missing in NewImageTag".to_string())?,
+        std::result::Result::Ok(NewImageTagDto {
+            tag_type: intermediate_rep.tag_type.into_iter().next().ok_or_else(|| "tagType missing in NewImageTagDto".to_string())?,
+            tag_name: intermediate_rep.tag_name.into_iter().next().ok_or_else(|| "tagName missing in NewImageTagDto".to_string())?,
         })
     }
 }
 
-// Methods for converting between header::IntoHeaderValue<NewImageTag> and HeaderValue
+// Methods for converting between header::IntoHeaderValue<NewImageTagDto> and HeaderValue
 
 #[cfg(feature = "server")]
-impl std::convert::TryFrom<header::IntoHeaderValue<NewImageTag>> for HeaderValue {
+impl std::convert::TryFrom<header::IntoHeaderValue<NewImageTagDto>> for HeaderValue {
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<NewImageTag>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(hdr_value: header::IntoHeaderValue<NewImageTagDto>) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match HeaderValue::from_str(&hdr_value) {
              std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for NewImageTag - value: {hdr_value} is invalid {e}"#))
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for NewImageTagDto - value: {hdr_value} is invalid {e}"#))
         }
     }
 }
 
 #[cfg(feature = "server")]
-impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<NewImageTag> {
+impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<NewImageTagDto> {
     type Error = String;
 
     fn try_from(hdr_value: HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
              std::result::Result::Ok(value) => {
-                    match <NewImageTag as std::str::FromStr>::from_str(value) {
+                    match <NewImageTagDto as std::str::FromStr>::from_str(value) {
                         std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into NewImageTag - {err}"#))
+                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into NewImageTagDto - {err}"#))
                     }
              },
              std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Unable to convert header: {hdr_value:?} to string: {e}"#))
@@ -1068,17 +1068,17 @@ impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<NewImageTag>
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
 #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
-pub struct Tag {
+pub struct TagDto {
     #[serde(rename = "id")]
     #[validate(
-            regex(path = *RE_TAG_ID),
+            regex(path = *RE_TAGDTO_ID),
           custom(function = "check_xss_string"),
     )]
     pub id: String,
 
     #[serde(rename = "tagType")]
           #[validate(nested)]
-    pub tag_type: models::TagType,
+    pub tag_type: models::TagTypeDto,
 
     /// max length: 40 characters
     #[serde(rename = "tagName")]
@@ -1089,13 +1089,13 @@ pub struct Tag {
 
 
 lazy_static::lazy_static! {
-    static ref RE_TAG_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    static ref RE_TAGDTO_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
 }
 
-impl Tag {
+impl TagDto {
     #[allow(clippy::new_without_default, clippy::too_many_arguments)]
-    pub fn new(id: String, tag_type: models::TagType, tag_name: String, ) -> Tag {
-        Tag {
+    pub fn new(id: String, tag_type: models::TagTypeDto, tag_name: String, ) -> TagDto {
+        TagDto {
  id,
  tag_type,
  tag_name,
@@ -1103,10 +1103,10 @@ impl Tag {
     }
 }
 
-/// Converts the Tag value to the Query Parameters representation (style=form, explode=false)
+/// Converts the TagDto value to the Query Parameters representation (style=form, explode=false)
 /// specified in https://swagger.io/docs/specification/serialization/
 /// Should be implemented in a serde serializer
-impl std::fmt::Display for Tag {
+impl std::fmt::Display for TagDto {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let params: Vec<Option<String>> = vec![
 
@@ -1125,10 +1125,10 @@ impl std::fmt::Display for Tag {
     }
 }
 
-/// Converts Query Parameters representation (style=form, explode=false) to a Tag value
+/// Converts Query Parameters representation (style=form, explode=false) to a TagDto value
 /// as specified in https://swagger.io/docs/specification/serialization/
 /// Should be implemented in a serde deserializer
-impl std::str::FromStr for Tag {
+impl std::str::FromStr for TagDto {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
@@ -1137,7 +1137,7 @@ impl std::str::FromStr for Tag {
         #[allow(dead_code)]
         struct IntermediateRep {
             pub id: Vec<String>,
-            pub tag_type: Vec<models::TagType>,
+            pub tag_type: Vec<models::TagTypeDto>,
             pub tag_name: Vec<String>,
         }
 
@@ -1150,7 +1150,7 @@ impl std::str::FromStr for Tag {
         while key_result.is_some() {
             let val = match string_iter.next() {
                 Some(x) => x,
-                None => return std::result::Result::Err("Missing value while parsing Tag".to_string())
+                None => return std::result::Result::Err("Missing value while parsing TagDto".to_string())
             };
 
             if let Some(key) = key_result {
@@ -1159,10 +1159,10 @@ impl std::str::FromStr for Tag {
                     #[allow(clippy::redundant_clone)]
                     "id" => intermediate_rep.id.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
-                    "tagType" => intermediate_rep.tag_type.push(<models::TagType as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    "tagType" => intermediate_rep.tag_type.push(<models::TagTypeDto as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
                     #[allow(clippy::redundant_clone)]
                     "tagName" => intermediate_rep.tag_name.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
-                    _ => return std::result::Result::Err("Unexpected key while parsing Tag".to_string())
+                    _ => return std::result::Result::Err("Unexpected key while parsing TagDto".to_string())
                 }
             }
 
@@ -1171,39 +1171,39 @@ impl std::str::FromStr for Tag {
         }
 
         // Use the intermediate representation to return the struct
-        std::result::Result::Ok(Tag {
-            id: intermediate_rep.id.into_iter().next().ok_or_else(|| "id missing in Tag".to_string())?,
-            tag_type: intermediate_rep.tag_type.into_iter().next().ok_or_else(|| "tagType missing in Tag".to_string())?,
-            tag_name: intermediate_rep.tag_name.into_iter().next().ok_or_else(|| "tagName missing in Tag".to_string())?,
+        std::result::Result::Ok(TagDto {
+            id: intermediate_rep.id.into_iter().next().ok_or_else(|| "id missing in TagDto".to_string())?,
+            tag_type: intermediate_rep.tag_type.into_iter().next().ok_or_else(|| "tagType missing in TagDto".to_string())?,
+            tag_name: intermediate_rep.tag_name.into_iter().next().ok_or_else(|| "tagName missing in TagDto".to_string())?,
         })
     }
 }
 
-// Methods for converting between header::IntoHeaderValue<Tag> and HeaderValue
+// Methods for converting between header::IntoHeaderValue<TagDto> and HeaderValue
 
 #[cfg(feature = "server")]
-impl std::convert::TryFrom<header::IntoHeaderValue<Tag>> for HeaderValue {
+impl std::convert::TryFrom<header::IntoHeaderValue<TagDto>> for HeaderValue {
     type Error = String;
 
-    fn try_from(hdr_value: header::IntoHeaderValue<Tag>) -> std::result::Result<Self, Self::Error> {
+    fn try_from(hdr_value: header::IntoHeaderValue<TagDto>) -> std::result::Result<Self, Self::Error> {
         let hdr_value = hdr_value.to_string();
         match HeaderValue::from_str(&hdr_value) {
              std::result::Result::Ok(value) => std::result::Result::Ok(value),
-             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for Tag - value: {hdr_value} is invalid {e}"#))
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for TagDto - value: {hdr_value} is invalid {e}"#))
         }
     }
 }
 
 #[cfg(feature = "server")]
-impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<Tag> {
+impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<TagDto> {
     type Error = String;
 
     fn try_from(hdr_value: HeaderValue) -> std::result::Result<Self, Self::Error> {
         match hdr_value.to_str() {
              std::result::Result::Ok(value) => {
-                    match <Tag as std::str::FromStr>::from_str(value) {
+                    match <TagDto as std::str::FromStr>::from_str(value) {
                         std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
-                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into Tag - {err}"#))
+                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into TagDto - {err}"#))
                     }
              },
              std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Unable to convert header: {hdr_value:?} to string: {e}"#))
@@ -1323,7 +1323,7 @@ impl std::ops::DerefMut for TagName {
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "conversion", derive(frunk_enum_derive::LabelledGenericEnum))]
-pub enum TagType {
+pub enum TagTypeDto {
     #[serde(rename = "rating")]
     Rating,
     #[serde(rename = "artist")]
@@ -1336,35 +1336,35 @@ pub enum TagType {
     General,
 }
 
-impl validator::Validate for TagType
+impl validator::Validate for TagTypeDto
 {
     fn validate(&self) -> std::result::Result<(), validator::ValidationErrors> {
         std::result::Result::Ok(())
     }
 }
 
-impl std::fmt::Display for TagType {
+impl std::fmt::Display for TagTypeDto {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match *self {
-            TagType::Rating => write!(f, "rating"),
-            TagType::Artist => write!(f, "artist"),
-            TagType::Source => write!(f, "source"),
-            TagType::Character => write!(f, "character"),
-            TagType::General => write!(f, "general"),
+            TagTypeDto::Rating => write!(f, "rating"),
+            TagTypeDto::Artist => write!(f, "artist"),
+            TagTypeDto::Source => write!(f, "source"),
+            TagTypeDto::Character => write!(f, "character"),
+            TagTypeDto::General => write!(f, "general"),
         }
     }
 }
 
-impl std::str::FromStr for TagType {
+impl std::str::FromStr for TagTypeDto {
     type Err = String;
 
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         match s {
-            "rating" => std::result::Result::Ok(TagType::Rating),
-            "artist" => std::result::Result::Ok(TagType::Artist),
-            "source" => std::result::Result::Ok(TagType::Source),
-            "character" => std::result::Result::Ok(TagType::Character),
-            "general" => std::result::Result::Ok(TagType::General),
+            "rating" => std::result::Result::Ok(TagTypeDto::Rating),
+            "artist" => std::result::Result::Ok(TagTypeDto::Artist),
+            "source" => std::result::Result::Ok(TagTypeDto::Source),
+            "character" => std::result::Result::Ok(TagTypeDto::Character),
+            "general" => std::result::Result::Ok(TagTypeDto::General),
             _ => std::result::Result::Err(format!(r#"Value not valid: {s}"#)),
         }
     }

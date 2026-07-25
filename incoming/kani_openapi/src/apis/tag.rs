@@ -14,7 +14,7 @@ use crate::{models, types::*};
 pub enum GetTagsResponse {
     /// Ok
     Status200_Ok
-    (Vec<models::Tag>)
+    (Vec<models::TagDto>)
 }
 
 
