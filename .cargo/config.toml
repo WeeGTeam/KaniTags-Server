@@ -1,0 +1,3 @@
+[alias]
+cl = "clean -p kani-server -p kani-domain -p kani-domain-api-incoming -p kani-domain-api-model -p kani-domain-api-outgoing -p kani-http-api -p kani-openapi -p kani-fs -p kani-iqdb -p kani-postgres -p kani-worker"
+dev = "run -p kani-server --features mock-user"
