@@ -66,6 +66,10 @@ mod test {
 
     mod test_add_image_tags {
         use super::*;
+        use kani_domain_api_model::image::PantsuImage;
+        use kani_domain_api_model::tag::image_tag::ImageTag;
+        use kani_domain_api_model::tag::Tag;
+        use kani_domain_api_outgoing::database::tag_database::MockTagDatabase;
 
         #[test]
         fn should_fail_on_non_existing_image() {
@@ -81,6 +85,41 @@ mod test {
             let result = tag_service.add_image_tags(non_existing_image_id, vec![NewTag::stub()], User::stub());
 
             assert_err!(result);
+        }
+
+        #[test]
+        fn should_add_tags_for_existing_image() {
+            let image_id = ImageId(1);
+            let image = PantsuImage::stub();
+            let new_tags = vec![NewTag::stub()];
+            let tags = vec![Tag::stub()];
+            let user = User::stub();
+            let image_tags = vec![ImageTag::stub()];
+
+            let mut mock_image_database = MockImageDatabase::new();
+            mock_image_database.expect_get_image_by_image_id()
+                .with(eq(image_id.clone()))
+                .returning(move |_| Ok(Some(image.clone())));
+            let mut mock_tag_database = MockTagDatabase::new();
+            let tags_clone = tags.clone();
+            mock_tag_database.expect_get_tags_create_if_missing()
+                .with(eq(new_tags.clone()))
+                .returning(move |_| Ok(tags_clone.clone()));
+            mock_tag_database.expect_add_image_tags_to_image_by_user()
+                .with(eq(tags.clone()), eq(image_id.clone()), eq(user.clone()))
+                .returning(|_, _, _| Ok(123));
+            let image_tags_clone = image_tags.clone();
+            mock_tag_database.expect_get_image_tags_of_image()
+                .with(eq(image_id.clone()))
+                .returning(move |_| Ok(image_tags_clone.clone()));
+            let database = MockDatabase::new()
+                .with_image(mock_image_database)
+                .with_tag(mock_tag_database);
+            let tag_service = TagServiceImpl::new(Arc::new(database));
+
+            let result = tag_service.add_image_tags(image_id, vec![NewTag::stub()], user).unwrap();
+
+            assert_eq!(result, image_tags);
         }
     }
 }

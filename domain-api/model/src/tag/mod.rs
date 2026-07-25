@@ -4,7 +4,7 @@ use std::ops::Deref;
 pub mod image_tag;
 pub mod tag_source_site;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct NewTag {
     pub tag_type: TagType,
     pub tag_name: TagName,
@@ -72,7 +72,17 @@ pub mod stub {
         pub fn stub() -> Self {
             NewTag {
                 tag_type: TagType::Character,
-                tag_name: TagName::try_from("Megumin".to_owned()).unwrap(),
+                tag_name: TagName::try_from("stub_megumin".to_owned()).unwrap(),
+            }
+        }
+    }
+
+    impl Tag {
+        pub fn stub() -> Self {
+            Tag {
+                id: TagId(i64::MAX),
+                tag_type: TagType::Character,
+                tag_name: TagName::try_from("stub_megumin".to_owned()).unwrap(),
             }
         }
     }
