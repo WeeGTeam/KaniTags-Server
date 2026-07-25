@@ -41,8 +41,8 @@ pub mod mock {
         mock_collection_database: MockCollectionDatabase,
     }
 
-    impl Default for MockDatabase {
-        fn default() -> Self {
+    impl MockDatabase {
+        pub fn new() -> Self {
             Self {
                 mock_image_database: MockImageDatabase::new(),
                 mock_user_database: MockUserDatabase::new(),
@@ -52,9 +52,7 @@ pub mod mock {
                 mock_collection_database: MockCollectionDatabase::new()
             }
         }
-    }
 
-    impl MockDatabase {
         pub fn with_image_database(mut self, mock_image_database: MockImageDatabase) -> Self {
             self.mock_image_database = mock_image_database;
             self

@@ -74,7 +74,7 @@ mod test {
             mock_image_database.expect_get_image_by_image_id()
                 .with(eq(non_existing_image_id.clone()))
                 .returning(|_| Ok(None));
-            let database = MockDatabase::default()
+            let database = MockDatabase::new()
                 .with_image_database(mock_image_database);
             let tag_service = TagServiceImpl::new(Arc::new(database));
 
