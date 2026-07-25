@@ -35,7 +35,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
             Ok(()) => Ok(AddImagesToCollectionResponse::Status200_ImagesAddedToCollection),
             Err(e @ AddImagesToCollectionError::CollectionDoesNotExist(_)) => Err(HttpApiUnhandledError::GenericNotFound(e.into())),
             Err(e @ AddImagesToCollectionError::InsufficientImageAccess(_)) => Err(HttpApiUnhandledError::GenericForbidden(e.into())),
-            Err(e @ AddImagesToCollectionError::Unknown(_)) => Err(HttpApiUnhandledError::GenericBadRequest(e.into())),
+            Err(e @ AddImagesToCollectionError::Unknown(_)) => Err(HttpApiUnhandledError::Unknown(e.into())),
         }
     }
 
@@ -52,7 +52,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
         match self.collection_service.create_collection(&user, &collection_name) {
             Ok(collection) => Ok(CreateCollectionResponse::Status201_CollectionCreated(models::Collection::from_domain(collection))),
             Err(CreateCollectionError::CollectionAlreadyExists(_)) => Ok(CreateCollectionResponse::Status409_CollectionAlreadyExists),
-            Err(CreateCollectionError::Unknown(error)) => Err(HttpApiUnhandledError::GenericBadRequest(error)),
+            Err(CreateCollectionError::Unknown(error)) => Err(HttpApiUnhandledError::Unknown(error)),
         }
     }
 
@@ -68,7 +68,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
         match self.collection_service.delete_collection(&user, collection_id) {
             Ok(()) => Ok(DeleteCollectionResponse::Status200_CollectionDeleted),
             Err(e @ DeleteCollectionError::CollectionDoesNotExist(_)) => Err(HttpApiUnhandledError::GenericNotFound(e.into())),
-            Err(DeleteCollectionError::Unknown(error)) => Err(HttpApiUnhandledError::GenericBadRequest(error)),
+            Err(DeleteCollectionError::Unknown(error)) => Err(HttpApiUnhandledError::Unknown(error)),
         }
     }
 
@@ -81,7 +81,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
         let user = current_user();
         match self.collection_service.load_collections_by_user(&user) {
             Ok(collections) => Ok(GetCollectionsResponse::Status200_Collections(Vec::<models::Collection>::from_domain(collections))),
-            Err(e @ LoadCollectionsError::Unknown(_)) => Err(HttpApiUnhandledError::GenericBadRequest(e.into())),
+            Err(e @ LoadCollectionsError::Unknown(_)) => Err(HttpApiUnhandledError::Unknown(e.into())),
         }
     }
 
@@ -99,7 +99,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
         match self.collection_service.remove_images_from_collection(&user, collection_id, &image_ids) {
             Ok(()) => Ok(RemoveImagesFromCollectionResponse::Status200_ImagesRemovedFromCollection),
             Err(e @ RemoveImagesFromCollectionError::CollectionDoesNotExist(_)) => Err(HttpApiUnhandledError::GenericNotFound(e.into())),
-            Err(e @ RemoveImagesFromCollectionError::Unknown(_)) => Err(HttpApiUnhandledError::GenericBadRequest(e.into())),
+            Err(e @ RemoveImagesFromCollectionError::Unknown(_)) => Err(HttpApiUnhandledError::Unknown(e.into())),
         }
     }
 }
