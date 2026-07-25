@@ -27,7 +27,7 @@ impl ImageTag<HttpApiUnhandledError> for AppState {
         let added_tags_result = match body.iter()
             .map(|new_tag| new_tag.try_to_domain())
             .collect() {
-            Ok(new_tags) => self.tag_service.add_image_tags(ImageId(image_id), new_tags, user),
+            Ok(new_tags) => self.tag_service.add_image_tags(ImageId(image_id), new_tags, user).await,
             Err(_) => return Ok(AddImageTagsResponse::Status400_InvalidTagOrImageId),
         };
 
@@ -48,7 +48,7 @@ impl ImageTag<HttpApiUnhandledError> for AppState {
     ) -> Result<GetImageTagsResponse, HttpApiUnhandledError> {
         let image_id: i64 = path_params.id.parse().map_err(|e: ParseIntError| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
 
-        let image_tags = self.tag_service.get_image_tags(ImageId(image_id))
+        let image_tags = self.tag_service.get_image_tags(ImageId(image_id)).await
             .map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
 
         Ok(GetImageTagsResponse::Status200_Ok(

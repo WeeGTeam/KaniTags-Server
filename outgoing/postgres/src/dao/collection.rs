@@ -5,8 +5,8 @@ use crate::schema::collection::dsl::collection;
 use crate::schema::collection_image::dsl as collection_image_dsl;
 use crate::schema::collection_image::dsl::collection_image;
 use anyhow::{Context, Error};
+use diesel::QueryDsl;
 use diesel::{BoolExpressionMethods, ExpressionMethods};
-use diesel::{OptionalExtension, QueryDsl};
 use diesel::{RunQueryDsl, SelectableHelper};
 
 pub struct CollectionDao<'c> {
@@ -40,12 +40,11 @@ impl<'c> CollectionDao<'c> {
         &mut self,
         user_id: i64,
         id: i64
-    ) -> Result<Option<CollectionRow>, Error> {
+    ) -> Result<CollectionRow, Error> {
         collection
             .select(CollectionRow::as_select())
             .filter(collection_dsl::user_id.eq(user_id).and(collection_dsl::id.eq(id)))
             .first(self.connection)
-            .optional()
             .context("Failed to get collection by user and id")
     }
 
@@ -53,12 +52,11 @@ impl<'c> CollectionDao<'c> {
         &mut self,
         user_id: i64,
         name: &str,
-    ) -> Result<Option<CollectionRow>, Error> {
+    ) -> Result<CollectionRow, Error> {
         collection
             .select(CollectionRow::as_select())
             .filter(collection_dsl::user_id.eq(user_id).and(collection_dsl::name.eq(name)))
             .first(self.connection)
-            .optional()
             .context("Failed to get collection by user and name")
     }
 
@@ -106,14 +104,14 @@ impl<'c> CollectionDao<'c> {
 
 #[cfg(test)]
 mod test {
+    use crate::dao::Dao;
     use crate::dao::test::{
         insert_test_collection, insert_test_collection_image, insert_test_image, insert_test_user,
     };
-    use crate::dao::Dao;
     use crate::models::collection::CollectionInsertRow;
     use crate::models::collection_image::CollectionImageInsertRow;
     use crate::test::test_db;
-    use assertables::{assert_len_eq_x, assert_some};
+    use assertables::assert_len_eq_x;
     use diesel::Connection;
 
     #[test]
@@ -147,12 +145,11 @@ mod test {
     fn test_get_collection_by_user_and_id() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let result = conn.test_transaction(|c| {
+        let _result = conn.test_transaction(|c| {
             let user = insert_test_user(c)?;
             let collection_row = insert_test_collection(c, user.id)?;
             c.collection_dao().get_collection_by_user_and_id(user.id, collection_row.id)
         });
-        assert_some!(result);
     }
 
     #[test]
@@ -160,12 +157,11 @@ mod test {
     fn test_get_collection_by_user_and_name() {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
-        let result = conn.test_transaction(|c| {
+        let _result = conn.test_transaction(|c| {
             let user = insert_test_user(c)?;
             let collection_row = insert_test_collection(c, user.id)?;
             c.collection_dao().get_collection_by_user_and_name(user.id, &collection_row.name)
         });
-        assert_some!(result);
     }
 
     #[test]

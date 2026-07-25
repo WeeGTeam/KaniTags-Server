@@ -15,7 +15,7 @@ diesel-derive-enum = { workspace = true, features = ["postgres"] }
 diesel_migrations = { workspace = true, features = ["postgres"] }
 pgvector = { workspace = true, features = ["diesel"] }
 r2d2 = { workspace = true }
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["macros"] }
 tracing = { workspace = true }
 
 [dev-dependencies]

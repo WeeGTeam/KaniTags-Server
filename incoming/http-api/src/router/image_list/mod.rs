@@ -23,7 +23,7 @@ impl ImageList<HttpApiUnhandledError> for AppState {
         let filter = query_params.try_to_domain()
             .context("Failed to convert query params to domain")
             .map_err(|e| HttpApiUnhandledError::GenericBadRequest(e))?;
-        let images = self.image_search_service.search_images(&user, &filter)
+        let images = self.image_search_service.search_images(&user, filter).await
             .context("Failed to search images")?;
         Ok(GetImagesResponse::Status200_Ok(Vec::from_domain(images)))
     }

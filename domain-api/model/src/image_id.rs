@@ -3,11 +3,11 @@ use std::num::ParseIntError;
 use std::ops::Deref;
 use std::str::FromStr;
 
-use crate::image_hash::{hash_to_hex, IdHash};
-use anyhow::{anyhow, Context};
+use crate::image_hash::{IdHash, hash_to_hex};
+use anyhow::{Context, anyhow};
 use regex::Regex;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ImageId(pub i64);
 
 impl Deref for ImageId {
@@ -18,7 +18,7 @@ impl Deref for ImageId {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct ImageIdHash(pub IdHash);
 
 impl ImageIdHash {

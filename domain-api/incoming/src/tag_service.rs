@@ -4,10 +4,13 @@ use kani_domain_api_model::tag::{NewTag, Tag};
 use kani_domain_api_model::user::User;
 use thiserror::Error;
 
+#[async_trait::async_trait]
 pub trait TagService {
-    fn get_tags(&self) -> Result<Vec<Tag>, GetTagsError>;
-    fn get_image_tags(&self, image_id: ImageId) -> Result<Vec<ImageTag>, GetImageTagsError>;
-    fn add_image_tags(&self, image_id: ImageId, new_tags: Vec<NewTag>, user: User) -> Result<Vec<ImageTag>, AddImageTagsError>;
+    async fn get_tags(&self) -> Result<Vec<Tag>, GetTagsError>;
+
+    async fn get_image_tags(&self, image_id: ImageId) -> Result<Vec<ImageTag>, GetImageTagsError>;
+
+    async fn add_image_tags(&self, image_id: ImageId, new_tags: Vec<NewTag>, user: User) -> Result<Vec<ImageTag>, AddImageTagsError>;
 }
 
 #[derive(Error, Debug)]

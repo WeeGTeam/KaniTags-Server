@@ -15,7 +15,7 @@ impl Tag<HttpApiUnhandledError> for AppState {
         _host: &Host,
         _cookies: &CookieJar,
     ) -> Result<GetTagsResponse, HttpApiUnhandledError> {
-        let tags = self.tag_service.get_tags()
+        let tags = self.tag_service.get_tags().await
             .map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
 
 

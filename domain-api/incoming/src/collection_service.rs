@@ -3,16 +3,17 @@ use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::user::User;
 use thiserror::Error;
 
+#[async_trait::async_trait]
 pub trait CollectionService {
-    fn load_collections_by_user(&self, user: &User) -> Result<Vec<Collection>, LoadCollectionsError>;
+    async fn load_collections_by_user(&self, user: &User) -> Result<Vec<Collection>, LoadCollectionsError>;
 
-    fn create_collection(&self, user: &User, collection_name: &CollectionName) -> Result<Collection, CreateCollectionError>;
+    async fn create_collection(&self, user: &User, collection_name: &CollectionName) -> Result<Collection, CreateCollectionError>;
 
-    fn delete_collection(&self, user: &User, collection_id: CollectionId) -> Result<(), DeleteCollectionError>;
+    async fn delete_collection(&self, user: &User, collection_id: CollectionId) -> Result<(), DeleteCollectionError>;
 
-    fn add_images_to_collection(&self, user: &User, collection_id: CollectionId, image_ids: &[ImageId]) -> Result<(), AddImagesToCollectionError>;
+    async fn add_images_to_collection(&self, user: &User, collection_id: CollectionId, image_ids: &[ImageId]) -> Result<(), AddImagesToCollectionError>;
 
-    fn remove_images_from_collection(&self, user: &User, collection_id: CollectionId, image_ids: &[ImageId]) -> Result<(), RemoveImagesFromCollectionError>;
+    async fn remove_images_from_collection(&self, user: &User, collection_id: CollectionId, image_ids: &[ImageId]) -> Result<(), RemoveImagesFromCollectionError>;
 }
 
 #[derive(Error, Debug)]
