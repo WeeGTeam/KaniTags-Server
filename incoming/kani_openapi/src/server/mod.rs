@@ -1202,17 +1202,17 @@ let result = api_impl.as_ref().get_images(
     #[allow(dead_code)]
     struct AddImageTagsBodyValidator<'a> {
                 #[validate(nested)]
-          body: &'a Vec<models::NewImageTag>,
+          body: &'a Vec<models::NewImageTagDto>,
     }
 
 
 #[tracing::instrument(skip_all)]
 fn add_image_tags_validation(
   path_params: models::AddImageTagsPathParams,
-        body: Vec<models::NewImageTag>,
+        body: Vec<models::NewImageTagDto>,
 ) -> std::result::Result<(
   models::AddImageTagsPathParams,
-        Vec<models::NewImageTag>,
+        Vec<models::NewImageTagDto>,
 ), ValidationErrors>
 {
   path_params.validate()?;
@@ -1232,7 +1232,7 @@ async fn add_image_tags<I, A, E>(
   cookies: CookieJar,
   Path(path_params): Path<models::AddImageTagsPathParams>,
  State(api_impl): State<I>,
-          Json(body): Json<Vec<models::NewImageTag>>,
+          Json(body): Json<Vec<models::NewImageTagDto>>,
 ) -> Result<Response, StatusCode>
 where
     I: AsRef<A> + Send + Sync,

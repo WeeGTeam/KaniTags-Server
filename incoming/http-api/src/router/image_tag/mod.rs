@@ -8,7 +8,7 @@ use axum_extra::extract::CookieJar;
 use headers::Host;
 use kani_domain_api_model::image_id::ImageId;
 use kani_openapi::apis::image_tag::{AddImageTagsResponse, GetImageTagsResponse, ImageTag};
-use kani_openapi::models::{AddImageTagsPathParams, GetImageTagsPathParams, NewImageTag};
+use kani_openapi::models::{AddImageTagsPathParams, GetImageTagsPathParams, NewImageTagDto};
 use std::num::ParseIntError;
 
 #[async_trait]
@@ -19,7 +19,7 @@ impl ImageTag<HttpApiUnhandledError> for AppState {
         _host: &Host,
         _cookies: &CookieJar,
         path_params: &AddImageTagsPathParams,
-        body: &Vec<NewImageTag>,
+        body: &Vec<NewImageTagDto>,
     ) -> Result<AddImageTagsResponse, HttpApiUnhandledError> {
         let user = current_user();
         let image_id: i64 = path_params.id.parse().map_err(|e: ParseIntError| HttpApiUnhandledError::GenericBadRequest(e.into()))?;

@@ -28,7 +28,7 @@ pub enum CloseImportSessionResponse {
 pub enum GetImportSessionsResponse {
     /// import sessions
     Status200_ImportSessions
-    (Vec<models::ImportSession>)
+    (Vec<models::ImportSessionDto>)
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

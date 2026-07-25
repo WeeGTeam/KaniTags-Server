@@ -12,11 +12,7 @@ use kani_openapi::apis::collection::{
     AddImagesToCollectionResponse, Collection, CreateCollectionResponse, DeleteCollectionResponse,
     GetCollectionsResponse, RemoveImagesFromCollectionResponse,
 };
-use kani_openapi::models;
-use kani_openapi::models::{
-    AddImagesToCollectionPathParams, DeleteCollectionPathParams, ImageId,
-    RemoveImagesFromCollectionPathParams,
-};
+use kani_openapi::models::{AddImagesToCollectionPathParams, CollectionDto, DeleteCollectionPathParams, ImageId, RemoveImagesFromCollectionPathParams};
 
 #[async_trait::async_trait]
 impl Collection<HttpApiUnhandledError> for AppState {
@@ -50,7 +46,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
         let collection_name = CollectionName::try_from(body.to_owned())
             .map_err(|e| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
         match self.collection_service.create_collection(&user, &collection_name) {
-            Ok(collection) => Ok(CreateCollectionResponse::Status201_CollectionCreated(models::Collection::from_domain(collection))),
+            Ok(collection) => Ok(CreateCollectionResponse::Status201_CollectionCreated(CollectionDto::from_domain(collection))),
             Err(CreateCollectionError::CollectionAlreadyExists(_)) => Ok(CreateCollectionResponse::Status409_CollectionAlreadyExists),
             Err(CreateCollectionError::Unknown(error)) => Err(HttpApiUnhandledError::Unknown(error)),
         }
@@ -80,7 +76,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
     ) -> Result<GetCollectionsResponse, HttpApiUnhandledError> {
         let user = current_user();
         match self.collection_service.load_collections_by_user(&user) {
-            Ok(collections) => Ok(GetCollectionsResponse::Status200_Collections(Vec::<models::Collection>::from_domain(collections))),
+            Ok(collections) => Ok(GetCollectionsResponse::Status200_Collections(Vec::<CollectionDto>::from_domain(collections))),
             Err(e @ LoadCollectionsError::Unknown(_)) => Err(HttpApiUnhandledError::Unknown(e.into())),
         }
     }

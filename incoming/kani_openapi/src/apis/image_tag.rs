@@ -14,7 +14,7 @@ use crate::{models, types::*};
 pub enum AddImageTagsResponse {
     /// all tags of image (including the newly added tags)
     Status201_AllTagsOfImage
-    (Vec<models::ImageTag>)
+    (Vec<models::ImageTagDto>)
     ,
     /// Invalid tag or image id
     Status400_InvalidTagOrImageId
@@ -26,7 +26,7 @@ pub enum AddImageTagsResponse {
 pub enum GetImageTagsResponse {
     /// Ok
     Status200_Ok
-    (Vec<models::ImageTag>)
+    (Vec<models::ImageTagDto>)
     ,
     /// image not found
     Status404_ImageNotFound
@@ -47,7 +47,7 @@ pub trait ImageTag<E: std::fmt::Debug + Send + Sync + 'static = ()>: super::Erro
     host: &Host,
     cookies: &CookieJar,
       path_params: &models::AddImageTagsPathParams,
-            body: &Vec<models::NewImageTag>,
+            body: &Vec<models::NewImageTagDto>,
     ) -> Result<AddImageTagsResponse, E>;
 
     /// GetImageTags - GET /image/{id}/tags
