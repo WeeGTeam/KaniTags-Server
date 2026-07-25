@@ -1,5 +1,5 @@
 use crate::image_id::ImageId;
-use crate::tag::tag_source_site::TagSourceSite;
+use crate::tag::image_tag_source_site::ImageTagSourceSite;
 use crate::tag::{Tag, TagId};
 use crate::user::User;
 use chrono::{DateTime, Utc};
@@ -9,7 +9,7 @@ pub struct NewImageTag {
     pub image_id: ImageId,
     pub tag_id: TagId,
     pub user: Option<User>,
-    pub source_site: Option<TagSourceSite>,
+    pub source_site: Option<ImageTagSourceSite>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -18,7 +18,7 @@ pub struct ImageTag {
     pub created_at: DateTime<Utc>,
     pub tag: Tag,
     pub user_id: Option<i64>,
-    pub source_site: Option<TagSourceSite>,
+    pub source_site: Option<ImageTagSourceSite>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
