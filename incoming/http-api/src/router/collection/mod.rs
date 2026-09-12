@@ -27,7 +27,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
         let user = current_user();
         let collection_id = parse_id(&path_params.id, CollectionId)?;
         let image_ids = body.try_to_domain().map_err(|e| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
-        match self.collection_service.add_images_to_collection(&user, collection_id, &image_ids) {
+        match self.collection_service.add_images_to_collection(&user, collection_id, &image_ids).await {
             Ok(()) => Ok(AddImagesToCollectionResponse::Status200_ImagesAddedToCollection),
             Err(e @ AddImagesToCollectionError::CollectionDoesNotExist(_)) => Err(HttpApiUnhandledError::GenericNotFound(e.into())),
             Err(e @ AddImagesToCollectionError::InsufficientImageAccess(_)) => Err(HttpApiUnhandledError::GenericForbidden(e.into())),
@@ -45,7 +45,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
         let user = current_user();
         let collection_name = CollectionName::try_from(body.to_owned())
             .map_err(|e| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
-        match self.collection_service.create_collection(&user, &collection_name) {
+        match self.collection_service.create_collection(&user, &collection_name).await {
             Ok(collection) => Ok(CreateCollectionResponse::Status201_CollectionCreated(CollectionDto::from_domain(collection))),
             Err(CreateCollectionError::CollectionAlreadyExists(_)) => Ok(CreateCollectionResponse::Status409_CollectionAlreadyExists),
             Err(CreateCollectionError::Unknown(error)) => Err(HttpApiUnhandledError::Unknown(error)),
@@ -61,7 +61,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
     ) -> Result<DeleteCollectionResponse, HttpApiUnhandledError> {
         let user = current_user();
         let collection_id = parse_id(&path_params.id, CollectionId)?;
-        match self.collection_service.delete_collection(&user, collection_id) {
+        match self.collection_service.delete_collection(&user, collection_id).await {
             Ok(()) => Ok(DeleteCollectionResponse::Status200_CollectionDeleted),
             Err(e @ DeleteCollectionError::CollectionDoesNotExist(_)) => Err(HttpApiUnhandledError::GenericNotFound(e.into())),
             Err(DeleteCollectionError::Unknown(error)) => Err(HttpApiUnhandledError::Unknown(error)),
@@ -75,7 +75,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
         _cookies: &CookieJar,
     ) -> Result<GetCollectionsResponse, HttpApiUnhandledError> {
         let user = current_user();
-        match self.collection_service.load_collections_by_user(&user) {
+        match self.collection_service.load_collections_by_user(&user).await {
             Ok(collections) => Ok(GetCollectionsResponse::Status200_Collections(Vec::<CollectionDto>::from_domain(collections))),
             Err(e @ LoadCollectionsError::Unknown(_)) => Err(HttpApiUnhandledError::Unknown(e.into())),
         }
@@ -92,7 +92,7 @@ impl Collection<HttpApiUnhandledError> for AppState {
         let user = current_user();
         let collection_id = parse_id(&path_params.id, CollectionId)?;
         let image_ids = body.try_to_domain().map_err(|e| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
-        match self.collection_service.remove_images_from_collection(&user, collection_id, &image_ids) {
+        match self.collection_service.remove_images_from_collection(&user, collection_id, &image_ids).await {
             Ok(()) => Ok(RemoveImagesFromCollectionResponse::Status200_ImagesRemovedFromCollection),
             Err(e @ RemoveImagesFromCollectionError::CollectionDoesNotExist(_)) => Err(HttpApiUnhandledError::GenericNotFound(e.into())),
             Err(e @ RemoveImagesFromCollectionError::Unknown(_)) => Err(HttpApiUnhandledError::Unknown(e.into())),

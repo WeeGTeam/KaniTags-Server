@@ -1734,6 +1734,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "assertables",
+ "async-trait",
  "chrono",
  "diesel",
  "diesel-derive-enum",
@@ -1744,6 +1745,7 @@ dependencies = [
  "r2d2",
  "rand 0.10.1",
  "serial_test",
+ "tokio",
  "tracing",
 ]
 

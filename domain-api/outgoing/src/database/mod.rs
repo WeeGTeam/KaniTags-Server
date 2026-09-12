@@ -6,6 +6,7 @@ use crate::database::tag_database::TagDatabase;
 use crate::database::user_database::UserDatabase;
 
 pub mod collection_database;
+pub mod error;
 pub mod image_database;
 pub mod import_session;
 pub mod similarity_database;

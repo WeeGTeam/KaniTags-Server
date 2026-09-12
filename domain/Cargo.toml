@@ -18,7 +18,7 @@ image = { workspace = true }
 lz_fnv = { workspace = true }
 regex = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true, features = ["sync"] }
+tokio = { workspace = true, features = ["macros", "sync"] }
 tracing = { workspace = true }
 
 [dev-dependencies]

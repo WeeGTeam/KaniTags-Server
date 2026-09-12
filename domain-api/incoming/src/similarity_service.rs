@@ -2,9 +2,11 @@ use kani_domain_api_model::image_id::ImageIdHash;
 use kani_domain_api_model::similarity::SimilarImage;
 use thiserror::Error;
 
+#[async_trait::async_trait]
 pub trait SimilarityService {
-    fn get_similar_images(&self, image_id_hash: &ImageIdHash) -> Result<Vec<SimilarImage>, GetSimilarImagesError>;
-    fn calculate_similarity_groups(&self) -> Result<Vec<Vec<ImageIdHash>>, CalculateSimilarityGroupsError>;
+    async fn get_similar_images(&self, image_id_hash: ImageIdHash) -> Result<Vec<SimilarImage>, GetSimilarImagesError>;
+
+    async fn calculate_similarity_groups(&self) -> Result<Vec<Vec<ImageIdHash>>, CalculateSimilarityGroupsError>;
 }
 
 #[derive(Error, Debug)]

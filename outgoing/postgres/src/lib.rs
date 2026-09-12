@@ -1,8 +1,9 @@
-use anyhow::{anyhow, Context};
+use crate::error::FromDieselError;
+use anyhow::{Context, anyhow};
 use diesel::r2d2::ConnectionManager;
-use diesel::PgConnection;
-use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use r2d2::{Pool, PooledConnection};
+use diesel::{Connection, PgConnection};
+use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
+use r2d2::Pool;
 use std::time::Duration;
 use tracing::info;
 
@@ -11,6 +12,7 @@ pub mod database;
 pub mod models;
 pub mod schema;
 pub mod converter;
+pub mod error;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("../../resources/migrations");
 
@@ -44,10 +46,27 @@ impl Postgres {
         Ok(())
     }
 
-    fn get_connection(
-        &self,
-    ) -> Result<PooledConnection<ConnectionManager<PgConnection>>, anyhow::Error> {
-        self.pool.get().context("could not get database connection")
+    async fn run<F, T, E: FromDieselError + From<anyhow::Error>>(&self, f: F) -> Result<T, E>
+    where
+        F: FnOnce(&mut PgConnection) -> anyhow::Result<T> + Send + 'static,
+        T: Send + 'static,
+    {
+        let pool = self.pool.clone();
+        tokio::task::spawn_blocking(move || {
+            let mut conn = pool.get().context("could not get database connection")?;
+            f(&mut conn)
+        })
+        .await
+        .context("database task panicked")?
+        .map_err(E::from_diesel_error)
+    }
+
+    async fn transaction<F, T, E: FromDieselError + From<anyhow::Error>>(&self, f: F) -> Result<T, E>
+    where
+        F: FnOnce(&mut PgConnection) -> anyhow::Result<T> + Send + 'static,
+        T: Send + 'static,
+    {
+        self.run(|conn| conn.transaction(|conn| f(conn))).await
     }
 }
 
@@ -56,6 +75,15 @@ mod test {
     use super::*;
     use diesel::connection::SimpleConnection;
     use diesel::r2d2::R2D2Connection;
+    use r2d2::PooledConnection;
+
+    impl Postgres {
+        pub fn get_connection(
+            &self,
+        ) -> Result<PooledConnection<ConnectionManager<PgConnection>>, anyhow::Error> {
+            self.pool.get().context("could not get database connection")
+        }
+    }
 
     pub fn test_db() -> Postgres {
         let db = Postgres::new("localhost:55432/kanidb", "postgres" , "postgres").unwrap();

@@ -35,13 +35,13 @@ impl ImageManagementServiceImpl {
 
     async fn create_thumbnail(
         &self,
-        image_hash_id: &ImageIdHash,
+        image_hash_id: ImageIdHash,
         image_data: Bytes,
         kind: &ThumbnailKind,
     ) -> Result<Bytes, anyhow::Error> {
         let options = get_thumbnail_options(&kind);
-        let thumbnail = create_thumbnail_in_memory(image_hash_id.clone(), image_data, options.clone()).await?;
-        self.image_repository.store_jpg_thumbnail(&image_hash_id, thumbnail.clone(), options).await?;
+        let thumbnail = create_thumbnail_in_memory(image_hash_id, image_data, options.clone()).await?;
+        self.image_repository.store_jpg_thumbnail(image_hash_id, thumbnail.clone(), options).await?;
         Ok(thumbnail)
     }
 
@@ -49,7 +49,7 @@ impl ImageManagementServiceImpl {
         self.image_repository
             .load_image(&image).await
             .map_err(|e| match e {
-                LoadImageError::ImageNotFound(_) => GetImageError::ImageNotFound(image.id.clone()),
+                LoadImageError::ImageNotFound(_) => GetImageError::ImageNotFound(image.id),
                 unknown @ LoadImageError::Unknown(_) => GetImageError::Unknown(unknown.into()),
             })
     }
@@ -66,24 +66,24 @@ impl ImageManagementService for ImageManagementServiceImpl {
     ) -> Result<(), ImportImageError> {
         let image = try_create_pantsu_image(&image_name, &image_data)?;
         let image_id_hash = ImageIdHash(image.id_hash);
-        let import_session = self.database.import_session().get_import_session_by_id_and_user(&user, import_session_id.clone())?
-            .ok_or_else(|| ImportImageError::MissingImportSession(import_session_id.clone()))?;
+        let import_session = self.database.import_session().get_import_session_by_id_and_user(&user, import_session_id).await?
+            .ok_or_else(|| ImportImageError::MissingImportSession(import_session_id))?;
 
         if import_session.closed_at.is_some() {
             return Err(ImportImageError::ImportSessionClosed(ImportSessionId(import_session.id)));
         }
 
-        let db_image = self.database.image().get_image_by_image_id_hash(&image_id_hash)
+        let db_image = self.database.image().get_image_by_image_id_hash(image_id_hash).await
             .context("Failed attempt to load image from database")?;
         if let Some(db_image) = db_image {
             return Err(ImportImageError::ImageAlreadyImported(db_image.image_id_hash));
         }
 
         info!("Store image '{}' in library", image_id_hash);
-        allow_existing_image(self.image_repository.store_image(&image_id_hash, &image.format, image_data.clone()).await)?;
-        let _ = self.create_thumbnail(&image_id_hash, image_data, &ThumbnailKind::Gallery).await.inspect_err(|e| warn!("Failed to create thumbnail: {}", e));
+        allow_existing_image(self.image_repository.store_image(image_id_hash, &image.format, image_data.clone()).await)?;
+        let _ = self.create_thumbnail(image_id_hash, image_data, &ThumbnailKind::Gallery).await.inspect_err(|e| warn!("Failed to create thumbnail: {}", e));
 
-        let stored_image = self.database.image().store_image(&user, ImportSessionId(import_session.id), &image)?;
+        let stored_image = self.database.image().store_image(&user, ImportSessionId(import_session.id), &image).await?;
         info!("Stored image '{}' with id '{}'", image_name, stored_image.image_id_hash);
 
         Ok(())
@@ -91,19 +91,19 @@ impl ImageManagementService for ImageManagementServiceImpl {
 
     async fn start_import_session(&self, user: &User) -> Result<ImportSessionId, StartImportSessionError> {
         info!("Starting import session");
-        let session = self.database.image().start_import_session(&user)?;
+        let session = self.database.image().start_import_session(&user).await?;
         info!("Started import session with id '{}'", *session);
         Ok(session)
     }
 
     async fn close_import_session(&self, user: &User, import_session_id: ImportSessionId) -> Result<(), CloseImportSessionError> {
         info!("Closing import session with id '{}'", *import_session_id);
-        let import_session = self.database.import_session().get_import_session_by_id_and_user(&user, import_session_id.clone())?
-            .ok_or_else(|| CloseImportSessionError::ImportSessionMissing(import_session_id.clone()))?;
+        let import_session = self.database.import_session().get_import_session_by_id_and_user(&user, import_session_id).await?
+            .ok_or_else(|| CloseImportSessionError::ImportSessionMissing(import_session_id))?;
         if import_session.closed_at.is_some() {
             return Err(CloseImportSessionError::ImportSessionClosed(import_session_id));
         }
-        self.database.image().close_import_session(ImportSessionId(import_session.id))?;
+        self.database.image().close_import_session(ImportSessionId(import_session.id)).await?;
         info!("Closed import session with id '{}'", import_session.id);
         Ok(())
     }
@@ -111,7 +111,7 @@ impl ImageManagementService for ImageManagementServiceImpl {
 
     async fn get_import_sessions(&self, user: &User) -> Result<Vec<ImportSession>, GetImportSessionsError> {
         info!("Getting import sessions for user '{}'", user.user_name);
-        let sessions = self.database.import_session().get_import_sessions(&user)?;
+        let sessions = self.database.import_session().get_import_sessions(&user).await?;
         info!("Retrieved {} import sessions for user '{}'", sessions.len(), user.user_name);
         Ok(sessions)
     }
@@ -119,8 +119,8 @@ impl ImageManagementService for ImageManagementServiceImpl {
 
     async fn get_image(&self, image_id: ImageId) -> Result<ImageDownloadData, GetImageError> {
         let db_image = self.database.image()
-            .get_image_by_image_id(image_id.clone())?
-            .ok_or_else(|| GetImageError::ImageNotFound(image_id.clone()))?;
+            .get_image_by_image_id(image_id).await?
+            .ok_or_else(|| GetImageError::ImageNotFound(image_id))?;
 
         let loaded_image = self.load_image_bytes(&db_image).await?;
 
@@ -133,10 +133,10 @@ impl ImageManagementService for ImageManagementServiceImpl {
 
     async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<ImageDownloadData, GetImageError> {
         let db_image = self.database.image()
-            .get_image_by_image_id(image_id.clone())?
-            .ok_or_else(|| GetImageError::ImageNotFound(image_id.clone()))?;
+            .get_image_by_image_id(image_id).await?
+            .ok_or_else(|| GetImageError::ImageNotFound(image_id))?;
         let thumbnail_options = get_thumbnail_options(&kind);
-        match self.image_repository.load_jpg_thumbnail(&db_image.image_id_hash, &thumbnail_options).await {
+        match self.image_repository.load_jpg_thumbnail(db_image.image_id_hash, &thumbnail_options).await {
             Ok(loaded_thumbnail) => Ok(ImageDownloadData {
                 bytes: loaded_thumbnail,
                 filename: db_image.image_id_hash.format_id_hash(),
@@ -145,7 +145,7 @@ impl ImageManagementService for ImageManagementServiceImpl {
             Err(LoadImageError::ImageNotFound(_)) => {
                 info!("Thumbnail for image '{:?}' not found, creating it", image_id);
                 let loaded_image = self.load_image_bytes(&db_image).await?;
-                let thumbnail = self.create_thumbnail(&db_image.image_id_hash, loaded_image, &kind).await.map_err(|e| GetImageError::Unknown(e))?;
+                let thumbnail = self.create_thumbnail(db_image.image_id_hash, loaded_image, &kind).await.map_err(|e| GetImageError::Unknown(e))?;
                 Ok(ImageDownloadData {
                     bytes: thumbnail,
                     filename: db_image.image_id_hash.format_id_hash(),

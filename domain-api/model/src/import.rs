@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use std::ops::Deref;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ImportSessionId(pub i64);
 
 pub struct ImportSession {

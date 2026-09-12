@@ -18,13 +18,14 @@ impl SimilarityServiceImpl {
     }
 }
 
+#[async_trait::async_trait]
 impl SimilarityService for SimilarityServiceImpl {
-    fn get_similar_images(&self, image_id_hash: &ImageIdHash) -> Result<Vec<SimilarImage>, GetSimilarImagesError> {
-        Ok(self.database.get_similar_images(image_id_hash)?)
+    async fn get_similar_images(&self, image_id_hash: ImageIdHash) -> Result<Vec<SimilarImage>, GetSimilarImagesError> {
+        Ok(self.database.get_similar_images(image_id_hash).await?)
     }
 
-    fn calculate_similarity_groups(&self) -> Result<Vec<Vec<ImageIdHash>>, CalculateSimilarityGroupsError> {
-        let image_pairs = self.database.get_all_similar_images()?;
+    async fn calculate_similarity_groups(&self) -> Result<Vec<Vec<ImageIdHash>>, CalculateSimilarityGroupsError> {
+        let image_pairs = self.database.get_all_similar_images().await?;
         let image_groups = create_similar_groups_by_images(&image_pairs);
         let merged_groups = color_and_merge_groups(image_groups);
         Ok(merged_groups)
@@ -55,68 +56,61 @@ fn create_similar_groups_by_images(image_pairs: &[SimilarImagePair]) -> HashMap<
 #[cfg(test)]
 mod test {
     use crate::similarity::SimilarityServiceImpl;
-    use anyhow::Error;
     use kani_domain_api_incoming::similarity_service::SimilarityService;
     use kani_domain_api_model::image_id::ImageIdHash;
-    use kani_domain_api_model::similarity::{SimilarImage, SimilarImagePair};
-    use kani_domain_api_outgoing::database::similarity_database::SimilarityDatabase;
+    use kani_domain_api_model::similarity::SimilarImagePair;
+    use kani_domain_api_outgoing::database::similarity_database::MockSimilarityDatabase;
     use std::sync::Arc;
 
-    #[test]
-    fn test_merge_chain_groups() {
+    #[tokio::test]
+    async fn test_merge_chain_groups() {
         let service = SimilarityServiceImpl {
-            database: Arc::new(MockDatabase(vec![(1,2), (2,3), (3,4), (4,5), (5,6)])),
+            database: Arc::new(mock_database(vec![(1,2), (2,3), (3,4), (4,5), (5,6)])),
         };
 
-        let groups = service.calculate_similarity_groups().unwrap();
+        let groups = service.calculate_similarity_groups().await.unwrap();
 
         assert_eq!(groups.len(), 1);
         assert_eq!(groups[0].len(), 6);
     }
 
-    #[test]
-    fn test_merge_split_groups() {
+    #[tokio::test]
+    async fn test_merge_split_groups() {
         let service = SimilarityServiceImpl {
-            database: Arc::new(MockDatabase(vec![(1,2), (1,3), (2,3), (4,5), (5,6)])),
+            database: Arc::new(mock_database(vec![(1,2), (1,3), (2,3), (4,5), (5,6)])),
         };
 
-        let groups = service.calculate_similarity_groups().unwrap();
+        let groups = service.calculate_similarity_groups().await.unwrap();
 
         assert_eq!(groups.len(), 2);
         assert_eq!(groups[0].len(), 3);
         assert_eq!(groups[1].len(), 3);
     }
 
-    #[test]
-    fn test_merge_circular_groups() {
+    #[tokio::test]
+    async fn test_merge_circular_groups() {
         let service = SimilarityServiceImpl {
-            database: Arc::new(MockDatabase(vec![(1,2), (2,3), (3,4), (4,1)])),
+            database: Arc::new(mock_database(vec![(1,2), (2,3), (3,4), (4,1)])),
         };
 
-        let groups = service.calculate_similarity_groups().unwrap();
+        let groups = service.calculate_similarity_groups().await.unwrap();
 
         assert_eq!(groups.len(), 1);
         assert_eq!(groups[0].len(), 4);
     }
 
-    struct MockDatabase(Vec<(u8, u8)>);
-
-    impl SimilarityDatabase for MockDatabase {
-        fn get_similar_images(&self, _image_id_hash: &ImageIdHash) -> Result<Vec<SimilarImage>, Error> {
-            todo!()
-        }
-
-        fn get_all_similar_images(&self) -> Result<Vec<SimilarImagePair>, Error> {
-            Ok(
-                self.0
-                    .iter()
+    fn mock_database(vec: Vec<(u8, u8)>) -> MockSimilarityDatabase {
+        let mut similarity_db = MockSimilarityDatabase::new();
+        similarity_db.expect_get_all_similar_images()
+            .returning(move || Ok(
+                vec.iter()
                     .map(|(id1, id2)| SimilarImagePair {
                         image_id_hash1: ImageIdHash([0,0,0,0,0,0,0,*id1]),
                         image_id_hash2: ImageIdHash([0,0,0,0,0,0,0,*id2]),
                         distance: 0,
                     })
                     .collect()
-            )
-        }
+            ));
+        similarity_db
     }
 }

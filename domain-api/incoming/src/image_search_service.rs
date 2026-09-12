@@ -3,8 +3,9 @@ use kani_domain_api_model::image_search::ImageSearchFilter;
 use kani_domain_api_model::user::User;
 use thiserror::Error;
 
+#[async_trait::async_trait]
 pub trait ImageSearchService {
-    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, SearchImagesError>;
+    async fn search_images(&self, user: &User, filter: ImageSearchFilter) -> Result<Vec<ImageId>, SearchImagesError>;
 }
 
 #[derive(Error, Debug)]

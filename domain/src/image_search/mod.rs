@@ -16,9 +16,10 @@ impl ImageSearchServiceImpl {
     }
 }
 
+#[async_trait::async_trait]
 impl ImageSearchService for ImageSearchServiceImpl {
-    fn search_images(&self, user: &User, filter: &ImageSearchFilter) -> Result<Vec<ImageId>, SearchImagesError> {
+    async fn search_images(&self, user: &User, filter: ImageSearchFilter) -> Result<Vec<ImageId>, SearchImagesError> {
         info!("searching images with filter '{:?}'", filter);
-        Ok(self.database.search_images(user, filter)?)
+        Ok(self.database.search_images(user, filter).await?)
     }
 }
