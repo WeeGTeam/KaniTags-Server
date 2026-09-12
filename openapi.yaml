@@ -3,7 +3,7 @@ info:
   title: Kani Server
   summary: A image library and sauce lookup service for pantsu
   description: API to import images, filter and download images, manage tags, lookup sources and tags
-  version: 0.2.0
+  version: 0.3.0
 servers:
   - description: localhost
     url: http://localhost:8000
