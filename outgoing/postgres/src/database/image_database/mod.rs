@@ -16,16 +16,18 @@ use tracing::debug;
 
 #[async_trait::async_trait]
 impl ImageDatabase for Postgres {
-    async fn get_image_by_image_id(&self, image_id: ImageId) -> Result<Option<PantsuImage>, anyhow::Error> {
-        debug!("Getting image by image id: {:?}", image_id);
-        let image_row = self.transaction::<_, _, ReadDbError>(move |conn| conn.image_dao().get_image_by_id(*image_id)).await?;
-        debug!("Got image by image id: {:?}: {}", image_id, image_row.is_some());
+    async fn get_image_by_image_id(&self, user: &User, image_id: ImageId) -> Result<Option<PantsuImage>, anyhow::Error> {
+        debug!("Getting image by image id: {:?}", *image_id);
+        let user_id = user.id;
+        let image_row = self.transaction::<_, _, ReadDbError>(move |conn| conn.image_dao().get_image_by_id(user_id, *image_id)).await?;
+        debug!("Got image by image id: {:?}: {}", *image_id, image_row.is_some());
         Ok(image_row.map(TryInto::try_into).transpose()?)
     }
 
-    async fn get_image_by_image_id_hash(&self, image_id_hash: ImageIdHash) -> Result<Option<PantsuImage>, anyhow::Error> {
+    async fn get_image_by_image_id_hash(&self, user: &User, image_id_hash: ImageIdHash) -> Result<Option<PantsuImage>, anyhow::Error> {
         debug!("Getting image by image id hash: {}", image_id_hash);
-        let image_row = self.transaction::<_, _, ReadDbError>(move |conn| conn.image_dao().get_image_by_id_hash(&image_id_hash.0)).await?;
+        let user_id = user.id;
+        let image_row = self.transaction::<_, _, ReadDbError>(move |conn| conn.image_dao().get_image_by_id_hash(user_id, &image_id_hash.0)).await?;
         debug!("Got image by image id hash: {}: {}", image_id_hash, image_row.is_some());
         Ok(image_row.map(TryInto::try_into).transpose()?)
     }
@@ -108,7 +110,7 @@ impl ImageDatabase for Postgres {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::dao::test::{insert_test_image, insert_test_import_session, insert_test_user};
+    use crate::dao::test::{insert_test_image, insert_test_import_session, insert_test_user, insert_test_user_image};
     use crate::test::test_db;
     use assertables::{assert_none, assert_ok, assert_some};
     use kani_domain_api_model::image_format::ImageFormat;
@@ -119,8 +121,15 @@ mod test {
     async fn test_get_image_by_image_id() {
         let db = test_db();
         let mut connection = db.get_connection().unwrap();
+        let user_row = insert_test_user(&mut connection).unwrap();
+        let user = User {
+            id: user_row.id,
+            user_name: user_row.user_name,
+            display_name: user_row.display_name,
+        };
         let db_image = insert_test_image(&mut connection).unwrap();
-        assert_some!(assert_ok!(db.get_image_by_image_id(ImageId(db_image.id)).await));
+        let _user_image = insert_test_user_image(&mut connection, user_row.id, db_image.id).unwrap();
+        assert_some!(assert_ok!(db.get_image_by_image_id(&user, ImageId(db_image.id)).await));
     }
 
     #[tokio::test]
@@ -128,16 +137,30 @@ mod test {
     async fn test_get_image_by_image_id_hash() {
         let db = test_db();
         let mut connection = db.get_connection().unwrap();
+        let user_row = insert_test_user(&mut connection).unwrap();
+        let user = User {
+            id: user_row.id,
+            user_name: user_row.user_name,
+            display_name: user_row.display_name,
+        };
         let db_image = insert_test_image(&mut connection).unwrap();
-        assert_ok!(db.get_image_by_image_id_hash(ImageIdHash(IdHash::try_from(db_image.id_hash).unwrap())).await);
+        let _user_image = insert_test_user_image(&mut connection, user_row.id, db_image.id).unwrap();
+        assert_ok!(db.get_image_by_image_id_hash(&user, ImageIdHash(IdHash::try_from(db_image.id_hash).unwrap())).await);
     }
 
     #[tokio::test]
     #[serial_test::serial]
     async fn test_get_error() {
         let db = test_db();
+        let mut connection = db.get_connection().unwrap();
+        let user_row = insert_test_user(&mut connection).unwrap();
+        let user = User {
+            id: user_row.id,
+            user_name: user_row.user_name,
+            display_name: user_row.display_name,
+        };
         assert_none!(assert_ok!(
-            db.get_image_by_image_id_hash(ImageIdHash([1, 2, 3, 4, 5, 6, 7, 8])).await
+            db.get_image_by_image_id_hash(&user, ImageIdHash([1, 2, 3, 4, 5, 6, 7, 8])).await
         ))
     }
 

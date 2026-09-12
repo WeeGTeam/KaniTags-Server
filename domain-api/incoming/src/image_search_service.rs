@@ -1,3 +1,4 @@
+use kani_domain_api_model::image::PantsuImage;
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::image_search::ImageSearchFilter;
 use kani_domain_api_model::user::User;
@@ -6,10 +7,20 @@ use thiserror::Error;
 #[async_trait::async_trait]
 pub trait ImageSearchService {
     async fn search_images(&self, user: &User, filter: ImageSearchFilter) -> Result<Vec<ImageId>, SearchImagesError>;
+
+    async fn get_image(&self, user: &User, image_id: ImageId) -> Result<PantsuImage, GetImageError>;
 }
 
 #[derive(Error, Debug)]
 pub enum SearchImagesError {
     #[error("Search images internal server error: '{0}'")]
     Unknown(#[from] anyhow::Error),
+}
+
+#[derive(Error, Debug)]
+pub enum GetImageError {
+    #[error("Get image internal server error: '{0}'")]
+    Unknown(#[from] anyhow::Error),
+    #[error("Image not found: {0:?}")]
+    ImageNotFound(ImageId),
 }

@@ -73,7 +73,7 @@ impl ImageManagementService for ImageManagementServiceImpl {
             return Err(ImportImageError::ImportSessionClosed(ImportSessionId(import_session.id)));
         }
 
-        let db_image = self.database.image().get_image_by_image_id_hash(image_id_hash).await
+        let db_image = self.database.image().get_image_by_image_id_hash(user, image_id_hash).await
             .context("Failed attempt to load image from database")?;
         if let Some(db_image) = db_image {
             return Err(ImportImageError::ImageAlreadyImported(db_image.image_id_hash));
@@ -117,9 +117,9 @@ impl ImageManagementService for ImageManagementServiceImpl {
     }
 
 
-    async fn get_image(&self, image_id: ImageId) -> Result<ImageDownloadData, GetImageError> {
+    async fn get_image(&self, user: &User, image_id: ImageId) -> Result<ImageDownloadData, GetImageError> {
         let db_image = self.database.image()
-            .get_image_by_image_id(image_id).await?
+            .get_image_by_image_id(user, image_id).await?
             .ok_or_else(|| GetImageError::ImageNotFound(image_id))?;
 
         let loaded_image = self.load_image_bytes(&db_image).await?;
@@ -131,9 +131,9 @@ impl ImageManagementService for ImageManagementServiceImpl {
         })
     }
 
-    async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<ImageDownloadData, GetImageError> {
+    async fn get_thumbnail(&self, user: &User, image_id: ImageId, kind: ThumbnailKind) -> Result<ImageDownloadData, GetImageError> {
         let db_image = self.database.image()
-            .get_image_by_image_id(image_id).await?
+            .get_image_by_image_id(user, image_id).await?
             .ok_or_else(|| GetImageError::ImageNotFound(image_id))?;
         let thumbnail_options = get_thumbnail_options(&kind);
         match self.image_repository.load_jpg_thumbnail(db_image.image_id_hash, &thumbnail_options).await {

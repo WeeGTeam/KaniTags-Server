@@ -3,7 +3,7 @@ info:
   title: Kani Server
   summary: A image library and sauce lookup service for pantsu
   description: API to import images, filter and download images, manage tags, lookup sources and tags
-  version: 0.3.0
+  version: 0.4.0
 servers:
   - description: localhost
     url: http://localhost:8000
@@ -11,7 +11,7 @@ tags:
   - name: collection
   - name: imageImport
   - name: imageDownload
-  - name: imageList
+  - name: image
   - name: imageTag
   - name: tag
 paths:
@@ -199,10 +199,30 @@ paths:
                   $ref: '#/components/schemas/ImageTagDTO'
         "400":
           description: Invalid tag or image id
+  /image/{id}/details:
+    get:
+      tags:
+        - image
+      operationId: getImageDetails
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/ImageId'
+      responses:
+        "200":
+          description: "Ok"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageDetailsDTO'
+        "404":
+          description: image not found
   /images:
     get:
       tags:
-        - imageList
+        - image
       operationId: getImages
       parameters:
         - in: query
@@ -412,6 +432,42 @@ paths:
           description: images removed from collection
 components:
   schemas:
+    ImageDetailsDTO:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ImageId'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-09-20T12:34:56Z"
+        uploadFilename:
+          type: string
+          example: "109192116-c0d3f2668431a63eb201bf5b3dd76f44_p0.jpg"
+        imageFormat:
+          type: string
+          enum: [ PNG, JPG ]
+          example: PNG
+        imageDimension:
+          $ref: '#/components/schemas/ImageDimensionDTO'
+      required:
+        - id
+        - createdAt
+        - uploadFilename
+        - imageFormat
+        - imageDimension
+    ImageDimensionDTO:
+      type: object
+      properties:
+        width:
+          type: integer
+          example: 100
+        height:
+          type: integer
+          example: 100
+      required:
+        - width
+        - height
     ImportSessionDTO:
       type: object
       properties:

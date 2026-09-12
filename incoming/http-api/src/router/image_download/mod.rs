@@ -1,3 +1,4 @@
+use crate::auth_middleware::current_user;
 use crate::error::HttpApiUnhandledError;
 use crate::router::AppState;
 use async_trait::async_trait;
@@ -27,9 +28,10 @@ impl ImageDownload<HttpApiUnhandledError> for AppState {
         _cookies: &CookieJar,
         path_params: &GetImagePathParams,
     ) -> Result<GetImageResponse, HttpApiUnhandledError> {
+        let user = current_user();
         let image_id: i64 = path_params.id.parse().map_err(|e: ParseIntError| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
 
-        match self.image_management_service.get_image(ImageId(image_id)).await {
+        match self.image_management_service.get_image(&user, ImageId(image_id)).await {
             Ok(ImageDownloadData { bytes, filename, format}) => Ok(GetImageResponse::Status200_Ok {
                 body: ByteArray(bytes.to_vec()),
                 content_type: to_image_content_type(format),
@@ -50,9 +52,10 @@ impl ImageDownload<HttpApiUnhandledError> for AppState {
         _cookies: &CookieJar,
         path_params: &GetThumbnailImagePathParams,
     ) -> Result<GetThumbnailImageResponse, HttpApiUnhandledError> {
+        let user = current_user();
         let image_id: i64 = path_params.id.parse().map_err(|e: ParseIntError| HttpApiUnhandledError::GenericBadRequest(e.into()))?;
 
-        match self.image_management_service.get_thumbnail(ImageId(image_id), ThumbnailKind::Gallery).await {
+        match self.image_management_service.get_thumbnail(&user, ImageId(image_id), ThumbnailKind::Gallery).await {
             Ok(ImageDownloadData { bytes, filename, format}) => Ok(GetThumbnailImageResponse::Status200_Ok {
                 body: ByteArray(bytes.to_vec()),
                 content_type: to_image_content_type(format),

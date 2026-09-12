@@ -18,9 +18,9 @@ pub trait ImageManagementService {
 
     async fn get_import_sessions(&self, user: &User) -> Result<Vec<ImportSession>, GetImportSessionsError>;
 
-    async fn get_image(&self, image_id: ImageId) -> Result<ImageDownloadData, GetImageError>;
+    async fn get_image(&self, user: &User, image_id: ImageId) -> Result<ImageDownloadData, GetImageError>;
 
-    async fn get_thumbnail(&self, image_id: ImageId, kind: ThumbnailKind) -> Result<ImageDownloadData, GetImageError>;
+    async fn get_thumbnail(&self, user: &User, image_id: ImageId, kind: ThumbnailKind) -> Result<ImageDownloadData, GetImageError>;
 }
 
 #[derive(Error, Debug)]

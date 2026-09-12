@@ -1,7 +1,7 @@
 pub mod collection;
+pub mod image;
 pub mod image_download;
 pub mod image_import;
-pub mod image_list;
 pub mod image_tag;
 pub mod tag;
 

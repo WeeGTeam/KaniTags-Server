@@ -2,9 +2,9 @@
 Cargo.toml
 README.md
 src/apis/collection.rs
+src/apis/image.rs
 src/apis/image_download.rs
 src/apis/image_import.rs
-src/apis/image_list.rs
 src/apis/image_tag.rs
 src/apis/mod.rs
 src/apis/tag.rs

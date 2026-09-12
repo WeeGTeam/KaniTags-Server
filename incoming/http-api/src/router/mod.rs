@@ -16,7 +16,7 @@ pub mod collection;
 pub mod image_download;
 pub mod image_import;
 pub mod image_tag;
-pub mod image_list;
+pub mod image;
 pub mod tag;
 
 #[derive(Clone)]

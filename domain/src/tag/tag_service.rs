@@ -39,7 +39,7 @@ impl TagService for TagServiceImpl {
 
     async fn add_image_tags(&self, image_id: ImageId, new_tags: Vec<NewTag>, user: User) -> Result<Vec<ImageTag>, AddImageTagsError> {
         info!("Adding image tags to image {}", *image_id);
-        if let None = self.database.image().get_image_by_image_id(image_id).await? {
+        if let None = self.database.image().get_image_by_image_id(&user, image_id).await? {
             info!("Image does not exist: {}", *image_id);
             return Err(AddImageTagsError::ImageNotFound(image_id));
         }
@@ -75,15 +75,16 @@ mod test {
         #[tokio::test]
         async fn should_fail_on_non_existing_image() {
             let non_existing_image_id = ImageId(1);
+            let user = User::stub();
             let mut mock_image_database = MockImageDatabase::new();
             mock_image_database.expect_get_image_by_image_id()
-                .with(eq(non_existing_image_id))
-                .returning(|_| Ok(None));
+                .with(eq(user.clone()), eq(non_existing_image_id))
+                .returning(|_, _| Ok(None));
             let database = MockDatabase::new()
                 .with_image(mock_image_database);
             let tag_service = TagServiceImpl::new(Arc::new(database));
 
-            let result = tag_service.add_image_tags(non_existing_image_id, vec![NewTag::stub()], User::stub()).await;
+            let result = tag_service.add_image_tags(non_existing_image_id, vec![NewTag::stub()], user).await;
 
             assert_err!(result);
         }
@@ -99,8 +100,8 @@ mod test {
 
             let mut mock_image_database = MockImageDatabase::new();
             mock_image_database.expect_get_image_by_image_id()
-                .with(eq(image_id))
-                .returning(move |_| Ok(Some(image.clone())));
+                .with(eq(user.clone()), eq(image_id))
+                .returning(move |_, _| Ok(Some(image.clone())));
             let mut mock_tag_database = MockTagDatabase::new();
             let tags_clone = tags.clone();
             mock_tag_database.expect_get_tags_create_if_missing()

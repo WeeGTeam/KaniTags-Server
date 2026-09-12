@@ -25,7 +25,7 @@ use crate::{
 pub fn new<I, A, E>(api_impl: I) -> Router
 where
     I: AsRef<A> + Clone + Send + Sync + 'static,
-    A: apis::collection::Collection<E> + apis::image_download::ImageDownload<E> + apis::image_import::ImageImport<E> + apis::image_list::ImageList<E> + apis::image_tag::ImageTag<E> + apis::tag::Tag<E> + Send + Sync + 'static,
+    A: apis::collection::Collection<E> + apis::image::Image<E> + apis::image_download::ImageDownload<E> + apis::image_import::ImageImport<E> + apis::image_tag::ImageTag<E> + apis::tag::Tag<E> + Send + Sync + 'static,
     E: std::fmt::Debug + Send + Sync + 'static,
     
 {
@@ -54,6 +54,9 @@ where
         )
         .route("/image/{id}",
             get(get_image::<I, A, E>)
+        )
+        .route("/image/{id}/details",
+            get(get_image_details::<I, A, E>)
         )
         .route("/image/{id}/tags",
             get(get_image_tags::<I, A, E>).post(add_image_tags::<I, A, E>)
@@ -604,6 +607,195 @@ let result = api_impl.as_ref().remove_images_from_collection(
                                                 => {
                                                   let mut response = response.status(200);
                                                   response.body(Body::empty())
+                                                },
+                                            },
+                                            Err(why) => {
+                                                    // Application code returned an error. This should not happen, as the implementation should
+                                                    // return a valid response.
+                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
+                                            },
+                                        };
+
+
+                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
+}
+
+
+#[tracing::instrument(skip_all)]
+fn get_image_details_validation(
+  path_params: models::GetImageDetailsPathParams,
+) -> std::result::Result<(
+  models::GetImageDetailsPathParams,
+), ValidationErrors>
+{
+  path_params.validate()?;
+
+Ok((
+  path_params,
+))
+}
+/// GetImageDetails - GET /image/{id}/details
+#[tracing::instrument(skip_all)]
+async fn get_image_details<I, A, E>(
+  method: Method,
+  TypedHeader(host): TypedHeader<Host>,
+  cookies: CookieJar,
+  Path(path_params): Path<models::GetImageDetailsPathParams>,
+ State(api_impl): State<I>,
+) -> Result<Response, StatusCode>
+where
+    I: AsRef<A> + Send + Sync,
+    A: apis::image::Image<E> + Send + Sync,
+    E: std::fmt::Debug + Send + Sync + 'static,
+        {
+
+
+
+
+      #[allow(clippy::redundant_closure)]
+      let validation = tokio::task::spawn_blocking(move ||
+    get_image_details_validation(
+        path_params,
+    )
+  ).await.unwrap();
+
+  let Ok((
+    path_params,
+  )) = validation else {
+    return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(validation.unwrap_err().to_string()))
+            .map_err(|_| StatusCode::BAD_REQUEST);
+  };
+
+
+
+let result = api_impl.as_ref().get_image_details(
+      
+      &method,
+      &host,
+      &cookies,
+        &path_params,
+  ).await;
+
+  let mut response = Response::builder();
+
+  let resp = match result {
+                                            Ok(rsp) => match rsp {
+                                                apis::image::GetImageDetailsResponse::Status200_Ok
+                                                    (body)
+                                                => {
+                                                  let mut response = response.status(200);
+                                                  {
+                                                    let mut response_headers = response.headers_mut().unwrap();
+                                                    response_headers.insert(
+                                                        CONTENT_TYPE,
+                                                        HeaderValue::from_static("application/json"));
+                                                  }
+
+                                                  let body_content =  tokio::task::spawn_blocking(move ||
+                                                      serde_json::to_vec(&body).map_err(|e| {
+                                                        error!(error = ?e);
+                                                        StatusCode::INTERNAL_SERVER_ERROR
+                                                      })).await.unwrap()?;
+                                                  response.body(Body::from(body_content))
+                                                },
+                                                apis::image::GetImageDetailsResponse::Status404_ImageNotFound
+                                                => {
+                                                  let mut response = response.status(404);
+                                                  response.body(Body::empty())
+                                                },
+                                            },
+                                            Err(why) => {
+                                                    // Application code returned an error. This should not happen, as the implementation should
+                                                    // return a valid response.
+                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
+                                            },
+                                        };
+
+
+                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
+}
+
+
+#[tracing::instrument(skip_all)]
+fn get_images_validation(
+  query_params: models::GetImagesQueryParams,
+) -> std::result::Result<(
+  models::GetImagesQueryParams,
+), ValidationErrors>
+{
+  query_params.validate()?;
+
+Ok((
+  query_params,
+))
+}
+/// GetImages - GET /images
+#[tracing::instrument(skip_all)]
+async fn get_images<I, A, E>(
+  method: Method,
+  TypedHeader(host): TypedHeader<Host>,
+  cookies: CookieJar,
+  QueryExtra(query_params): QueryExtra<models::GetImagesQueryParams>,
+ State(api_impl): State<I>,
+) -> Result<Response, StatusCode>
+where
+    I: AsRef<A> + Send + Sync,
+    A: apis::image::Image<E> + Send + Sync,
+    E: std::fmt::Debug + Send + Sync + 'static,
+        {
+
+
+
+
+      #[allow(clippy::redundant_closure)]
+      let validation = tokio::task::spawn_blocking(move ||
+    get_images_validation(
+        query_params,
+    )
+  ).await.unwrap();
+
+  let Ok((
+    query_params,
+  )) = validation else {
+    return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(validation.unwrap_err().to_string()))
+            .map_err(|_| StatusCode::BAD_REQUEST);
+  };
+
+
+
+let result = api_impl.as_ref().get_images(
+      
+      &method,
+      &host,
+      &cookies,
+        &query_params,
+  ).await;
+
+  let mut response = Response::builder();
+
+  let resp = match result {
+                                            Ok(rsp) => match rsp {
+                                                apis::image::GetImagesResponse::Status200_Ok
+                                                    (body)
+                                                => {
+                                                  let mut response = response.status(200);
+                                                  {
+                                                    let mut response_headers = response.headers_mut().unwrap();
+                                                    response_headers.insert(
+                                                        CONTENT_TYPE,
+                                                        HeaderValue::from_static("application/json"));
+                                                  }
+
+                                                  let body_content =  tokio::task::spawn_blocking(move ||
+                                                      serde_json::to_vec(&body).map_err(|e| {
+                                                        error!(error = ?e);
+                                                        StatusCode::INTERNAL_SERVER_ERROR
+                                                      })).await.unwrap()?;
+                                                  response.body(Body::from(body_content))
                                                 },
                                             },
                                             Err(why) => {
@@ -1172,98 +1364,6 @@ let result = api_impl.as_ref().start_import_session(
                                                     (body)
                                                 => {
                                                   let mut response = response.status(201);
-                                                  {
-                                                    let mut response_headers = response.headers_mut().unwrap();
-                                                    response_headers.insert(
-                                                        CONTENT_TYPE,
-                                                        HeaderValue::from_static("application/json"));
-                                                  }
-
-                                                  let body_content =  tokio::task::spawn_blocking(move ||
-                                                      serde_json::to_vec(&body).map_err(|e| {
-                                                        error!(error = ?e);
-                                                        StatusCode::INTERNAL_SERVER_ERROR
-                                                      })).await.unwrap()?;
-                                                  response.body(Body::from(body_content))
-                                                },
-                                            },
-                                            Err(why) => {
-                                                    // Application code returned an error. This should not happen, as the implementation should
-                                                    // return a valid response.
-                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
-                                            },
-                                        };
-
-
-                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
-}
-
-
-#[tracing::instrument(skip_all)]
-fn get_images_validation(
-  query_params: models::GetImagesQueryParams,
-) -> std::result::Result<(
-  models::GetImagesQueryParams,
-), ValidationErrors>
-{
-  query_params.validate()?;
-
-Ok((
-  query_params,
-))
-}
-/// GetImages - GET /images
-#[tracing::instrument(skip_all)]
-async fn get_images<I, A, E>(
-  method: Method,
-  TypedHeader(host): TypedHeader<Host>,
-  cookies: CookieJar,
-  QueryExtra(query_params): QueryExtra<models::GetImagesQueryParams>,
- State(api_impl): State<I>,
-) -> Result<Response, StatusCode>
-where
-    I: AsRef<A> + Send + Sync,
-    A: apis::image_list::ImageList<E> + Send + Sync,
-    E: std::fmt::Debug + Send + Sync + 'static,
-        {
-
-
-
-
-      #[allow(clippy::redundant_closure)]
-      let validation = tokio::task::spawn_blocking(move ||
-    get_images_validation(
-        query_params,
-    )
-  ).await.unwrap();
-
-  let Ok((
-    query_params,
-  )) = validation else {
-    return Response::builder()
-            .status(StatusCode::BAD_REQUEST)
-            .body(Body::from(validation.unwrap_err().to_string()))
-            .map_err(|_| StatusCode::BAD_REQUEST);
-  };
-
-
-
-let result = api_impl.as_ref().get_images(
-      
-      &method,
-      &host,
-      &cookies,
-        &query_params,
-  ).await;
-
-  let mut response = Response::builder();
-
-  let resp = match result {
-                                            Ok(rsp) => match rsp {
-                                                apis::image_list::GetImagesResponse::Status200_Ok
-                                                    (body)
-                                                => {
-                                                  let mut response = response.status(200);
                                                   {
                                                     let mut response_headers = response.headers_mut().unwrap();
                                                     response_headers.insert(

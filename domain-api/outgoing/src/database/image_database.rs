@@ -7,9 +7,9 @@ use kani_domain_api_model::user::User;
 #[cfg_attr(feature = "test-util", mockall::automock)]
 #[async_trait::async_trait]
 pub trait ImageDatabase {
-    async fn get_image_by_image_id(&self, image_id: ImageId) -> Result<Option<PantsuImage>, anyhow::Error>;
+    async fn get_image_by_image_id(&self, user: &User,image_id: ImageId) -> Result<Option<PantsuImage>, anyhow::Error>;
 
-    async fn get_image_by_image_id_hash(&self, image_id_hash: ImageIdHash) -> Result<Option<PantsuImage>, anyhow::Error>;
+    async fn get_image_by_image_id_hash(&self, user: &User, image_id_hash: ImageIdHash) -> Result<Option<PantsuImage>, anyhow::Error>;
 
     async fn get_images_by_image_ids(&self, user: &User, id_hash: &[ImageId]) -> Result<Vec<PantsuImage>, anyhow::Error>;
 
