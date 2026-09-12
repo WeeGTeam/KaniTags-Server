@@ -14,6 +14,8 @@ pub trait CollectionService {
     async fn add_images_to_collection(&self, user: &User, collection_id: CollectionId, image_ids: &[ImageId]) -> Result<(), AddImagesToCollectionError>;
 
     async fn remove_images_from_collection(&self, user: &User, collection_id: CollectionId, image_ids: &[ImageId]) -> Result<(), RemoveImagesFromCollectionError>;
+
+    async fn get_collection_images(&self, user: &User, collection_id: CollectionId) -> Result<Vec<ImageId>, GetCollectionImagesError>;
 }
 
 #[derive(Error, Debug)]
@@ -51,6 +53,14 @@ pub enum AddImagesToCollectionError {
 #[derive(Error, Debug)]
 pub enum RemoveImagesFromCollectionError {
     #[error("Collection remove images internal server error: '{0}'")]
+    Unknown(#[from] anyhow::Error),
+    #[error("Collection does not exist: '{0:?}'")]
+    CollectionDoesNotExist(CollectionId),
+}
+
+#[derive(Error, Debug)]
+pub enum GetCollectionImagesError {
+    #[error("Collection images load internal server error: '{0}'")]
     Unknown(#[from] anyhow::Error),
     #[error("Collection does not exist: '{0:?}'")]
     CollectionDoesNotExist(CollectionId),

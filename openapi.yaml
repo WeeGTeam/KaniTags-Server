@@ -347,6 +347,25 @@ paths:
         "200":
           description: collection deleted
   /collections/{id}/images:
+    get:
+      tags:
+        - collection
+      operationId: getCollectionImages
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/CollectionId'
+      responses:
+        "200":
+          description: List of image ids in the collection
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageId'
     post:
       tags:
         - collection

@@ -39,6 +39,15 @@ pub enum DeleteCollectionResponse {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 #[must_use]
 #[allow(clippy::large_enum_variant)]
+pub enum GetCollectionImagesResponse {
+    /// List of image ids in the collection
+    Status200_ListOfImageIdsInTheCollection
+    (Vec<models::ImageId>)
+}
+
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[must_use]
+#[allow(clippy::large_enum_variant)]
 pub enum GetCollectionsResponse {
     /// Collections
     Status200_Collections
@@ -90,6 +99,16 @@ pub trait Collection<E: std::fmt::Debug + Send + Sync + 'static = ()>: super::Er
     cookies: &CookieJar,
       path_params: &models::DeleteCollectionPathParams,
     ) -> Result<DeleteCollectionResponse, E>;
+
+    /// GetCollectionImages - GET /collections/{id}/images
+    async fn get_collection_images(
+    &self,
+    
+    method: &Method,
+    host: &Host,
+    cookies: &CookieJar,
+      path_params: &models::GetCollectionImagesPathParams,
+    ) -> Result<GetCollectionImagesResponse, E>;
 
     /// GetCollections - GET /collections
     async fn get_collections(

@@ -6,13 +6,10 @@ use crate::router::AppState;
 use axum::http::Method;
 use axum_extra::extract::CookieJar;
 use headers::Host;
-use kani_domain_api_incoming::collection_service::{AddImagesToCollectionError, CreateCollectionError, DeleteCollectionError, LoadCollectionsError, RemoveImagesFromCollectionError};
+use kani_domain_api_incoming::collection_service::{AddImagesToCollectionError, CreateCollectionError, DeleteCollectionError, GetCollectionImagesError, LoadCollectionsError, RemoveImagesFromCollectionError};
 use kani_domain_api_model::collection::{CollectionId, CollectionName};
-use kani_openapi::apis::collection::{
-    AddImagesToCollectionResponse, Collection, CreateCollectionResponse, DeleteCollectionResponse,
-    GetCollectionsResponse, RemoveImagesFromCollectionResponse,
-};
-use kani_openapi::models::{AddImagesToCollectionPathParams, CollectionDto, DeleteCollectionPathParams, ImageId, RemoveImagesFromCollectionPathParams};
+use kani_openapi::apis::collection::{AddImagesToCollectionResponse, Collection, CreateCollectionResponse, DeleteCollectionResponse, GetCollectionImagesResponse, GetCollectionsResponse, RemoveImagesFromCollectionResponse};
+use kani_openapi::models::{AddImagesToCollectionPathParams, CollectionDto, DeleteCollectionPathParams, GetCollectionImagesPathParams, ImageId, RemoveImagesFromCollectionPathParams};
 
 #[async_trait::async_trait]
 impl Collection<HttpApiUnhandledError> for AppState {
@@ -98,4 +95,21 @@ impl Collection<HttpApiUnhandledError> for AppState {
             Err(e @ RemoveImagesFromCollectionError::Unknown(_)) => Err(HttpApiUnhandledError::Unknown(e.into())),
         }
     }
+
+    async fn get_collection_images(
+        &self,
+        _method: &Method,
+        _host: &Host,
+        _cookies: &CookieJar,
+        path_params: &GetCollectionImagesPathParams
+    ) -> Result<GetCollectionImagesResponse, HttpApiUnhandledError> {
+        let user = current_user();
+        let collection_id = parse_id(&path_params.id, CollectionId)?;
+        match self.collection_service.get_collection_images(&user, collection_id).await {
+            Ok(images) => Ok(GetCollectionImagesResponse::Status200_ListOfImageIdsInTheCollection(Vec::<ImageId>::from_domain(images))),
+            Err(e @ GetCollectionImagesError::CollectionDoesNotExist(_)) => Err(HttpApiUnhandledError::GenericNotFound(e.into())),
+            Err(e @ GetCollectionImagesError::Unknown(_)) => Err(HttpApiUnhandledError::Unknown(e.into())),
+        }
+    }
+
 }

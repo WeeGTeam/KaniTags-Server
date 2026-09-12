@@ -1,4 +1,4 @@
-use kani_domain_api_incoming::collection_service::{AddImagesToCollectionError, CollectionService, CreateCollectionError, DeleteCollectionError, LoadCollectionsError, RemoveImagesFromCollectionError};
+use kani_domain_api_incoming::collection_service::{AddImagesToCollectionError, CollectionService, CreateCollectionError, DeleteCollectionError, GetCollectionImagesError, LoadCollectionsError, RemoveImagesFromCollectionError};
 use kani_domain_api_model::collection::{Collection, CollectionId, CollectionName};
 use kani_domain_api_model::image_id::ImageId;
 use kani_domain_api_model::user::User;
@@ -110,5 +110,20 @@ impl CollectionService for CollectionServiceImpl {
         }
         info!("Removed {} images from collection '{}' for user", removed_count, &collection.name.deref());
         Ok(())
+    }
+
+    async fn get_collection_images(&self, user: &User, collection_id: CollectionId) -> Result<Vec<ImageId>, GetCollectionImagesError> {
+        info!("Getting images from collection with id '{}' for user", *collection_id);
+        let collection = match self.database.collection().load_collection_by_user_and_id(user, collection_id).await {
+            Ok(collection) => collection,
+            Err(ReadDbError::NotFound) => {
+                error!("Collection with id '{}' does not exist for user", *collection_id);
+                return Err(GetCollectionImagesError::CollectionDoesNotExist(collection_id));
+            },
+            Err(e) => return Err(GetCollectionImagesError::Unknown(e.into())),
+        };
+        let image_ids = self.database.collection().get_collection_images(user, collection.id).await
+            .map_err(|e| GetCollectionImagesError::Unknown(e.into()))?;
+        Ok(image_ids)
     }
 }

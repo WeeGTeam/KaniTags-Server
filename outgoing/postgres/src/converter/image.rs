@@ -1,3 +1,4 @@
+use crate::models::collection_image::CollectionImageRow;
 use crate::models::image::{ImageInsertRow, ImageRow};
 use kani_domain_api_model::image::{CreatePantsuImage, PantsuImage};
 use kani_domain_api_model::image_format::ImageFormat;
@@ -26,6 +27,13 @@ impl TryFrom<ImageRow> for ImageId {
 
     fn try_from(image_row: ImageRow) -> Result<Self, Self::Error> {
         Ok(ImageId(image_row.id))
+    }
+}
+
+impl From<CollectionImageRow> for ImageId {
+
+    fn from(image_row: CollectionImageRow) -> Self {
+        ImageId(image_row.image_id)
     }
 }
 
