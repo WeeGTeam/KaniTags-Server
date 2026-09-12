@@ -64,7 +64,7 @@ pub enum StartImportSessionResponse {
 #[async_trait]
 #[allow(clippy::ptr_arg)]
 pub trait ImageImport<E: std::fmt::Debug + Send + Sync + 'static = ()>: super::ErrorHandler<E> {
-    /// CloseImportSession - DELETE /image/importSession/{id}
+    /// CloseImportSession - DELETE /image/import-session/{id}
     async fn close_import_session(
     &self,
     
@@ -74,7 +74,7 @@ pub trait ImageImport<E: std::fmt::Debug + Send + Sync + 'static = ()>: super::E
       path_params: &models::CloseImportSessionPathParams,
     ) -> Result<CloseImportSessionResponse, E>;
 
-    /// GetImportSessions - GET /image/importSession
+    /// GetImportSessions - GET /image/import-session
     async fn get_import_sessions(
     &self,
     
@@ -94,7 +94,7 @@ pub trait ImageImport<E: std::fmt::Debug + Send + Sync + 'static = ()>: super::E
     body: Multipart,
     ) -> Result<ImportImageResponse, E>;
 
-    /// StartImportSession - POST /image/importSession
+    /// StartImportSession - POST /image/import-session
     async fn start_import_session(
     &self,
     

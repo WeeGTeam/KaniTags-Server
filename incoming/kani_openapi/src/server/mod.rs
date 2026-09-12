@@ -40,14 +40,14 @@ where
         .route("/collections/{id}/images",
             delete(remove_images_from_collection::<I, A, E>).get(get_collection_images::<I, A, E>).post(add_images_to_collection::<I, A, E>)
         )
-        .route("/image/import/{id}",
-            post(import_image::<I, A, E>)
-        )
-        .route("/image/importSession",
+        .route("/image/import-session",
             get(get_import_sessions::<I, A, E>).post(start_import_session::<I, A, E>)
         )
-        .route("/image/importSession/{id}",
+        .route("/image/import-session/{id}",
             delete(close_import_session::<I, A, E>)
+        )
+        .route("/image/import/{id}",
+            post(import_image::<I, A, E>)
         )
         .route("/image/thumbnail/{id}",
             get(get_thumbnail_image::<I, A, E>)
@@ -859,7 +859,7 @@ Ok((
   path_params,
 ))
 }
-/// CloseImportSession - DELETE /image/importSession/{id}
+/// CloseImportSession - DELETE /image/import-session/{id}
 #[tracing::instrument(skip_all)]
 async fn close_import_session<I, A, E>(
   method: Method,
@@ -944,7 +944,7 @@ fn get_import_sessions_validation(
 Ok((
 ))
 }
-/// GetImportSessions - GET /image/importSession
+/// GetImportSessions - GET /image/import-session
 #[tracing::instrument(skip_all)]
 async fn get_import_sessions<I, A, E>(
   method: Method,
@@ -1124,7 +1124,7 @@ fn start_import_session_validation(
 Ok((
 ))
 }
-/// StartImportSession - POST /image/importSession
+/// StartImportSession - POST /image/import-session
 #[tracing::instrument(skip_all)]
 async fn start_import_session<I, A, E>(
   method: Method,

@@ -15,7 +15,7 @@ tags:
   - name: imageTag
   - name: tag
 paths:
-  /image/importSession:
+  /image/import-session:
     get:
       tags:
         - imageImport
@@ -40,7 +40,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ImportSessionId'
-  /image/importSession/{id}:
+  /image/import-session/{id}:
     delete:
       tags:
         - imageImport
