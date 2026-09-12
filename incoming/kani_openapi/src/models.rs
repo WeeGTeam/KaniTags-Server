@@ -127,60 +127,16 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
 
     #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
     #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
-    pub struct GetImagePathParams {
+    pub struct GetImageDetailsPathParams {
                 #[validate(
-                          regex(path = *RE_GETIMAGEPATHPARAMS_ID),
+                          regex(path = *RE_GETIMAGEDETAILSPATHPARAMS_ID),
             )]
                 pub id: String,
     }
 
     lazy_static::lazy_static! {
-        static ref RE_GETIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+        static ref RE_GETIMAGEDETAILSPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
     }
-
-
-    #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
-    #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
-    pub struct GetThumbnailImagePathParams {
-                #[validate(
-                          regex(path = *RE_GETTHUMBNAILIMAGEPATHPARAMS_ID),
-            )]
-                pub id: String,
-    }
-
-    lazy_static::lazy_static! {
-        static ref RE_GETTHUMBNAILIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
-    }
-
-
-    #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
-    #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
-    pub struct CloseImportSessionPathParams {
-                #[validate(
-                          regex(path = *RE_CLOSEIMPORTSESSIONPATHPARAMS_ID),
-            )]
-                pub id: String,
-    }
-
-    lazy_static::lazy_static! {
-        static ref RE_CLOSEIMPORTSESSIONPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
-    }
-
-
-
-    #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
-    #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
-    pub struct ImportImagePathParams {
-                #[validate(
-                          regex(path = *RE_IMPORTIMAGEPATHPARAMS_ID),
-            )]
-                pub id: String,
-    }
-
-    lazy_static::lazy_static! {
-        static ref RE_IMPORTIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
-    }
-
 
 
     #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
@@ -241,6 +197,64 @@ pub fn check_xss_map<T>(v: &std::collections::HashMap<String, T>) -> std::result
     lazy_static::lazy_static! {
         static ref RE_GETIMAGESQUERYPARAMS_IMPORT_SESSION: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
     }
+
+    #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
+    #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+    pub struct GetImagePathParams {
+                #[validate(
+                          regex(path = *RE_GETIMAGEPATHPARAMS_ID),
+            )]
+                pub id: String,
+    }
+
+    lazy_static::lazy_static! {
+        static ref RE_GETIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    }
+
+
+    #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
+    #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+    pub struct GetThumbnailImagePathParams {
+                #[validate(
+                          regex(path = *RE_GETTHUMBNAILIMAGEPATHPARAMS_ID),
+            )]
+                pub id: String,
+    }
+
+    lazy_static::lazy_static! {
+        static ref RE_GETTHUMBNAILIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    }
+
+
+    #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
+    #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+    pub struct CloseImportSessionPathParams {
+                #[validate(
+                          regex(path = *RE_CLOSEIMPORTSESSIONPATHPARAMS_ID),
+            )]
+                pub id: String,
+    }
+
+    lazy_static::lazy_static! {
+        static ref RE_CLOSEIMPORTSESSIONPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    }
+
+
+
+    #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
+    #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+    pub struct ImportImagePathParams {
+                #[validate(
+                          regex(path = *RE_IMPORTIMAGEPATHPARAMS_ID),
+            )]
+                pub id: String,
+    }
+
+    lazy_static::lazy_static! {
+        static ref RE_IMPORTIMAGEPATHPARAMS_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+    }
+
+
 
     #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
     #[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
@@ -493,6 +507,303 @@ impl std::ops::Deref for CollectionId {
 impl std::ops::DerefMut for CollectionId {
     fn deref_mut(&mut self) -> &mut String {
         &mut self.0
+    }
+}
+
+
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
+#[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+pub struct ImageDetailsDto {
+    #[serde(rename = "id")]
+    #[validate(
+            regex(path = *RE_IMAGEDETAILSDTO_ID),
+          custom(function = "check_xss_string"),
+    )]
+    pub id: String,
+
+    #[serde(rename = "createdAt")]
+    pub created_at: chrono::DateTime::<chrono::Utc>,
+
+    #[serde(rename = "uploadFilename")]
+          #[validate(custom(function = "check_xss_string"))]
+    pub upload_filename: String,
+
+    /// Note: inline enums are not fully supported by openapi-generator
+    #[serde(rename = "imageFormat")]
+          #[validate(custom(function = "check_xss_string"))]
+    pub image_format: String,
+
+    #[serde(rename = "imageDimension")]
+          #[validate(nested)]
+    pub image_dimension: models::ImageDimensionDto,
+
+}
+
+
+lazy_static::lazy_static! {
+    static ref RE_IMAGEDETAILSDTO_ID: regex::Regex = regex::Regex::new("^[0-9]+$").unwrap();
+}
+
+impl ImageDetailsDto {
+    #[allow(clippy::new_without_default, clippy::too_many_arguments)]
+    pub fn new(id: String, created_at: chrono::DateTime::<chrono::Utc>, upload_filename: String, image_format: String, image_dimension: models::ImageDimensionDto, ) -> ImageDetailsDto {
+        ImageDetailsDto {
+ id,
+ created_at,
+ upload_filename,
+ image_format,
+ image_dimension,
+        }
+    }
+}
+
+/// Converts the ImageDetailsDto value to the Query Parameters representation (style=form, explode=false)
+/// specified in https://swagger.io/docs/specification/serialization/
+/// Should be implemented in a serde serializer
+impl std::fmt::Display for ImageDetailsDto {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let params: Vec<Option<String>> = vec![
+
+            Some("id".to_string()),
+            Some(self.id.to_string()),
+
+            // Skipping createdAt in query parameter serialization
+
+
+            Some("uploadFilename".to_string()),
+            Some(self.upload_filename.to_string()),
+
+
+            Some("imageFormat".to_string()),
+            Some(self.image_format.to_string()),
+
+            // Skipping imageDimension in query parameter serialization
+
+        ];
+
+        write!(f, "{}", params.into_iter().flatten().collect::<Vec<_>>().join(","))
+    }
+}
+
+/// Converts Query Parameters representation (style=form, explode=false) to a ImageDetailsDto value
+/// as specified in https://swagger.io/docs/specification/serialization/
+/// Should be implemented in a serde deserializer
+impl std::str::FromStr for ImageDetailsDto {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
+        #[derive(Default)]
+        #[allow(dead_code)]
+        struct IntermediateRep {
+            pub id: Vec<String>,
+            pub created_at: Vec<chrono::DateTime::<chrono::Utc>>,
+            pub upload_filename: Vec<String>,
+            pub image_format: Vec<String>,
+            pub image_dimension: Vec<models::ImageDimensionDto>,
+        }
+
+        let mut intermediate_rep = IntermediateRep::default();
+
+        // Parse into intermediate representation
+        let mut string_iter = s.split(',');
+        let mut key_result = string_iter.next();
+
+        while key_result.is_some() {
+            let val = match string_iter.next() {
+                Some(x) => x,
+                None => return std::result::Result::Err("Missing value while parsing ImageDetailsDto".to_string())
+            };
+
+            if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
+                match key {
+                    #[allow(clippy::redundant_clone)]
+                    "id" => intermediate_rep.id.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "createdAt" => intermediate_rep.created_at.push(<chrono::DateTime::<chrono::Utc> as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "uploadFilename" => intermediate_rep.upload_filename.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "imageFormat" => intermediate_rep.image_format.push(<String as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "imageDimension" => intermediate_rep.image_dimension.push(<models::ImageDimensionDto as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    _ => return std::result::Result::Err("Unexpected key while parsing ImageDetailsDto".to_string())
+                }
+            }
+
+            // Get the next key
+            key_result = string_iter.next();
+        }
+
+        // Use the intermediate representation to return the struct
+        std::result::Result::Ok(ImageDetailsDto {
+            id: intermediate_rep.id.into_iter().next().ok_or_else(|| "id missing in ImageDetailsDto".to_string())?,
+            created_at: intermediate_rep.created_at.into_iter().next().ok_or_else(|| "createdAt missing in ImageDetailsDto".to_string())?,
+            upload_filename: intermediate_rep.upload_filename.into_iter().next().ok_or_else(|| "uploadFilename missing in ImageDetailsDto".to_string())?,
+            image_format: intermediate_rep.image_format.into_iter().next().ok_or_else(|| "imageFormat missing in ImageDetailsDto".to_string())?,
+            image_dimension: intermediate_rep.image_dimension.into_iter().next().ok_or_else(|| "imageDimension missing in ImageDetailsDto".to_string())?,
+        })
+    }
+}
+
+// Methods for converting between header::IntoHeaderValue<ImageDetailsDto> and HeaderValue
+
+#[cfg(feature = "server")]
+impl std::convert::TryFrom<header::IntoHeaderValue<ImageDetailsDto>> for HeaderValue {
+    type Error = String;
+
+    fn try_from(hdr_value: header::IntoHeaderValue<ImageDetailsDto>) -> std::result::Result<Self, Self::Error> {
+        let hdr_value = hdr_value.to_string();
+        match HeaderValue::from_str(&hdr_value) {
+             std::result::Result::Ok(value) => std::result::Result::Ok(value),
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for ImageDetailsDto - value: {hdr_value} is invalid {e}"#))
+        }
+    }
+}
+
+#[cfg(feature = "server")]
+impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<ImageDetailsDto> {
+    type Error = String;
+
+    fn try_from(hdr_value: HeaderValue) -> std::result::Result<Self, Self::Error> {
+        match hdr_value.to_str() {
+             std::result::Result::Ok(value) => {
+                    match <ImageDetailsDto as std::str::FromStr>::from_str(value) {
+                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
+                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into ImageDetailsDto - {err}"#))
+                    }
+             },
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Unable to convert header: {hdr_value:?} to string: {e}"#))
+        }
+    }
+}
+
+
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize, validator::Validate)]
+#[cfg_attr(feature = "conversion", derive(frunk::LabelledGeneric))]
+pub struct ImageDimensionDto {
+    #[serde(rename = "width")]
+    pub width: i32,
+
+    #[serde(rename = "height")]
+    pub height: i32,
+
+}
+
+
+
+impl ImageDimensionDto {
+    #[allow(clippy::new_without_default, clippy::too_many_arguments)]
+    pub fn new(width: i32, height: i32, ) -> ImageDimensionDto {
+        ImageDimensionDto {
+ width,
+ height,
+        }
+    }
+}
+
+/// Converts the ImageDimensionDto value to the Query Parameters representation (style=form, explode=false)
+/// specified in https://swagger.io/docs/specification/serialization/
+/// Should be implemented in a serde serializer
+impl std::fmt::Display for ImageDimensionDto {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let params: Vec<Option<String>> = vec![
+
+            Some("width".to_string()),
+            Some(self.width.to_string()),
+
+
+            Some("height".to_string()),
+            Some(self.height.to_string()),
+
+        ];
+
+        write!(f, "{}", params.into_iter().flatten().collect::<Vec<_>>().join(","))
+    }
+}
+
+/// Converts Query Parameters representation (style=form, explode=false) to a ImageDimensionDto value
+/// as specified in https://swagger.io/docs/specification/serialization/
+/// Should be implemented in a serde deserializer
+impl std::str::FromStr for ImageDimensionDto {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        /// An intermediate representation of the struct to use for parsing.
+        #[derive(Default)]
+        #[allow(dead_code)]
+        struct IntermediateRep {
+            pub width: Vec<i32>,
+            pub height: Vec<i32>,
+        }
+
+        let mut intermediate_rep = IntermediateRep::default();
+
+        // Parse into intermediate representation
+        let mut string_iter = s.split(',');
+        let mut key_result = string_iter.next();
+
+        while key_result.is_some() {
+            let val = match string_iter.next() {
+                Some(x) => x,
+                None => return std::result::Result::Err("Missing value while parsing ImageDimensionDto".to_string())
+            };
+
+            if let Some(key) = key_result {
+                #[allow(clippy::match_single_binding)]
+                match key {
+                    #[allow(clippy::redundant_clone)]
+                    "width" => intermediate_rep.width.push(<i32 as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    #[allow(clippy::redundant_clone)]
+                    "height" => intermediate_rep.height.push(<i32 as std::str::FromStr>::from_str(val).map_err(|x| x.to_string())?),
+                    _ => return std::result::Result::Err("Unexpected key while parsing ImageDimensionDto".to_string())
+                }
+            }
+
+            // Get the next key
+            key_result = string_iter.next();
+        }
+
+        // Use the intermediate representation to return the struct
+        std::result::Result::Ok(ImageDimensionDto {
+            width: intermediate_rep.width.into_iter().next().ok_or_else(|| "width missing in ImageDimensionDto".to_string())?,
+            height: intermediate_rep.height.into_iter().next().ok_or_else(|| "height missing in ImageDimensionDto".to_string())?,
+        })
+    }
+}
+
+// Methods for converting between header::IntoHeaderValue<ImageDimensionDto> and HeaderValue
+
+#[cfg(feature = "server")]
+impl std::convert::TryFrom<header::IntoHeaderValue<ImageDimensionDto>> for HeaderValue {
+    type Error = String;
+
+    fn try_from(hdr_value: header::IntoHeaderValue<ImageDimensionDto>) -> std::result::Result<Self, Self::Error> {
+        let hdr_value = hdr_value.to_string();
+        match HeaderValue::from_str(&hdr_value) {
+             std::result::Result::Ok(value) => std::result::Result::Ok(value),
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Invalid header value for ImageDimensionDto - value: {hdr_value} is invalid {e}"#))
+        }
+    }
+}
+
+#[cfg(feature = "server")]
+impl std::convert::TryFrom<HeaderValue> for header::IntoHeaderValue<ImageDimensionDto> {
+    type Error = String;
+
+    fn try_from(hdr_value: HeaderValue) -> std::result::Result<Self, Self::Error> {
+        match hdr_value.to_str() {
+             std::result::Result::Ok(value) => {
+                    match <ImageDimensionDto as std::str::FromStr>::from_str(value) {
+                        std::result::Result::Ok(value) => std::result::Result::Ok(header::IntoHeaderValue(value)),
+                        std::result::Result::Err(err) => std::result::Result::Err(format!(r#"Unable to convert header value '{value}' into ImageDimensionDto - {err}"#))
+                    }
+             },
+             std::result::Result::Err(e) => std::result::Result::Err(format!(r#"Unable to convert header: {hdr_value:?} to string: {e}"#))
+        }
     }
 }
 

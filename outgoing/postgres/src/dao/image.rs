@@ -76,10 +76,11 @@ impl<'c> ImageDao<'c> {
             .context("Failed to search images by user and filter from database")
     }
 
-    pub fn get_image_by_id(&mut self, id: i64) -> Result<Option<ImageRow>, Error> {
+    pub fn get_image_by_id(&mut self, user_id: i64, id: i64) -> Result<Option<ImageRow>, Error> {
         image
             .select(ImageRow::as_select())
-            .filter(image_dsl::id.eq(id))
+            .inner_join(user_image)
+            .filter(image_dsl::id.eq(id).and(user_image_dsl::user_id.eq(user_id)))
             .get_result(self.connection)
             .optional()
             .context("Failed to get image by id from database")
@@ -87,10 +88,13 @@ impl<'c> ImageDao<'c> {
 
     pub fn get_image_by_id_hash(
         &mut self,
+        user_id: i64,
         id_hash: &[u8],
     ) -> Result<Option<ImageRow>, Error> {
         image
-            .filter(image_dsl::id_hash.eq(id_hash))
+            .select(ImageRow::as_select())
+            .inner_join(user_image)
+            .filter(image_dsl::id_hash.eq(id_hash).and(user_image_dsl::user_id.eq(user_id)))
             .get_result(self.connection)
             .optional()
             .context("Failed to get image by id hash from database")
@@ -106,7 +110,7 @@ impl<'c> ImageDao<'c> {
             .inner_join(user_image)
             .filter(image_dsl::id.eq_any(image_ids).and(user_image_dsl::user_id.eq(user_id)))
             .get_results(self.connection)
-            .context("Failed to get images by user and id hashes from database")
+            .context("Failed to get images by user and ids from database")
     }
 
     pub fn insert_image_source(
@@ -182,8 +186,8 @@ impl<'c> ImageDao<'c> {
 
 #[cfg(test)]
 mod test {
-    use crate::dao::test::{insert_test_image, insert_test_image_source, insert_test_image_tag, insert_test_tag, insert_test_user, insert_test_user_image};
     use crate::dao::Dao;
+    use crate::dao::test::{insert_test_image, insert_test_image_source, insert_test_image_tag, insert_test_tag, insert_test_user, insert_test_user_image};
     use crate::models::image::ImageInsertRow;
     use crate::models::image_source::ImageSourceInsertRow;
     use crate::models::user_image::UserImageInsertRow;
@@ -287,8 +291,10 @@ mod test {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
         let result = conn.test_transaction(|c| {
+            let user = insert_test_user(c)?;
             let image = insert_test_image(c)?;
-            c.image_dao().get_image_by_id(image.id)
+            let _user_image = insert_test_user_image(c, user.id, image.id)?;
+            c.image_dao().get_image_by_id(user.id, image.id)
         });
         assert_some!(result);
     }
@@ -299,8 +305,10 @@ mod test {
         let postgres = test_db();
         let mut conn = postgres.get_connection().unwrap();
         let result = conn.test_transaction(|c| {
+            let user = insert_test_user(c)?;
             let image = insert_test_image(c)?;
-            c.image_dao().get_image_by_id_hash(&image.id_hash)
+            let _user_image = insert_test_user_image(c, user.id, image.id)?;
+            c.image_dao().get_image_by_id_hash(user.id, &image.id_hash)
         });
         assert_some!(result);
     }
@@ -383,8 +391,8 @@ mod test {
 
 #[cfg(test)]
 mod test_data {
-    use crate::models::image::ImageInsertRow;
     use crate::models::ImageFormat;
+    use crate::models::image::ImageInsertRow;
     use crate::test::test_db;
     use diesel::{PgConnection, RunQueryDsl};
     use pgvector::Bit;

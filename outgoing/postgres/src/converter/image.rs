@@ -17,7 +17,7 @@ impl TryFrom<ImageRow> for PantsuImage {
             upload_filename: value.file_name,
             format: value.image_format.into(),
             dimensions: (value.res_width as u32, value.res_height as u32),
-            date_added: Default::default(),
+            date_added: value.created_at,
         })
     }
 }
