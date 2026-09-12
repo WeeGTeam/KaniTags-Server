@@ -86,4 +86,13 @@ impl CollectionDatabase for Postgres {
         debug!("Deleted {} images from collection: {}", deleted.len(), cid);
         Ok(deleted.len())
     }
+
+    async fn get_collection_images(&self, user: &User, collection_id: CollectionId) -> Result<Vec<ImageId>, DbError> {
+        debug!("Getting images from collection for user: {}, collection_id: {}", user.id, *collection_id);
+        let images = self
+            .transaction::<_, _, DbError>(move |conn| conn.collection_dao().get_all_collection_images(*collection_id))
+            .await?;
+        debug!("Finished gettimg collection images with {} results", images.len());
+        Ok(images.into_iter().map(Into::into).collect())
+    }
 }

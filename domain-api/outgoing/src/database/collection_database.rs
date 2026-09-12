@@ -13,4 +13,5 @@ pub trait CollectionDatabase {
     async fn delete_collection(&self, user: &User, collection_id: CollectionId) -> Result<(), ReadDbError>;
     async fn add_images_to_collection(&self, user: &User, collection_id: CollectionId, image_ids: &[ImageId]) -> Result<usize, ReadWriteDbError>;
     async fn remove_images_from_collection(&self, user: &User, collection_id: CollectionId, image_ids: &[ImageId]) -> Result<usize, DbError>;
+    async fn get_collection_images(&self, user: &User, collection_id: CollectionId) -> Result<Vec<ImageId>, DbError>;
 }

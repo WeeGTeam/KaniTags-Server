@@ -38,16 +38,16 @@ where
             delete(delete_collection::<I, A, E>)
         )
         .route("/collections/{id}/images",
-            delete(remove_images_from_collection::<I, A, E>).post(add_images_to_collection::<I, A, E>)
+            delete(remove_images_from_collection::<I, A, E>).get(get_collection_images::<I, A, E>).post(add_images_to_collection::<I, A, E>)
+        )
+        .route("/image/import-session",
+            get(get_import_sessions::<I, A, E>).post(start_import_session::<I, A, E>)
+        )
+        .route("/image/import-session/{id}",
+            delete(close_import_session::<I, A, E>)
         )
         .route("/image/import/{id}",
             post(import_image::<I, A, E>)
-        )
-        .route("/image/importSession",
-            get(get_import_sessions::<I, A, E>).post(start_import_session::<I, A, E>)
-        )
-        .route("/image/importSession/{id}",
-            delete(close_import_session::<I, A, E>)
         )
         .route("/image/thumbnail/{id}",
             get(get_thumbnail_image::<I, A, E>)
@@ -333,6 +333,98 @@ let result = api_impl.as_ref().delete_collection(
                                                 => {
                                                   let mut response = response.status(200);
                                                   response.body(Body::empty())
+                                                },
+                                            },
+                                            Err(why) => {
+                                                    // Application code returned an error. This should not happen, as the implementation should
+                                                    // return a valid response.
+                                                    return api_impl.as_ref().handle_error(&method, &host, &cookies, why).await;
+                                            },
+                                        };
+
+
+                                        resp.map_err(|e| { error!(error = ?e); StatusCode::INTERNAL_SERVER_ERROR })
+}
+
+
+#[tracing::instrument(skip_all)]
+fn get_collection_images_validation(
+  path_params: models::GetCollectionImagesPathParams,
+) -> std::result::Result<(
+  models::GetCollectionImagesPathParams,
+), ValidationErrors>
+{
+  path_params.validate()?;
+
+Ok((
+  path_params,
+))
+}
+/// GetCollectionImages - GET /collections/{id}/images
+#[tracing::instrument(skip_all)]
+async fn get_collection_images<I, A, E>(
+  method: Method,
+  TypedHeader(host): TypedHeader<Host>,
+  cookies: CookieJar,
+  Path(path_params): Path<models::GetCollectionImagesPathParams>,
+ State(api_impl): State<I>,
+) -> Result<Response, StatusCode>
+where
+    I: AsRef<A> + Send + Sync,
+    A: apis::collection::Collection<E> + Send + Sync,
+    E: std::fmt::Debug + Send + Sync + 'static,
+        {
+
+
+
+
+      #[allow(clippy::redundant_closure)]
+      let validation = tokio::task::spawn_blocking(move ||
+    get_collection_images_validation(
+        path_params,
+    )
+  ).await.unwrap();
+
+  let Ok((
+    path_params,
+  )) = validation else {
+    return Response::builder()
+            .status(StatusCode::BAD_REQUEST)
+            .body(Body::from(validation.unwrap_err().to_string()))
+            .map_err(|_| StatusCode::BAD_REQUEST);
+  };
+
+
+
+let result = api_impl.as_ref().get_collection_images(
+      
+      &method,
+      &host,
+      &cookies,
+        &path_params,
+  ).await;
+
+  let mut response = Response::builder();
+
+  let resp = match result {
+                                            Ok(rsp) => match rsp {
+                                                apis::collection::GetCollectionImagesResponse::Status200_ListOfImageIdsInTheCollection
+                                                    (body)
+                                                => {
+                                                  let mut response = response.status(200);
+                                                  {
+                                                    let mut response_headers = response.headers_mut().unwrap();
+                                                    response_headers.insert(
+                                                        CONTENT_TYPE,
+                                                        HeaderValue::from_static("application/json"));
+                                                  }
+
+                                                  let body_content =  tokio::task::spawn_blocking(move ||
+                                                      serde_json::to_vec(&body).map_err(|e| {
+                                                        error!(error = ?e);
+                                                        StatusCode::INTERNAL_SERVER_ERROR
+                                                      })).await.unwrap()?;
+                                                  response.body(Body::from(body_content))
                                                 },
                                             },
                                             Err(why) => {
@@ -767,7 +859,7 @@ Ok((
   path_params,
 ))
 }
-/// CloseImportSession - DELETE /image/importSession/{id}
+/// CloseImportSession - DELETE /image/import-session/{id}
 #[tracing::instrument(skip_all)]
 async fn close_import_session<I, A, E>(
   method: Method,
@@ -852,7 +944,7 @@ fn get_import_sessions_validation(
 Ok((
 ))
 }
-/// GetImportSessions - GET /image/importSession
+/// GetImportSessions - GET /image/import-session
 #[tracing::instrument(skip_all)]
 async fn get_import_sessions<I, A, E>(
   method: Method,
@@ -1032,7 +1124,7 @@ fn start_import_session_validation(
 Ok((
 ))
 }
-/// StartImportSession - POST /image/importSession
+/// StartImportSession - POST /image/import-session
 #[tracing::instrument(skip_all)]
 async fn start_import_session<I, A, E>(
   method: Method,

@@ -3,7 +3,7 @@ info:
   title: Kani Server
   summary: A image library and sauce lookup service for pantsu
   description: API to import images, filter and download images, manage tags, lookup sources and tags
-  version: 0.2.0
+  version: 0.3.0
 servers:
   - description: localhost
     url: http://localhost:8000
@@ -15,7 +15,7 @@ tags:
   - name: imageTag
   - name: tag
 paths:
-  /image/importSession:
+  /image/import-session:
     get:
       tags:
         - imageImport
@@ -40,7 +40,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ImportSessionId'
-  /image/importSession/{id}:
+  /image/import-session/{id}:
     delete:
       tags:
         - imageImport
@@ -347,6 +347,25 @@ paths:
         "200":
           description: collection deleted
   /collections/{id}/images:
+    get:
+      tags:
+        - collection
+      operationId: getCollectionImages
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/CollectionId'
+      responses:
+        "200":
+          description: List of image ids in the collection
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ImageId'
     post:
       tags:
         - collection
