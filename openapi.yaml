@@ -3,7 +3,7 @@ info:
   title: Kani Server
   summary: A image library and sauce lookup service for pantsu
   description: API to import images, filter and download images, manage tags, lookup sources and tags
-  version: 0.1.0
+  version: 0.2.0
 servers:
   - description: localhost
     url: http://localhost:8000
@@ -28,7 +28,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ImportSession'
+                  $ref: '#/components/schemas/ImportSessionDTO'
     post:
       tags:
         - imageImport
@@ -74,7 +74,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/ImageImport'
+              $ref: '#/components/schemas/ImageImportDTO'
         required: true
       responses:
         "201":
@@ -166,7 +166,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ImageTag'
+                  $ref: '#/components/schemas/ImageTagDTO'
         "404":
           description: image not found
     post:
@@ -186,7 +186,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/NewImageTag'
+                $ref: '#/components/schemas/NewImageTagDTO'
         required: true
       responses:
         "201":
@@ -196,7 +196,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ImageTag'
+                  $ref: '#/components/schemas/ImageTagDTO'
         "400":
           description: Invalid tag or image id
   /images:
@@ -296,7 +296,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Tag'
+                  $ref: '#/components/schemas/TagDTO'
   /collections:
     get:
       tags:
@@ -310,7 +310,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Collection'
+                  $ref: '#/components/schemas/CollectionDTO'
     post:
       tags:
         - collection
@@ -329,7 +329,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Collection'
+                $ref: '#/components/schemas/CollectionDTO'
         "409":
           description: collection already exists
   /collections/{id}:
@@ -393,7 +393,7 @@ paths:
           description: images removed from collection
 components:
   schemas:
-    ImportSession:
+    ImportSessionDTO:
       type: object
       properties:
         id:
@@ -434,25 +434,25 @@ components:
       type: string
       example: "123456789"
       pattern: "^[0-9]+$"
-    NewImageTag:
+    NewImageTagDTO:
       type: object
       properties:
         tagType:
-          $ref: '#/components/schemas/TagType'
+          $ref: '#/components/schemas/TagTypeDTO'
         tagName:
           $ref: '#/components/schemas/TagName'
       required:
         - tagType
         - tagName
-    ImageTag:
+    ImageTagDTO:
       type: object
       properties:
         tag:
-          $ref: '#/components/schemas/Tag'
+          $ref: '#/components/schemas/TagDTO'
         createdByUser:
           $ref: '#/components/schemas/UserId'
         createdBySourceSite:
-          $ref: '#/components/schemas/ImageTagSourceSite'
+          $ref: '#/components/schemas/ImageTagSourceSiteDTO'
         createdAt:
           type: string
           format: date-time
@@ -460,11 +460,11 @@ components:
       required:
         - tag
         - createdAt
-    ImageTagSourceSite:
+    ImageTagSourceSiteDTO:
       type: string
       enum: [ gelbooru ]
       example: gelbooru
-    ImageImport:
+    ImageImportDTO:
       type: object
       properties:
         file:
@@ -472,7 +472,7 @@ components:
           format: binary
       required:
         - file
-    Collection:
+    CollectionDTO:
       type: object
       properties:
         id:
@@ -497,13 +497,13 @@ components:
         - createdBy
         - createdAt
         - updatedAt
-    Tag:
+    TagDTO:
       type: object
       properties:
         id:
           $ref: '#/components/schemas/TagId'
         tagType:
-          $ref: '#/components/schemas/TagType'
+          $ref: '#/components/schemas/TagTypeDTO'
         tagName:
           $ref: '#/components/schemas/TagName'
       required:
@@ -513,7 +513,7 @@ components:
     TagName:
       type: string
       description: "max length: 40 characters"
-    TagType:
+    TagTypeDTO:
       type: string
       enum: [ rating, artist, source, character, general ]
       example: general

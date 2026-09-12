@@ -1,9 +1,10 @@
 use crate::converter::FromDomain;
-use kani_openapi::models::Collection;
+use kani_domain_api_model::collection::Collection;
+use kani_openapi::models::CollectionDto;
 
-impl FromDomain<kani_domain_api_model::collection::Collection> for Collection {
-    fn from_domain(collection: kani_domain_api_model::collection::Collection) -> Self {
-        Collection {
+impl FromDomain<Collection> for CollectionDto {
+    fn from_domain(collection: Collection) -> Self {
+        CollectionDto {
             id: collection.id.to_string(),
             created_at: collection.created_at,
             created_by: collection.created_by.to_string(),

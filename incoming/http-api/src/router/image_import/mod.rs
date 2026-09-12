@@ -10,7 +10,7 @@ use headers::Host;
 use kani_domain_api_incoming::image_management::{CloseImportSessionError, ImportImageError};
 use kani_domain_api_model::import::ImportSessionId;
 use kani_openapi::apis::image_import::{CloseImportSessionResponse, GetImportSessionsResponse, ImageImport, ImportImageResponse, StartImportSessionResponse};
-use kani_openapi::models::{CloseImportSessionPathParams, ImportImagePathParams, ImportSession};
+use kani_openapi::models::{CloseImportSessionPathParams, ImportImagePathParams, ImportSessionDto};
 use std::num::ParseIntError;
 use tracing::error;
 
@@ -90,7 +90,7 @@ impl ImageImport<HttpApiUnhandledError> for AppState {
 
         let sessions = self.image_management_service.get_import_sessions(&user).await
             .map_err(|e| HttpApiUnhandledError::Unknown(e.into()))?;
-        let sessions = Vec::<ImportSession>::from_domain(sessions);
+        let sessions = Vec::<ImportSessionDto>::from_domain(sessions);
         Ok(GetImportSessionsResponse::Status200_ImportSessions(sessions))
     }
 }

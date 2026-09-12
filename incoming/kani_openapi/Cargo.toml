@@ -1,6 +1,6 @@
 [package]
 name = "kani-openapi"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["OpenAPI Generator team and contributors"]
 description = "API to import images, filter and download images, manage tags, lookup sources and tags"
 edition = "2024"

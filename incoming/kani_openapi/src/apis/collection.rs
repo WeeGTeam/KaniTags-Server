@@ -22,7 +22,7 @@ pub enum AddImagesToCollectionResponse {
 pub enum CreateCollectionResponse {
     /// collection created
     Status201_CollectionCreated
-    (models::Collection)
+    (models::CollectionDto)
     ,
     /// collection already exists
     Status409_CollectionAlreadyExists
@@ -42,7 +42,7 @@ pub enum DeleteCollectionResponse {
 pub enum GetCollectionsResponse {
     /// Collections
     Status200_Collections
-    (Vec<models::Collection>)
+    (Vec<models::CollectionDto>)
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
